@@ -1,0 +1,64 @@
+{
+  "input_header": "def sudo(self, command, **kwargs):",
+  "input_docstring": "Execute a shell command, via ``sudo``, on the remote end.\n\nThis method is identical to `invoke.context.Context.sudo` in every way,\nexcept in that -- like `run` -- it honors per-host/per-connection\nconfiguration overrides in addition to the generic/global ones. Thus,\nfor example, per-host sudo passwords may be configured.\n\n.. versionadded:: 2.0",
+  "output_code": "    def sudo(self, command, **kwargs):\n        \n        return self._sudo(self._remote_runner(), command, **kwargs)",
+  "input_contexts": [
+    {
+      "id": "fabric_fabric_35_3",
+      "input_code": "        def calls_open_for_you(self, Remote, client):\n            c = Connection(\"host\")\n            c.open = Mock()\n            c.sudo(\"command\")\n            assert c.open.called\n"
+    },
+    {
+      "id": "fabric_fabric_35_1",
+      "input_code": "        def sudo_command(self):\n            \n            skip_outside_ci()\n            assert self.cxn.sudo(\"whoami\").stdout.strip() == \"root\"\n"
+    },
+    {
+      "id": "fabric_fabric_35_4",
+      "input_code": "        def passes_inline_env_to_Remote(self, Remote, client):\n            Connection(\"host\").sudo(\"command\")\n            assert Remote.call_args[1][\"inline_env\"] is True\n            Connection(\"host\", inline_ssh_env=False).sudo(\"command\")\n            assert Remote.call_args[1][\"inline_env\"] is False\n"
+    },
+    {
+      "id": "fabric_fabric_35_2",
+      "input_code": "        def mixed_sudo_and_normal_commands(self):\n            \n            skip_outside_ci()\n            logname = os.environ[\"LOGNAME\"]\n            assert self.cxn.run(\"whoami\").stdout.strip() == logname\n            assert self.cxn.sudo(\"whoami\").stdout.strip() == \"root\"\n"
+    },
+    {
+      "id": "fabric_fabric_35_5",
+      "input_code": "        def basic_invocation(self, Remote, client):\n            cxn = Connection(\"host\")\n            cxn.sudo(\"foo\")\n            cmd = \"sudo -S -p '{}' foo\".format(cxn.config.sudo.prompt)\n            expected = [\n                call(context=cxn, inline_env=True),\n                call().run(cmd, watchers=ANY),\n            ]\n            assert Remote.mock_calls == expected\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport os\nfrom unittest.mock import Mock, call, ANY\n\n<testcase_1>\nself = Mock()\ncommand = \"ls -la\"\nkwargs = {\"user\": \"admin\", \"pty\": True}\n\n<testcase_2>\nself = Mock()\ncommand = \"apt-get update\"\nkwargs = {\"password\": \"securepassword\", \"timeout\": 60}\n\n<testcase_3>\nself = Mock()\ncommand = \"systemctl restart apache2\"\nkwargs = {\"warn\": True, \"hide\": \"both\"}\n\n<testcase_4>\nself = Mock()\ncommand = \"df -h\"\nkwargs = {\"watchers\": [ANY], \"echo\": True}\n\n<testcase_5>\nself = Mock()\ncommand = \"cat /etc/passwd\"\nkwargs = {\"env\": {\"LANG\": \"C.UTF-8\"}, \"in_stream\": None}\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport os\nfrom unittest.mock import Mock, call, ANY\n\n<testcase_1>\nself = Mock()\ncommand = \"ls -la\"\nkwargs = {\"user\": \"admin\", \"pty\": True}\n\n<testcase_2>\nself = Mock()\ncommand = \"apt-get update\"\nkwargs = {\"password\": \"securepassword\", \"timeout\": 60}\n\n<testcase_3>\nself = Mock()\ncommand = \"systemctl restart apache2\"\nkwargs = {\"warn\": True, \"hide\": \"both\"}\n\n<testcase_4>\nself = Mock()\ncommand = \"df -h\"\nkwargs = {\"watchers\": [ANY], \"echo\": True}\n\n<testcase_5>\nself = Mock()\ncommand = \"cat /etc/passwd\"\nkwargs = {\"env\": {\"LANG\": \"C.UTF-8\"}, \"in_stream\": None}\n```",
+  "needimport": "import os\nfrom unittest.mock import Mock, call, ANY\n\n",
+  "test_results": {
+    "ans1": {
+      "success": true,
+      "result": "sudo_mock_result",
+      "error": null,
+      "traceback": null
+    },
+    "ans2": {
+      "success": true,
+      "result": "sudo_mock_result",
+      "error": null,
+      "traceback": null
+    },
+    "ans3": {
+      "success": true,
+      "result": "sudo_mock_result",
+      "error": null,
+      "traceback": null
+    },
+    "ans4": {
+      "success": true,
+      "result": "sudo_mock_result",
+      "error": null,
+      "traceback": null
+    },
+    "ans5": {
+      "success": true,
+      "result": "sudo_mock_result",
+      "error": null,
+      "traceback": null
+    }
+  }
+}

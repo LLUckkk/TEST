@@ -5,6 +5,7 @@ import sys
 import subprocess
 import time
 from typing import List, Dict
+import PyQt5.QtWidgets as QtWidgets
 
 
 def load_dataset_json(file_path: str):
@@ -130,6 +131,7 @@ def check_and_install_libraries(needimport: str, max_retries: int = 3) -> None:
                             timeout=300,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
+                            encoding='utf-8',
                             text=True
                         )
 
@@ -202,7 +204,8 @@ def fill_template(template_path, replacements):
 
 def solve(dataset: Dict[str, Dict]) -> Dict[str, List[Dict]]:
     cnt = 1
-    index = 2
+    index = 17
+
     for item_key in dataset:
         if cnt < index:
             cnt += 1
@@ -216,7 +219,11 @@ def solve(dataset: Dict[str, Dict]) -> Dict[str, List[Dict]]:
 
         call_func = get_call_func(item["input_header"])
         generated_inputs = item["generated_inputs"][0]
-        needimport = generated_inputs.split("<needimport>\n")[1].split("<testcase_1>")[0]
+        if not generated_inputs == "None":
+            needimport = generated_inputs.split("<needimport>\n")[1].split("<testcase_1>")[0]
+        else:
+            print("no generated_inputs")
+            break
 
         replacements = []
         replacements.append(needimport)
@@ -271,9 +278,10 @@ def execute_test_code(filename):
     # 执行该文件
     try:
         result = subprocess.run(
-            ["python", filename],
+            [sys.executable, filename],
             capture_output=True,
             text=True,
+            encoding='utf-8',
             check=True
         )
         # 解析标准输出的最后一行（JSON字符串）

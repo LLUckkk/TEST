@@ -1,0 +1,86 @@
+{
+  "input_header": "def setIcon(self, icon):",
+  "input_docstring": "设置图标",
+  "output_code": "    def setIcon(self, icon):\n        \n        self.iconLabel.setPixmap(icon.pixmap(self.iconSize, self.iconSize))",
+  "input_contexts": [
+    {
+      "id": "PyQt5_PyQt_73_4",
+      "input_code": "    def chooseWaterColor2(self):\n        \n        col = QColorDialog.getColor(self.bar.waterColor2, self)\n        if not col.isValid():\n            return\n        self.bar.waterColor2 = col\n        pix = QPixmap(16, 16)\n        pix.fill(col)\n        self.sender().setIcon(QIcon(pix))\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_7",
+      "input_code": "    def stop_flash(self):\n        \n        if self.flash_timer.isActive():\n            self.flash_timer.stop()\n            self.tray_icon.setIcon(self.style().standardIcon(\n                QStyle.SP_ComputerIcon))\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_1",
+      "input_code": "    def chooseBackgroundColor(self):\n        \n        col = QColorDialog.getColor(self.bar.backgroundColor, self)\n        if not col.isValid():\n            return\n        self.bar.backgroundColor = col\n        pix = QPixmap(16, 16)\n        pix.fill(col)\n        self.sender().setIcon(QIcon(pix))\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_8",
+      "input_code": "    def flash_icon(self):\n        \n        if self.tray_visible:\n            self.tray_icon.setIcon(self.style().standardIcon(\n                QStyle.SP_TrashIcon))\n        else:\n            self.tray_icon.setIcon(self.style().standardIcon(\n                QStyle.SP_ComputerIcon))\n        self.tray_visible = not self.tray_visible\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_12",
+      "input_code": "    def __init__(self, parent=None, title='', animationDuration=300):\n        \n        super(Spoiler, self).__init__(parent=parent)\n        self.groupBox = QtWidgets.QGroupBox(self)\n        self.groupBox.setGeometry(QtCore.QRect(210, 30, 95, 134))\n        self.groupBox.setObjectName(\"groupBox\")\n        self.verticalLayout = QtWidgets.QVBoxLayout(self.groupBox)\n        self.verticalLayout.setObjectName(\"verticalLayout\")\n        self.pushButton3 = QtWidgets.QPushButton(self.groupBox)\n        icon = QtGui.QIcon()\n\n        self.pushButton3.setIcon(icon)\n        self.pushButton3.setObjectName(\"pushButton3\")\n        self.verticalLayout.addWidget(self.pushButton3)\n        self.pushButton2 = QtWidgets.QPushButton(self.groupBox)\n        self.pushButton2.setObjectName(\"pushButton2\")\n        self.verticalLayout.addWidget(self.pushButton2)\n        self.label_2 = QtWidgets.QLabel(self.groupBox)\n\n        self.label_2.setObjectName(\"label_2\")\n        self.verticalLayout.addWidget(self.label_2)\n        self.pushButton = QtWidgets.QPushButton(self.groupBox)\n        self.pushButton.setIcon(icon)\n        self.pushButton.setObjectName(\"pushButton\")\n        self.verticalLayout.addWidget(self.pushButton)\n\n        self.animationDuration = 300\n        self.toggleAnimation = QParallelAnimationGroup()\n        self.contentArea = QScrollArea()\n        self.headerLine = QFrame()\n        self.toggleButton = QToolButton()\n        self.mainLayout = QGridLayout()\n\n        toggleButton = self.toggleButton\n        toggleButton.setStyleSheet(\"QToolButton { border: none; }\")\n        toggleButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)\n        toggleButton.setArrowType(Qt.RightArrow)\n        toggleButton.setText(str(title))\n        toggleButton.setCheckable(True)\n        toggleButton.setChecked(False)\n\n        headerLine = self.headerLine\n        headerLine.setFrameShape(QFrame.HLine)\n        headerLine.setFrameShadow(QFrame.Sunken)\n        headerLine.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)\n\n        self.contentArea.setStyleSheet(\n            \"QScrollArea { background-color: white; border: none; }\")\n        self.contentArea.setSizePolicy(\n            QSizePolicy.Expanding, QSizePolicy.Fixed)\n        self.contentArea.setMaximumHeight(0)\n        self.contentArea.setMinimumHeight(0)\n        toggleAnimation = self.toggleAnimation\n        toggleAnimation.addAnimation(\n            QPropertyAnimation(self, b\"minimumHeight\"))\n        toggleAnimation.addAnimation(\n            QPropertyAnimation(self, b\"maximumHeight\"))\n        toggleAnimation.addAnimation(\n            QPropertyAnimation(self.contentArea, b\"maximumHeight\"))\n        mainLayout = self.mainLayout\n        mainLayout.setVerticalSpacing(0)\n        mainLayout.setContentsMargins(0, 0, 0, 0)\n        row = 0\n        mainLayout.addWidget(self.toggleButton, row, 0,\n                             1, 1, Qt.AlignLeft)\n        mainLayout.addWidget(self.headerLine, row, 2, 1, 1)\n        row += 1\n        mainLayout.addWidget(self.contentArea, row, 0, 1, 3)\n        self.setLayout(self.mainLayout)\n\n        def start_animation(checked):\n            arrow_type = Qt.DownArrow if checked else Qt.RightArrow\n            direction = QAbstractAnimation.Forward if checked else QAbstractAnimation.Backward\n            toggleButton.setArrowType(arrow_type)\n            self.toggleAnimation.setDirection(direction)\n            self.toggleAnimation.start()\n\n        self.toggleButton.clicked.connect(start_animation)\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_2",
+      "input_code": "    def chooseTextColor(self):\n        \n        col = QColorDialog.getColor(self.bar.textColor, self)\n        if not col.isValid():\n            return\n        self.bar.textColor = col\n        pix = QPixmap(16, 16)\n        pix.fill(col)\n        self.sender().setIcon(QIcon(pix))\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_11",
+      "input_code": "    def initUi(self):\n        self.horizontalLayout = QHBoxLayout(self)\n        self.file_btn = QPushButton(QIcon(\":/newPrefix/file.png\"), self.text, self)\n        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)\n        self.file_btn.setSizePolicy(sizePolicy)\n        qss = '''QPushButton \n{\n    background-color: transparent;\n    border: none;\n}\n\nQPushButton:hover {\n    background:transparent;\n    }'''\n        self.file_btn.setStyleSheet(qss)\n        self.bt_close = QToolButton(self)\n        self.bt_close.setIcon(QIcon(\":/newPrefix/if_Delete_1493279.png\"))\n        self.bt_close.setAutoRaise(True)\n        self.bt_close.setToolTip(\"Delete\")\n        self.bt_close.clicked.connect(lambda: self.itemOpSignal.emit(self.listwidgetItem))\n\n        self.horizontalLayout.addWidget(self.bt_close)\n        self.horizontalLayout.addWidget(self.file_btn)\n        spacerItem = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)\n        self.horizontalLayout.addItem(spacerItem)\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_3",
+      "input_code": "    def chooseWaterColor1(self):\n        \n        col = QColorDialog.getColor(self.bar.waterColor1, self)\n        if not col.isValid():\n            return\n        self.bar.waterColor1 = col\n        pix = QPixmap(16, 16)\n        pix.fill(col)\n        self.sender().setIcon(QIcon(pix))\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_9",
+      "input_code": "    def init_ui(self):\n        layout = QVBoxLayout(self)\n        self.labelPrev = QLabel(self)\n        self.labelControl = QLabel('暂停播放', self)\n        self.labelNext = QLabel(self)\n        layout.addWidget(self.labelPrev)\n        layout.addWidget(self.labelControl)\n        layout.addWidget(self.labelNext)\n\n        self.toolBar = QWinThumbnailToolBar(self)\n        self.toolBtnPrev = QWinThumbnailToolButton(self.toolBar)\n        self.toolBtnPrev.setToolTip('上一首')\n        self.toolBtnPrev.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipBackward))\n        self.toolBtnPrev.clicked.connect(self.set_prev)\n        self.toolBar.addButton(self.toolBtnPrev)\n\n        self.toolBtnControl = QWinThumbnailToolButton(self.toolBar)\n        self.toolBtnControl.setToolTip('播放')\n        self.toolBtnControl.setProperty('status', 0)\n        self.toolBtnControl.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))\n        self.toolBtnControl.clicked.connect(self.set_control)\n        self.toolBar.addButton(self.toolBtnControl)\n\n        self.toolBtnNext = QWinThumbnailToolButton(self.toolBar)\n        self.toolBtnNext.setToolTip('下一首')\n        self.toolBtnNext.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipForward))\n        self.toolBtnNext.clicked.connect(self.set_next)\n        self.toolBar.addButton(self.toolBtnNext)\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_13",
+      "input_code": "    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.setWindowTitle('My Browser')\n        self.setWindowIcon(QIcon('icons/penguin.png'))\n        \n        self.resize(750, 400)\n        self.show()\n        self.frame=1\n        self.browser = MyEngineView()\n        url=\"http://www.onlinedown.net/soft/56160.htm\"\n        self.browser.setUrl(QUrl(url))\n        self.setCentralWidget(self.browser)\n\n        self.tray = QSystemTrayIcon()\n        self.icon = QIcon('icons/back.png')\n        self.tray.setIcon(self.icon)\n        self.tray.show()\n\n\n        navigation_bar = QToolBar('Navigation')\n        navigation_bar.setIconSize(QSize(16, 16))\n        self.addToolBar(navigation_bar)\n\n        back_button = QAction(QIcon('icons/back.png'), 'Back', self)\n        next_button = QAction(QIcon('icons/next.png'), 'Forward', self)\n        stop_button = QAction(QIcon('icons/cross.png'), 'stop', self)\n        reload_button = QAction(QIcon('icons/renew.png'), 'reload', self)\n       \n        \n        back_button.triggered.connect(self.browser.back)\n        next_button.triggered.connect(self.browser.forward)\n        stop_button.triggered.connect(self.browser.stop)\n        reload_button.triggered.connect(self.browser.reload)\n  \n        navigation_bar.addAction(back_button)\n        navigation_bar.addAction(next_button)\n        navigation_bar.addAction(stop_button)\n        navigation_bar.addAction(reload_button)\n        self.urlbar = QLineEdit()\n        self.urlbar.setText(url)\n        self.urlbar.returnPressed.connect(self.navigate_to_url)\n\n        navigation_bar.addSeparator()\n        navigation_bar.addWidget(self.urlbar)\n\n        self.browser.urlChanged.connect(self.renew_urlbar)\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_10",
+      "input_code": "    def set_control(self):\n        if self.toolBtnControl.property('status') == 0:\n            self.labelControl.setText('正在播放')\n            self.toolBtnControl.setProperty('status', 1)\n            self.toolBtnControl.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))\n        else:\n            self.labelControl.setText('暂停播放')\n            self.toolBtnControl.setProperty('status', 0)\n            self.toolBtnControl.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_5",
+      "input_code": "    def __init__(self):\n        QMainWindow.__init__(self)\n\n        self.setMinimumSize(QSize(480, 80))\n        self.setWindowTitle(\"System Tray Application\")\n        central_widget = QWidget(self)\n        self.setCentralWidget(central_widget)\n\n        grid_layout = QGridLayout(self)\n        central_widget.setLayout(grid_layout)\n        grid_layout.addWidget(\n            QLabel(\"Application, which can minimize to Tray\", self), 0, 0)\n\n        self.check_box = QCheckBox('Minimize to Tray')\n        grid_layout.addWidget(self.check_box, 1, 0)\n        grid_layout.addItem(QSpacerItem(\n            0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding), 2, 0)\n\n        self.tray_icon = QSystemTrayIcon(self)\n        self.tray_icon.setIcon(\n            self.style().standardIcon(QStyle.SP_ComputerIcon))\n\n        '''\n            Define and add steps to work with the system tray icon\n            show - show window\n            hide - hide window\n            exit - exit from application\n        '''\n        show_action = QAction(\"Show\", self)\n        quit_action = QAction(\"Exit\", self)\n        hide_action = QAction(\"Hide\", self)\n        show_action.triggered.connect(self.show)\n        hide_action.triggered.connect(self.hide)\n        quit_action.triggered.connect(QApplication.instance().quit)\n        tray_menu = QMenu()\n        tray_menu.addAction(show_action)\n        tray_menu.addAction(hide_action)\n        tray_menu.addAction(quit_action)\n        self.tray_icon.setContextMenu(tray_menu)\n        self.tray_icon.show()\n"
+    },
+    {
+      "id": "PyQt5_PyQt_73_6",
+      "input_code": "    def __init__(self, *args, **kwargs):\n        super(Window, self).__init__(*args, **kwargs)\n        layout = QHBoxLayout(self)\n        layout.addWidget(QPushButton('开始闪烁', self, clicked=self.start_flash))\n        layout.addWidget(QPushButton('停止闪烁', self, clicked=self.stop_flash))\n        self.tray_icon = QSystemTrayIcon(self)\n        self.tray_icon.setIcon(self.style().standardIcon(\n            QStyle.SP_ComputerIcon))\n        self.tray_icon.show()\n        self.tray_visible = True\n        self.flash_timer = QTimer(self, timeout=self.flash_icon)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport PyQt5.QtGui as QtGui\n\n<testcase_1>\nicon = QtGui.QIcon('icons/penguin.png')\n\n<testcase_2>\nicon = QtGui.QIcon('icons/back.png')\n\n<testcase_3>\nicon = QtGui.QIcon('icons/next.png')\n\n<testcase_4>\nicon = QtGui.QIcon('icons/renew.png')\n\n<testcase_5>\nicon = QtGui.QIcon('icons/cross.png')"
+  ],
+  "gpt_output": "<needimport>\nimport PyQt5.QtGui as QtGui\n\n<testcase_1>\nicon = QtGui.QIcon('icons/penguin.png')\n\n<testcase_2>\nicon = QtGui.QIcon('icons/back.png')\n\n<testcase_3>\nicon = QtGui.QIcon('icons/next.png')\n\n<testcase_4>\nicon = QtGui.QIcon('icons/renew.png')\n\n<testcase_5>\nicon = QtGui.QIcon('icons/cross.png')",
+  "needimport": "import PyQt5.QtGui as QtGui\n\n",
+  "test_results": {
+    "ans1": {
+      "width": 200,
+      "height": 200
+    },
+    "ans2": {
+      "width": 200,
+      "height": 200
+    },
+    "ans3": {
+      "width": 200,
+      "height": 200
+    },
+    "ans4": {
+      "width": 200,
+      "height": 200
+    },
+    "ans5": {
+      "width": 200,
+      "height": 200
+    }
+  }
+}

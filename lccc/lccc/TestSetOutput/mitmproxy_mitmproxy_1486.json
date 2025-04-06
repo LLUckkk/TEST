@@ -1,0 +1,51 @@
+{
+  "input_header": "def parse_authority(authority: AnyStr, check: bool) -> tuple[str, int | None]:",
+  "input_docstring": "Extract the host and port from host header/authority information\n\nRaises:\n    ValueError, if check is True and the authority information is malformed.",
+  "output_code": "def parse_authority(authority: AnyStr, check: bool) -> tuple[str, int | None]:\n    \n    try:\n        if isinstance(authority, bytes):\n            m = _authority_re.match(authority.decode(\"utf-8\"))\n            if not m:\n                raise ValueError\n            host = m[\"host\"].encode(\"utf-8\").decode(\"idna\")\n        else:\n            m = _authority_re.match(authority)\n            if not m:\n                raise ValueError\n            host = m.group(\"host\")\n\n        if host.startswith(\"[\") and host.endswith(\"]\"):\n            host = host[1:-1]\n        if not is_valid_host(host):\n            raise ValueError\n\n        if m.group(\"port\"):\n            port = int(m.group(\"port\"))\n            if not is_valid_port(port):\n                raise ValueError\n            return host, port\n        else:\n            return host, None\n\n    except ValueError:\n        if check:\n            raise\n        else:\n            return always_str(authority, \"utf-8\", \"surrogateescape\"), None",
+  "input_contexts": [
+    {
+      "id": "mitmproxy_mitmproxy_1486_2",
+      "input_code": "    def pretty_host(self) -> str:\n        \n        authority = self.host_header\n        if authority:\n            return url.parse_authority(authority, check=False)[0]\n        else:\n            return self.host\n"
+    },
+    {
+      "id": "mitmproxy_mitmproxy_1486_5",
+      "input_code": "def test_parse_authority(authority: AnyStr, valid: bool, out):\n    assert parse_authority(authority, False) == out\n\n    if valid:\n        assert parse_authority(authority, True) == out\n    else:\n        with pytest.raises(ValueError):\n            parse_authority(authority, True)\n"
+    },
+    {
+      "id": "mitmproxy_mitmproxy_1486_3",
+      "input_code": "    def pretty_url(self) -> str:\n        \n        if self.first_line_format == \"authority\":\n            return self.authority\n\n        host_header = self.host_header\n        if not host_header:\n            return self.url\n\n        pretty_host, pretty_port = url.parse_authority(host_header, check=False)\n        pretty_port = pretty_port or url.default_port(self.scheme) or 443\n\n        return url.unparse(self.scheme, pretty_host, pretty_port, self.path)\n"
+    },
+    {
+      "id": "mitmproxy_mitmproxy_1486_1",
+      "input_code": "    def state_wait_for_request_headers(\n        self, event: RequestHeaders\n    ) -> layer.CommandGenerator[None]:\n        if not event.replay_flow:\n            self.flow = http.HTTPFlow(self.context.client, self.context.server)\n\n        else:\n            self.flow = event.replay_flow\n        self.flow.request = event.request\n        self.flow.live = True\n\n        if (yield from self.check_invalid(True)):\n            return\n\n        if self.flow.request.method == \"CONNECT\":\n            return (yield from self.handle_connect())\n\n        if self.mode is HTTPMode.transparent:\n            assert self.context.server.address\n            self.flow.request.data.host = self.context.server.address[0]\n            self.flow.request.data.port = self.context.server.address[1]\n            self.flow.request.scheme = \"https\" if self.context.server.tls else \"http\"\n        elif not self.flow.request.host:\n            try:\n                host, port = url.parse_authority(\n                    self.flow.request.host_header or \"\", check=True\n                )\n            except ValueError:\n                yield SendHttp(\n                    ResponseProtocolError(\n                        self.stream_id,\n                        \"HTTP request has no host header, destination unknown.\",\n                        400,\n                    ),\n                    self.context.client,\n                )\n                self.client_state = self.state_errored\n                return\n            else:\n                if port is None:\n                    port = 443 if self.context.client.tls else 80\n                self.flow.request.data.host = host\n                self.flow.request.data.port = port\n                self.flow.request.scheme = (\n                    \"https\" if self.context.client.tls else \"http\"\n                )\n\n        if self.mode is HTTPMode.regular and not (\n            self.flow.request.is_http2 or self.flow.request.is_http3\n        ):\n            self.flow.request.authority = \"\"\n\n        if (\n            isinstance(self.context.client.proxy_mode, ReverseMode)\n            and not self.context.options.keep_host_header\n        ):\n            assert self.context.server.address\n            self.flow.request.host_header = url.hostport(\n                \"https\" if self.context.server.tls else \"http\",\n                self.context.server.address[0],\n                self.context.server.address[1],\n            )\n\n        if not event.end_stream and (yield from self.check_body_size(True)):\n            return\n\n        yield HttpRequestHeadersHook(self.flow)\n        if (yield from self.check_killed(True)):\n            return\n\n        if self.flow.request.headers.get(\"expect\", \"\").lower() == \"100-continue\":\n            continue_response = http.Response.make(100)\n            continue_response.headers.clear()\n            yield SendHttp(\n                ResponseHeaders(self.stream_id, continue_response), self.context.client\n            )\n            self.flow.request.headers.pop(\"expect\")\n\n        if self.flow.request.stream and not event.end_stream:\n            yield from self.start_request_stream()\n        else:\n            self.client_state = self.state_consume_request_body\n        self.server_state = self.state_wait_for_response_headers\n"
+    },
+    {
+      "id": "mitmproxy_mitmproxy_1486_4",
+      "input_code": "def parse_h2_request_headers(\n    h2_headers: Sequence[tuple[bytes, bytes]],\n) -> tuple[str, int, bytes, bytes, bytes, bytes, http.Headers]:\n    \n    pseudo_headers, headers = split_pseudo_headers(h2_headers)\n\n    try:\n        method: bytes = pseudo_headers.pop(b\":method\")\n        scheme: bytes = pseudo_headers.pop(\n            b\":scheme\"\n        )\n        path: bytes = pseudo_headers.pop(b\":path\")\n        authority: bytes = pseudo_headers.pop(b\":authority\", b\"\")\n    except KeyError as e:\n        raise ValueError(f\"Required pseudo header is missing: {e}\")\n\n    if pseudo_headers:\n        raise ValueError(f\"Unknown pseudo headers: {pseudo_headers}\")\n\n    if authority:\n        host, port = url.parse_authority(authority, check=True)\n        if port is None:\n            port = 80 if scheme == b\"http\" else 443\n    else:\n        host = \"\"\n        port = 0\n\n    return host, port, method, scheme, authority, path, headers\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport re\n\n<testcase_1>\nauthority = \"example.com:8080\"\ncheck = True\n\n<testcase_2>\nauthority = b\"example.com:443\"\ncheck = False\n\n<testcase_3>\nauthority = \"invalid_host:99999\"\ncheck = True\n\n<testcase_4>\nauthority = b\"[2001:db8::1]:80\"\ncheck = False\n\n<testcase_5>\nauthority = \"localhost\"\ncheck = True"
+  ],
+  "gpt_output": "<needimport>\nimport re\n\n<testcase_1>\nauthority = \"example.com:8080\"\ncheck = True\n\n<testcase_2>\nauthority = b\"example.com:443\"\ncheck = False\n\n<testcase_3>\nauthority = \"invalid_host:99999\"\ncheck = True\n\n<testcase_4>\nauthority = b\"[2001:db8::1]:80\"\ncheck = False\n\n<testcase_5>\nauthority = \"localhost\"\ncheck = True",
+  "needimport": "import re\n\n",
+  "test_results": {
+    "ans1": [
+      "example.com",
+      8080
+    ],
+    "ans2": [
+      "example.com",
+      443
+    ],
+    "ans3": null,
+    "ans4": [
+      "2001:db8::1",
+      80
+    ],
+    "ans5": [
+      "localhost",
+      null
+    ]
+  }
+}

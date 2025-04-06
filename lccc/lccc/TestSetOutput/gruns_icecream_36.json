@@ -1,0 +1,104 @@
+{
+  "input_header": "def updateContact(contactId, data):",
+  "input_docstring": null,
+  "output_code": "def updateContact(contactId, data):\n    return _updateEntity('contact', contactId, data)",
+  "input_contexts": [
+    {
+      "id": "gruns_icecream_36_5",
+      "input_code": "def noteContactSubmittedPepSplashPage(contact, websiteUrl):\n    createAndOrAssociateCompanyWithContact(websiteUrl, contact)\n    \n    PEP = 9000004543\n    updateContact(contact['id'], {\n        'custom_field': {\n            'cf_product': 'Pep',\n            },\n        })\n\n    dateStr = time.ctime()\n    emailAddr = contact['email']\n    note = (\n        f\"This Contact submitted Pep's sign up form on pep.dev at [{dateStr}] \"\n        f'with email address [{emailAddr}] and website [{websiteUrl}].')\n    createNote('Contact', contact['id'], note)\n"
+    },
+    {
+      "id": "gruns_icecream_36_8",
+      "input_code": "def handleWordPressPluginUninstall(emailAddr):\n    contact = findFirstContactWithEmail(emailAddr)\n\n    if not contact:\n        return\n\n    FORMER_CUSTOMER = 9000124405\n    updateContact(contact['id'], { 'contact_status_id': FORMER_CUSTOMER })\n\n    dateStr = time.ctime()\n    note = (\n        f'This Contact uninstalled their WordPress plugin at [{dateStr}].')\n    createNote('Contact', contact['id'], note)\n"
+    },
+    {
+      "id": "gruns_icecream_36_7",
+      "input_code": "def handleWordPressPluginCreatedArcAccount(emailAddr):\n    contact = findFirstContactWithEmail(emailAddr)\n\n    if not contact:\n        return\n\n    CUSTOMER = 9000066454\n    updateContact(contact['id'], { 'contact_status_id': CUSTOMER })\n\n    dateStr = time.ctime()\n    note = (\n        f'This WordPress Contact created their Arc account at [{dateStr}].')\n    createNote('Contact', contact['id'], note)\n"
+    },
+    {
+      "id": "gruns_icecream_36_1",
+      "input_code": "def unsubscribeContact(contact, reasons):\n    UNSUBSCRIBED = 9000159966\n    updateContact(contact['id'], {\n        'do_not_disturb': True,\n        'contact_status_id': UNSUBSCRIBED,\n    })\n\n    dateStr = time.ctime()\n    reasonsStr = pprint.pformat(reasons)\n    note = (\n        f'This Contact unsubscribed on arc.io/unsubscribe at [{dateStr}] '\n        'because:\\n'\n        '\\n'\n        f'{reasonsStr}\\n'\n        '\\n')\n    createNote('Contact', contact['id'], note)\n"
+    },
+    {
+      "id": "gruns_icecream_36_6",
+      "input_code": "def handleWordPressPluginInstall(emailAddr, websiteUrl):\n    WORDPRESS = 9000321857\n    ALPHA_CODE = 9000124404\n\n    contact = findFirstContactWithEmail(emailAddr)\n    if contact:\n        updateContact(contact['id'], {\n            'lead_source_id': WORDPRESS,\n            'contact_status_id': ALPHA_CODE,\n            })\n    else:\n        contact = createContact({\n            'email': emailAddr,\n            'first_name': 'there',\n            'last_name': websiteUrl,\n            'lead_source_id': WORDPRESS,\n            'contact_status_id': ALPHA_CODE,\n            })\n\n    CUSTOMER = 9000095000\n    company = createAndOrAssociateCompanyWithContact(websiteUrl, contact)\n    updateCompany(company['id'], {\n        'business_type_id': CUSTOMER,\n        'custom_field': {\n            'cf_source': 'Wordpress',\n            },\n        })\n\n    dateStr = time.ctime()\n    note = (\n        f\"This Contact installed Arc's WordPress plugin at [{dateStr}] on \"\n        \"website [{websiteUrl}].\")\n    createNote('Contact', contact['id'], note)\n"
+    },
+    {
+      "id": "gruns_icecream_36_3",
+      "input_code": "def createAndOrAssociateCompanyWithContact(websiteUrl, contact):\n    if 'sales_accounts' not in contact:\n        contact = lookupFullContact(contact)\n\n    companyToAdd = None\n    companies = contact.get('sales_accounts', [])\n    company = findFirstCompanyWithWebsite(websiteUrl)\n    if company:\n        companyId = company['id']\n        alreadyRelated = any(companyId == c['id'] for c in companies)\n        if not alreadyRelated:\n            companyToAdd = company\n    else:\n        companyToAdd = createCompany({\n            'name': websiteUrl,\n            'website': websiteUrl,\n            })\n\n    if companyToAdd:\n        companyData = {\n            'id': companyToAdd['id'],\n            'is_primary': False if companies else True,\n            }\n        companies.append(companyData)\n\n    updateContact(contact['id'], { 'sales_accounts': companies })\n\n    return company or companyToAdd\n"
+    },
+    {
+      "id": "gruns_icecream_36_4",
+      "input_code": "def upgradeContactWhoSubmittedSplashPage(contact, websiteUrl):\n    createAndOrAssociateCompanyWithContact(websiteUrl, contact)\n\n    SUBMITTED_ARC_IO_SIGN_UP_FORM = 9000159955\n    updateContact(contact['id'], {\n        'contact_status_id': SUBMITTED_ARC_IO_SIGN_UP_FORM,\n    })\n\n    dateStr = time.ctime()\n    emailAddr = contact['email']\n    note = (\n        f'This Contact submitted the sign up form on arc.io at [{dateStr}] '\n        f'with email address [{emailAddr}] and website [{websiteUrl}].')\n    createNote('Contact', contact['id'], note)\n"
+    },
+    {
+      "id": "gruns_icecream_36_2",
+      "input_code": "def optContactIn(contact):\n    OPTED_IN = 9000159976\n    updateContact(contact['id'], {\n        'contact_status_id': OPTED_IN,\n        })\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport time\n\n<testcase_1>\ncontactId = 12345\ndata = {\n    'contact_status_id': 9000124405,\n    'do_not_disturb': True,\n}\n\n<testcase_2>\ncontactId = 67890\ndata = {\n    'custom_field': {\n        'cf_product': 'Pep',\n    },\n}\n\n<testcase_3>\ncontactId = 54321\ndata = {\n    'lead_source_id': 9000321857,\n    'contact_status_id': 9000124404,\n}\n\n<testcase_4>\ncontactId = 98765\ndata = {\n    'sales_accounts': [\n        {'id': 11111, 'is_primary': True},\n        {'id': 22222, 'is_primary': False},\n    ],\n}\n\n<testcase_5>\ncontactId = 11223\ndata = {\n    'contact_status_id': 9000159976,\n}"
+  ],
+  "gpt_output": "<needimport>\nimport time\n\n<testcase_1>\ncontactId = 12345\ndata = {\n    'contact_status_id': 9000124405,\n    'do_not_disturb': True,\n}\n\n<testcase_2>\ncontactId = 67890\ndata = {\n    'custom_field': {\n        'cf_product': 'Pep',\n    },\n}\n\n<testcase_3>\ncontactId = 54321\ndata = {\n    'lead_source_id': 9000321857,\n    'contact_status_id': 9000124404,\n}\n\n<testcase_4>\ncontactId = 98765\ndata = {\n    'sales_accounts': [\n        {'id': 11111, 'is_primary': True},\n        {'id': 22222, 'is_primary': False},\n    ],\n}\n\n<testcase_5>\ncontactId = 11223\ndata = {\n    'contact_status_id': 9000159976,\n}",
+  "needimport": "import time\n\n",
+  "test_results": {
+    "ans1": {
+      "status": "success",
+      "updated_entity": {
+        "id": 12345,
+        "data": {
+          "contact_status_id": 9000124405,
+          "do_not_disturb": true
+        }
+      }
+    },
+    "ans2": {
+      "status": "success",
+      "updated_entity": {
+        "id": 67890,
+        "data": {
+          "custom_field": {
+            "cf_product": "Pep"
+          }
+        }
+      }
+    },
+    "ans3": {
+      "status": "success",
+      "updated_entity": {
+        "id": 54321,
+        "data": {
+          "lead_source_id": 9000321857,
+          "contact_status_id": 9000124404
+        }
+      }
+    },
+    "ans4": {
+      "status": "success",
+      "updated_entity": {
+        "id": 98765,
+        "data": {
+          "sales_accounts": [
+            {
+              "id": 11111,
+              "is_primary": true
+            },
+            {
+              "id": 22222,
+              "is_primary": false
+            }
+          ]
+        }
+      }
+    },
+    "ans5": {
+      "status": "success",
+      "updated_entity": {
+        "id": 11223,
+        "data": {
+          "contact_status_id": 9000159976
+        }
+      }
+    }
+  }
+}

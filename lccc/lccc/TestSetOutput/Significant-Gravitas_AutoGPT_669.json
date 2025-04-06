@@ -1,0 +1,73 @@
+{
+  "input_header": "def merge_stats(self, stats: dict[str, Any]) -> dict[str, Any]:",
+  "input_docstring": null,
+  "output_code": "    def merge_stats(self, stats: dict[str, Any]) -> dict[str, Any]:\n        for key, value in stats.items():\n            if isinstance(value, dict):\n                self.execution_stats.setdefault(key, {}).update(value)\n            elif isinstance(value, (int, float)):\n                self.execution_stats.setdefault(key, 0)\n                self.execution_stats[key] += value\n            elif isinstance(value, list):\n                self.execution_stats.setdefault(key, [])\n                self.execution_stats[key].extend(value)\n            else:\n                self.execution_stats[key] = value\n        return self.execution_stats",
+  "input_contexts": [
+    {
+      "id": "Significant-Gravitas_AutoGPT_669_4",
+      "input_code": "    def llm_call(\n        self,\n        input_data: AIStructuredResponseGeneratorBlock.Input,\n        credentials: APIKeyCredentials,\n    ) -> str:\n        block = AIStructuredResponseGeneratorBlock()\n        response = block.run_once(input_data, \"response\", credentials=credentials)\n        self.merge_stats(block.execution_stats)\n        return response[\"response\"]\n"
+    },
+    {
+      "id": "Significant-Gravitas_AutoGPT_669_3",
+      "input_code": "    def llm_call(\n        self,\n        input_data: AIStructuredResponseGeneratorBlock.Input,\n        credentials: APIKeyCredentials,\n    ) -> dict:\n        block = AIStructuredResponseGeneratorBlock()\n        response = block.run_once(input_data, \"response\", credentials=credentials)\n        self.merge_stats(block.execution_stats)\n        return response\n"
+    },
+    {
+      "id": "Significant-Gravitas_AutoGPT_669_2",
+      "input_code": "    def llm_call(\n        self,\n        input_data: AIStructuredResponseGeneratorBlock.Input,\n        credentials: APIKeyCredentials,\n    ) -> str:\n        block = AIStructuredResponseGeneratorBlock()\n        response = block.run_once(input_data, \"response\", credentials=credentials)\n        self.merge_stats(block.execution_stats)\n        return response[\"response\"]\n"
+    },
+    {
+      "id": "Significant-Gravitas_AutoGPT_669_1",
+      "input_code": "    def run(\n        self, input_data: Input, *, credentials: APIKeyCredentials, **kwargs\n    ) -> BlockOutput:\n        logger.debug(f\"Calling LLM with input data: {input_data}\")\n        prompt = [p.model_dump() for p in input_data.conversation_history]\n\n        def trim_prompt(s: str) -> str:\n            lines = s.strip().split(\"\\n\")\n            return \"\\n\".join([line.strip().lstrip(\"|\") for line in lines])\n\n        values = input_data.prompt_values\n        if values:\n            input_data.prompt = fmt.format_string(input_data.prompt, values)\n            input_data.sys_prompt = fmt.format_string(input_data.sys_prompt, values)\n\n        if input_data.sys_prompt:\n            prompt.append({\"role\": \"system\", \"content\": input_data.sys_prompt})\n\n        if input_data.expected_format:\n            expected_format = [\n                f'\"{k}\": \"{v}\"' for k, v in input_data.expected_format.items()\n            ]\n            format_prompt = \",\\n  \".join(expected_format)\n            sys_prompt = trim_prompt(\n                f\"\"\"\n                  |Reply strictly only in the following JSON format:\n                  |{{\n                  |  {format_prompt}\n                  |}}\n                \"\"\"\n            )\n            prompt.append({\"role\": \"system\", \"content\": sys_prompt})\n\n        if input_data.prompt:\n            prompt.append({\"role\": \"user\", \"content\": input_data.prompt})\n\n        def parse_response(resp: str) -> tuple[dict[str, Any], str | None]:\n            try:\n                parsed = json.loads(resp)\n                if not isinstance(parsed, dict):\n                    return {}, f\"Expected a dictionary, but got {type(parsed)}\"\n                miss_keys = set(input_data.expected_format.keys()) - set(parsed.keys())\n                if miss_keys:\n                    return parsed, f\"Missing keys: {miss_keys}\"\n                return parsed, None\n            except JSONDecodeError as e:\n                return {}, f\"JSON decode error: {e}\"\n\n        logger.info(f\"LLM request: {prompt}\")\n        retry_prompt = \"\"\n        llm_model = input_data.model\n\n        for retry_count in range(input_data.retry):\n            try:\n                response_text, input_token, output_token = self.llm_call(\n                    credentials=credentials,\n                    llm_model=llm_model,\n                    prompt=prompt,\n                    json_format=bool(input_data.expected_format),\n                    ollama_host=input_data.ollama_host,\n                    max_tokens=input_data.max_tokens,\n                )\n                self.merge_stats(\n                    {\n                        \"input_token_count\": input_token,\n                        \"output_token_count\": output_token,\n                    }\n                )\n                logger.info(f\"LLM attempt-{retry_count} response: {response_text}\")\n\n                if input_data.expected_format:\n                    parsed_dict, parsed_error = parse_response(response_text)\n                    if not parsed_error:\n                        yield \"response\", {\n                            k: (\n                                json.loads(v)\n                                if isinstance(v, str)\n                                and v.startswith(\"[\")\n                                and v.endswith(\"]\")\n                                else (\", \".join(v) if isinstance(v, list) else v)\n                            )\n                            for k, v in parsed_dict.items()\n                        }\n                        return\n                else:\n                    yield \"response\", {\"response\": response_text}\n                    return\n\n                retry_prompt = trim_prompt(\n                    f\"\"\"\n                  |This is your previous error response:\n                  |--\n                  |{response_text}\n                  |--\n                  |\n                  |And this is the error:\n                  |--\n                  |{parsed_error}\n                  |--\n                \"\"\"\n                )\n                prompt.append({\"role\": \"user\", \"content\": retry_prompt})\n            except Exception as e:\n                logger.exception(f\"Error calling LLM: {e}\")\n                retry_prompt = f\"Error calling LLM: {e}\"\n            finally:\n                self.merge_stats(\n                    {\n                        \"llm_call_count\": retry_count + 1,\n                        \"llm_retry_count\": retry_count,\n                    }\n                )\n\n        raise RuntimeError(retry_prompt)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\nfrom typing import Any\n\n<testcase_1>\nstats = {\n    \"input_token_count\": 150,\n    \"output_token_count\": 200,\n    \"llm_call_count\": 1,\n    \"llm_retry_count\": 0\n}\n\n<testcase_2>\nstats = {\n    \"execution_time\": 2.5,\n    \"errors\": [\"timeout\", \"invalid response format\"],\n    \"input_token_count\": 300,\n    \"output_token_count\": 350\n}\n\n<testcase_3>\nstats = {\n    \"input_token_count\": 500,\n    \"output_token_count\": 600,\n    \"additional_info\": {\n        \"model_version\": \"v2.1\",\n        \"api_version\": \"v1.0\"\n    }\n}\n\n<testcase_4>\nstats = {\n    \"input_token_count\": 1000,\n    \"output_token_count\": 1200,\n    \"warnings\": [\"slow response\", \"high token usage\"],\n    \"llm_call_count\": 2\n}\n\n<testcase_5>\nstats = {\n    \"input_token_count\": 250,\n    \"output_token_count\": 300,\n    \"llm_call_count\": 3,\n    \"llm_retry_count\": 1,\n    \"response_times\": [0.5, 0.7, 0.6]\n}"
+  ],
+  "gpt_output": "<needimport>\nimport json\nfrom typing import Any\n\n<testcase_1>\nstats = {\n    \"input_token_count\": 150,\n    \"output_token_count\": 200,\n    \"llm_call_count\": 1,\n    \"llm_retry_count\": 0\n}\n\n<testcase_2>\nstats = {\n    \"execution_time\": 2.5,\n    \"errors\": [\"timeout\", \"invalid response format\"],\n    \"input_token_count\": 300,\n    \"output_token_count\": 350\n}\n\n<testcase_3>\nstats = {\n    \"input_token_count\": 500,\n    \"output_token_count\": 600,\n    \"additional_info\": {\n        \"model_version\": \"v2.1\",\n        \"api_version\": \"v1.0\"\n    }\n}\n\n<testcase_4>\nstats = {\n    \"input_token_count\": 1000,\n    \"output_token_count\": 1200,\n    \"warnings\": [\"slow response\", \"high token usage\"],\n    \"llm_call_count\": 2\n}\n\n<testcase_5>\nstats = {\n    \"input_token_count\": 250,\n    \"output_token_count\": 300,\n    \"llm_call_count\": 3,\n    \"llm_retry_count\": 1,\n    \"response_times\": [0.5, 0.7, 0.6]\n}",
+  "needimport": "import json\nfrom typing import Any\n\n",
+  "test_results": {
+    "ans1": {
+      "input_token_count": 150,
+      "output_token_count": 200,
+      "llm_call_count": 1,
+      "llm_retry_count": 0
+    },
+    "ans2": {
+      "execution_time": 2.5,
+      "errors": [
+        "timeout",
+        "invalid response format"
+      ],
+      "input_token_count": 300,
+      "output_token_count": 350
+    },
+    "ans3": {
+      "input_token_count": 500,
+      "output_token_count": 600,
+      "additional_info": {
+        "model_version": "v2.1",
+        "api_version": "v1.0"
+      }
+    },
+    "ans4": {
+      "input_token_count": 1000,
+      "output_token_count": 1200,
+      "warnings": [
+        "slow response",
+        "high token usage"
+      ],
+      "llm_call_count": 2
+    },
+    "ans5": {
+      "input_token_count": 250,
+      "output_token_count": 300,
+      "llm_call_count": 3,
+      "llm_retry_count": 1,
+      "response_times": [
+        0.5,
+        0.7,
+        0.6
+      ]
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "input_header": "def _set_dynamic_attr(self, attr_name, value):",
+  "input_docstring": "Sets an instance attribute and tracks it in a list of dynamic attributes.\n\nArgs:\n  attr_name: string; The name of the attribute to be set\n  value: The value being set on the object and tracked in the dynamic cache.",
+  "output_code": "    def _set_dynamic_attr(self, attr_name, value):\n        \n        self._dynamic_attrs.append(attr_name)\n        self.__dict__[attr_name] = value",
+  "input_contexts": [
+    {
+      "id": "googleapis_google-api-python-client_53_3",
+      "input_code": "    def _add_next_methods(self, resourceDesc, schema):\n        if \"methods\" not in resourceDesc:\n            return\n        for methodName, methodDesc in resourceDesc[\"methods\"].items():\n            nextPageTokenName = _findPageTokenName(\n                _methodProperties(methodDesc, schema, \"response\")\n            )\n            if not nextPageTokenName:\n                continue\n            isPageTokenParameter = True\n            pageTokenName = _findPageTokenName(methodDesc.get(\"parameters\", {}))\n            if not pageTokenName:\n                isPageTokenParameter = False\n                pageTokenName = _findPageTokenName(\n                    _methodProperties(methodDesc, schema, \"request\")\n                )\n            if not pageTokenName:\n                continue\n            fixedMethodName, method = createNextMethod(\n                methodName + \"_next\",\n                pageTokenName,\n                nextPageTokenName,\n                isPageTokenParameter,\n            )\n            self._set_dynamic_attr(\n                fixedMethodName, method.__get__(self, self.__class__)\n            )\n"
+    },
+    {
+      "id": "googleapis_google-api-python-client_53_1",
+      "input_code": "    def _add_basic_methods(self, resourceDesc, rootDesc, schema):\n        if resourceDesc == rootDesc:\n            batch_uri = \"%s%s\" % (\n                rootDesc[\"rootUrl\"],\n                rootDesc.get(\"batchPath\", \"batch\"),\n            )\n\n            def new_batch_http_request(callback=None):\n                \n                return BatchHttpRequest(callback=callback, batch_uri=batch_uri)\n\n            self._set_dynamic_attr(\"new_batch_http_request\", new_batch_http_request)\n\n        if \"methods\" in resourceDesc:\n            for methodName, methodDesc in resourceDesc[\"methods\"].items():\n                fixedMethodName, method = createMethod(\n                    methodName, methodDesc, rootDesc, schema\n                )\n                self._set_dynamic_attr(\n                    fixedMethodName, method.__get__(self, self.__class__)\n                )\n                if methodDesc.get(\"supportsMediaDownload\", False):\n                    fixedMethodName, method = createMethod(\n                        methodName + \"_media\", methodDesc, rootDesc, schema\n                    )\n                    self._set_dynamic_attr(\n                        fixedMethodName, method.__get__(self, self.__class__)\n                    )\n"
+    },
+    {
+      "id": "googleapis_google-api-python-client_53_2",
+      "input_code": "    def _add_nested_resources(self, resourceDesc, rootDesc, schema):\n        if \"resources\" in resourceDesc:\n\n            def createResourceMethod(methodName, methodDesc):\n                \n                methodName = fix_method_name(methodName)\n\n                def methodResource(self):\n                    return Resource(\n                        http=self._http,\n                        baseUrl=self._baseUrl,\n                        model=self._model,\n                        developerKey=self._developerKey,\n                        requestBuilder=self._requestBuilder,\n                        resourceDesc=methodDesc,\n                        rootDesc=rootDesc,\n                        schema=schema,\n                        universe_domain=self._universe_domain,\n                    )\n\n                setattr(methodResource, \"__doc__\", \"A collection resource.\")\n                setattr(methodResource, \"__is_resource__\", True)\n\n                return (methodName, methodResource)\n\n            for methodName, methodDesc in resourceDesc[\"resources\"].items():\n                fixedMethodName, method = createResourceMethod(methodName, methodDesc)\n                self._set_dynamic_attr(\n                    fixedMethodName, method.__get__(self, self.__class__)\n                )\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport types\n\n<testcase_1>\nattr_name = \"dynamic_method_1\"\nvalue = types.MethodType(lambda self: \"Hello, World!\", None)\n\n<testcase_2>\nattr_name = \"dynamic_method_2\"\nvalue = types.MethodType(lambda self: sum(range(10)), None)\n\n<testcase_3>\nattr_name = \"dynamic_method_3\"\nvalue = types.MethodType(lambda self: [i**2 for i in range(5)], None)\n\n<testcase_4>\nattr_name = \"dynamic_method_4\"\nvalue = types.MethodType(lambda self: {\"key\": \"value\"}, None)\n\n<testcase_5>\nattr_name = \"dynamic_method_5\"\nvalue = types.MethodType(lambda self: \"Dynamic attribute test\", None)"
+  ],
+  "gpt_output": "<needimport>\nimport types\n\n<testcase_1>\nattr_name = \"dynamic_method_1\"\nvalue = types.MethodType(lambda self: \"Hello, World!\", None)\n\n<testcase_2>\nattr_name = \"dynamic_method_2\"\nvalue = types.MethodType(lambda self: sum(range(10)), None)\n\n<testcase_3>\nattr_name = \"dynamic_method_3\"\nvalue = types.MethodType(lambda self: [i**2 for i in range(5)], None)\n\n<testcase_4>\nattr_name = \"dynamic_method_4\"\nvalue = types.MethodType(lambda self: {\"key\": \"value\"}, None)\n\n<testcase_5>\nattr_name = \"dynamic_method_5\"\nvalue = types.MethodType(lambda self: \"Dynamic attribute test\", None)",
+  "needimport": "import types\n\n",
+  "test_results": {
+    "ans1": "Hello, World!",
+    "ans2": 45,
+    "ans3": [
+      0,
+      1,
+      4,
+      9,
+      16
+    ],
+    "ans4": {
+      "key": "value"
+    },
+    "ans5": "Dynamic attribute test"
+  }
+}
