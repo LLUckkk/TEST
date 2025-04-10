@@ -1,0 +1,27 @@
+{
+  "input_header": "def is_manager_installed(self) -> bool:",
+  "input_docstring": null,
+  "output_code": "    def is_manager_installed(self) -> bool:\n        return is_pyodide()",
+  "input_contexts": [
+    {
+      "id": "marimo-team_marimo_1635_1",
+      "input_code": "    def _list_packages_from_cmd(\n        self, cmd: List[str]\n    ) -> List[PackageDescription]:\n        if not self.is_manager_installed():\n            return []\n        proc = subprocess.run(cmd, capture_output=True, text=True)\n        if proc.returncode != 0:\n            return []\n        try:\n            packages = json.loads(proc.stdout)\n            return [\n                PackageDescription(name=pkg[\"name\"], version=pkg[\"version\"])\n                for pkg in packages\n            ]\n        except json.JSONDecodeError:\n            return []\n"
+    },
+    {
+      "id": "marimo-team_marimo_1635_2",
+      "input_code": "    def _list_packages_from_cmd(\n        self, cmd: List[str]\n    ) -> List[PackageDescription]:\n        if not self.is_manager_installed():\n            return []\n        proc = subprocess.run(cmd, capture_output=True, text=True)\n        if proc.returncode != 0:\n            return []\n\n        package_lines = proc.stdout.splitlines()\n        packages = []\n        for line in package_lines:\n            parts = line.split()\n            if len(parts) < 2:\n                continue\n            packages.append(\n                PackageDescription(name=parts[0], version=parts[1])\n            )\n        return packages\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport subprocess\nimport json\nfrom typing import List\n\n<testcase_1>\nself = type('Test', (object,), {'is_manager_installed': lambda self: True})()\n\n<testcase_2>\nself = type('Test', (object,), {'is_manager_installed': lambda self: False})()\n\n<testcase_3>\nself = type('Test', (object,), {'is_manager_installed': lambda self: True})()\n\n<testcase_4>\nself = type('Test', (object,), {'is_manager_installed': lambda self: False})()\n\n<testcase_5>\nself = type('Test', (object,), {'is_manager_installed': lambda self: True})()"
+  ],
+  "gpt_output": "<needimport>\nimport subprocess\nimport json\nfrom typing import List\n\n<testcase_1>\nself = type('Test', (object,), {'is_manager_installed': lambda self: True})()\n\n<testcase_2>\nself = type('Test', (object,), {'is_manager_installed': lambda self: False})()\n\n<testcase_3>\nself = type('Test', (object,), {'is_manager_installed': lambda self: True})()\n\n<testcase_4>\nself = type('Test', (object,), {'is_manager_installed': lambda self: False})()\n\n<testcase_5>\nself = type('Test', (object,), {'is_manager_installed': lambda self: True})()",
+  "needimport": "import subprocess\nimport json\nfrom typing import List\n\n",
+  "test_results": {
+    "ans1": false,
+    "ans2": false,
+    "ans3": false,
+    "ans4": false,
+    "ans5": false
+  }
+}

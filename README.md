@@ -11,4 +11,4 @@
         [sys.executable, filename],  # ✅ 用当前解释器执行
     ```
 
-+ gruns_icecream_36，测试函数调用的是外部的函数，根据函数名写了一个函数模拟这个行为
++ test文件里面除了ans1-5不要有额外的打印

@@ -1,0 +1,61 @@
+{
+  "input_header": "def load_json() -> List[API]:",
+  "input_docstring": "load json for api.json\n:return: api list",
+  "output_code": "def load_json() -> List[API]:\n    \n    json_path = pathlib.Path(path, 'api.json')\n    if not json_path.exists():\n        logger.error(\"Json file not exists!\")\n        raise ValueError\n\n    with open(json_path.resolve(), mode=\"r\", encoding=\"utf8\") as j:\n        try:\n            datas = json.loads(j.read())\n            APIs = [\n                API(**data)\n                for data in datas\n            ]\n            logger.success(f\"api.json 加载完成 接口数:{len(APIs)}\")\n            return APIs\n        except Exception as why:\n            logger.error(f\"Json file syntax error:{why}\")\n            raise ValueError",
+  "input_contexts": [
+    {
+      "id": "OpenEthan_SMSBoom_13_2",
+      "input_code": "def asyncRun(phone):\n    \n    _api = load_json()\n    _api_get = load_getapi()\n\n    apis = _api + _api_get\n\n    loop = asyncio.get_event_loop()\n    loop.run_until_complete(runAsync(apis, phone))\n"
+    },
+    {
+      "id": "OpenEthan_SMSBoom_13_3",
+      "input_code": "def oneRun(phone):\n    \n    _api = load_json()\n    _api_get = load_getapi()\n\n    apis = _api + _api_get\n\n    for api in apis:\n        try:\n            reqFunc(api, phone)\n        except:\n            pass\n"
+    },
+    {
+      "id": "OpenEthan_SMSBoom_13_1",
+      "input_code": "def run(thread: int, phone: Union[str, tuple], frequency: int, interval: int, enable_proxy: bool = False):\n    \n    while not phone:\n        phone = input(\"Phone: \")\n    for i in phone:\n        if not i.isdigit():\n            logger.error(\"手机号必须为纯数字！\")\n            sys.exit(1)\n    logger.info(\n        f\"手机号:{phone}, 线程数:{thread}, 执行次数:{frequency}, 间隔时间:{interval}\")\n    try:\n        _api = load_json()\n        _api_get = load_getapi()\n        _proxies = load_proxies()\n        if not _proxies:\n            if enable_proxy:\n                logger.error(\"无法读取任何代理....请取消-e\")\n                sys.exit(1)\n            _proxies = [None]\n    except ValueError:\n        logger.error(\"读取接口出错!正在重新下载接口数据!....\")\n        update()\n        sys.exit(1)\n\n    with ThreadPoolExecutor(max_workers=thread) as pool:\n        for i in range(1, frequency + 1):\n            logger.success(f\"第{i}波轰炸开始！\")\n            for proxy in _proxies:\n                logger.success(f\"第{i}波轰炸 - 当前正在使用代理：\" +\n                                proxy['all://'] + \" 进行轰炸...\") if enable_proxy else logger.success(f\"第{i}波开始轰炸...\")\n                for api in _api:\n                    pool.submit(reqFuncByProxy, api, phone, proxy) if enable_proxy else pool.submit(\n                        reqFunc, api, phone)\n                for api_get in _api_get:\n                    pool.submit(reqFuncByProxy, api_get, phone, proxy) if enable_proxy else pool.submit(\n                        reqFunc, api_get, phone)\n                logger.success(f\"第{i}波轰炸提交结束！休息{interval}s.....\")\n                time.sleep(interval)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\nimport pathlib\nfrom typing import List\n\nclass API:\n    def __init__(self, name, url, method):\n        self.name = name\n        self.url = url\n        self.method = method\n\n<testcase_1>\npath = \"/path/to/api1\"\nwith open('/path/to/api1/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API1\", \"url\": \"https://api1.example.com\", \"method\": \"GET\"}], f)\n\n<testcase_2>\npath = \"/path/to/api2\"\nwith open('/path/to/api2/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API2\", \"url\": \"https://api2.example.com\", \"method\": \"POST\"}], f)\n\n<testcase_3>\npath = \"/path/to/api3\"\nwith open('/path/to/api3/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API3\", \"url\": \"https://api3.example.com\", \"method\": \"PUT\"}], f)\n\n<testcase_4>\npath = \"/path/to/api4\"\nwith open('/path/to/api4/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API4\", \"url\": \"https://api4.example.com\", \"method\": \"DELETE\"}], f)\n\n<testcase_5>\npath = \"/path/to/api5\"\nwith open('/path/to/api5/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API5\", \"url\": \"https://api5.example.com\", \"method\": \"PATCH\"}], f)"
+  ],
+  "gpt_output": "<needimport>\nimport json\nimport pathlib\nfrom typing import List\n\nclass API:\n    def __init__(self, name, url, method):\n        self.name = name\n        self.url = url\n        self.method = method\n\n<testcase_1>\npath = \"/path/to/api1\"\nwith open('/path/to/api1/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API1\", \"url\": \"https://api1.example.com\", \"method\": \"GET\"}], f)\n\n<testcase_2>\npath = \"/path/to/api2\"\nwith open('/path/to/api2/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API2\", \"url\": \"https://api2.example.com\", \"method\": \"POST\"}], f)\n\n<testcase_3>\npath = \"/path/to/api3\"\nwith open('/path/to/api3/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API3\", \"url\": \"https://api3.example.com\", \"method\": \"PUT\"}], f)\n\n<testcase_4>\npath = \"/path/to/api4\"\nwith open('/path/to/api4/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API4\", \"url\": \"https://api4.example.com\", \"method\": \"DELETE\"}], f)\n\n<testcase_5>\npath = \"/path/to/api5\"\nwith open('/path/to/api5/api.json', 'w', encoding='utf8') as f:\n    json.dump([{\"name\": \"API5\", \"url\": \"https://api5.example.com\", \"method\": \"PATCH\"}], f)",
+  "needimport": "import json\nimport pathlib\nfrom typing import List\n\nclass API:\n    def __init__(self, name, url, method):\n        self.name = name\n        self.url = url\n        self.method = method\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "name": "API1",
+        "url": "https://api1.example.com",
+        "method": "GET"
+      }
+    ],
+    "ans2": [
+      {
+        "name": "API2",
+        "url": "https://api2.example.com",
+        "method": "POST"
+      }
+    ],
+    "ans3": [
+      {
+        "name": "API3",
+        "url": "https://api3.example.com",
+        "method": "PUT"
+      }
+    ],
+    "ans4": [
+      {
+        "name": "API4",
+        "url": "https://api4.example.com",
+        "method": "DELETE"
+      }
+    ],
+    "ans5": [
+      {
+        "name": "API5",
+        "url": "https://api5.example.com",
+        "method": "PATCH"
+      }
+    ]
+  }
+}
