@@ -1,0 +1,67 @@
+{
+  "input_header": "def assertMPError(self, **ka):",
+  "input_docstring": null,
+  "output_code": "    def assertMPError(self, **ka):\n        self.assertRaises(bottle.MultipartError, self.parse, **ka)",
+  "input_contexts": [
+    {
+      "id": "bottlepy_bottle_506_11",
+      "input_code": "    def test_content_length_to_small(self):\n        self.write('--foo\\r\\n',\n                   'Content-Disposition: form-data; name=\"file1\"; filename=\"random.png\"\\r\\n',\n                   'Content-Type: image/png\\r\\n',\n                   'Content-Length: 111\\r\\n', '\\r\\n', 'abc'*1024+'\\r\\n', '--foo--')\n        self.assertMPError()\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_10",
+      "input_code": "    def test_invalid_header(self):\n        self.write('--foo\\r\\n',\n                   'Content-Disposition: form-data; name=\"file1\"; filename=\"random.png\"\\r\\n',\n                   'Content-Type: image/png\\r\\n',\n                   'Bad header\\r\\n', '\\r\\n', 'abc'*1024+'\\r\\n', '--foo--')\n        self.assertMPError()\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_9",
+      "input_code": "    def test_mem_limit(self):\n        self.write('--foo\\r\\n',\n                   'Content-Disposition: form-data; name=\"file1\"; filename=\"random.png\"\\r\\n',\n                   'Content-Type: image/png\\r\\n', '\\r\\n', 'abc'*1024+'\\r\\n', '--foo\\r\\n',\n                   'Content-Disposition: form-data; name=\"file2\"; filename=\"random.png\"\\r\\n',\n                   'Content-Type: image/png\\r\\n', '\\r\\n', 'abc'*1024+'\\r\\n', '--foo--')\n        self.assertMPError(mem_limit=1024*3)\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_5",
+      "input_code": "    def test_no_terminator(self):\n        self.write('--foo\\r\\n',\n                   'Content-Disposition: form-data; name=\"file1\"; filename=\"random.png\"\\r\\n',\n                   'Content-Type: image/png\\r\\n', '\\r\\n', 'abc')\n        self.assertMPError()\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_2",
+      "input_code": "    def test_missing_content_type(self):\n        self.assertMPError(ctype=\"\")\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_6",
+      "input_code": "    def test_no_newline_after_content(self):\n        self.write('--foo\\r\\n',\n                   'Content-Disposition: form-data; name=\"file1\"; filename=\"random.png\"\\r\\n',\n                   'Content-Type: image/png\\r\\n', '\\r\\n', 'abc', '--foo--')\n        self.assertMPError()\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_1",
+      "input_code": "    def test_big_boundary(self):\n        self.assertMPError(buffer_size=1024*3)\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_8",
+      "input_code": "    def test_disk_limit(self):\n        self.write('--foo\\r\\n',\n                   'Content-Disposition: form-data; name=\"file1\"; filename=\"random.png\"\\r\\n',\n                   'Content-Type: image/png\\r\\n', '\\r\\n', 'abc'*1024+'\\r\\n', '--foo--')\n        self.assertMPError(memfile_limit=0, disk_limit=1024)\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_4",
+      "input_code": "    def test_missing_boundary(self):\n        self.assertMPError(ctype=\"multipart/form-data\")\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_3",
+      "input_code": "    def test_unsupported_content_type(self):\n        self.assertMPError(ctype='multipart/fantasy')\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_12",
+      "input_code": "    def test_no_disposition_header(self):\n        self.write('--foo\\r\\n',\n                   'Content-Type: image/png\\r\\n', '\\r\\n', 'abc'*1024+'\\r\\n', '--foo--')\n        self.assertMPError()\n"
+    },
+    {
+      "id": "bottlepy_bottle_506_7",
+      "input_code": "    def test_no_start_boundary(self):\n        self.write('--bar\\r\\n','--nonsense\\r\\n'\n                   'Content-Disposition: form-data; name=\"file1\"; filename=\"random.png\"\\r\\n',\n                   'Content-Type: image/png\\r\\n', '\\r\\n', 'abc\\r\\n', '--nonsense--')\n        self.assertMPError()\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport bottle\n\n<testcase_1>\nka = {\n    'ctype': 'multipart/form-data'\n}\n\n<testcase_2>\nka = {\n    'buffer_size': 1024 * 3\n}\n\n<testcase_3>\nka = {\n    'mem_limit': 1024 * 3\n}\n\n<testcase_4>\nka = {\n    'memfile_limit': 0,\n    'disk_limit': 1024\n}\n\n<testcase_5>\nka = {\n    'ctype': 'multipart/fantasy'\n}"
+  ],
+  "gpt_output": "<needimport>\nimport bottle\n\n<testcase_1>\nka = {\n    'ctype': 'multipart/form-data'\n}\n\n<testcase_2>\nka = {\n    'buffer_size': 1024 * 3\n}\n\n<testcase_3>\nka = {\n    'mem_limit': 1024 * 3\n}\n\n<testcase_4>\nka = {\n    'memfile_limit': 0,\n    'disk_limit': 1024\n}\n\n<testcase_5>\nka = {\n    'ctype': 'multipart/fantasy'\n}",
+  "needimport": "import bottle\n\n",
+  "test_results": {
+    "ans1": "Test passed - expected MultipartError was raised",
+    "ans2": "Test passed - expected MultipartError was raised",
+    "ans3": "Test passed - expected MultipartError was raised",
+    "ans4": "Test passed - expected MultipartError was raised",
+    "ans5": "Test passed - expected MultipartError was raised"
+  }
+}

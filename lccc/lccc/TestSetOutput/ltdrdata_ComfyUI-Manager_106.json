@@ -1,0 +1,47 @@
+{
+  "input_header": "def add_to_cnr_inactive_nodes(self, node_id, ver, fullpath):",
+  "input_docstring": null,
+  "output_code": "    def add_to_cnr_inactive_nodes(self, node_id, ver, fullpath):\n        ver_map = self.cnr_inactive_nodes.get(node_id)\n        if ver_map is None:\n            ver_map = {}\n            self.cnr_inactive_nodes[node_id] = ver_map\n\n        ver_map[ver] = fullpath",
+  "input_contexts": [
+    {
+      "id": "ltdrdata_ComfyUI-Manager_106_1",
+      "input_code": "    def update_cache_at_path(self, fullpath):\n        node_package = InstalledNodePackage.from_fullpath(fullpath, self.resolve_from_path)\n        self.installed_node_packages[node_package.id] = node_package\n\n        if node_package.is_disabled and node_package.is_unknown:\n            url = git_utils.git_url(node_package.fullpath)\n            self.unknown_inactive_nodes[node_package.id] = (url, node_package.fullpath)\n\n        if node_package.is_disabled and node_package.is_nightly:\n            self.nightly_inactive_nodes[node_package.id] = node_package.fullpath\n\n        if node_package.is_enabled and not node_package.is_unknown:\n            self.active_nodes[node_package.id] = node_package.version, node_package.fullpath\n\n        if node_package.is_enabled and node_package.is_unknown:\n            url = git_utils.git_url(node_package.fullpath)\n            self.unknown_active_nodes[node_package.id] = (url, node_package.fullpath)\n\n        if node_package.is_from_cnr and node_package.is_disabled:\n            self.add_to_cnr_inactive_nodes(node_package.id, node_package.version, node_package.fullpath)\n"
+    },
+    {
+      "id": "ltdrdata_ComfyUI-Manager_106_2",
+      "input_code": "    def unified_disable(self, node_id, is_unknown):\n        result = ManagedResult('disable')\n\n        if is_unknown:\n            version_spec = 'unknown'\n        else:\n            version_spec = None\n\n        if not self.is_enabled(node_id, version_spec):\n            if not self.is_disabled(node_id, version_spec):\n                return ManagedResult('skip').with_msg('Not installed')\n            else:\n                return ManagedResult('skip').with_msg('Already disabled')\n\n        if is_unknown:\n            repo_and_path = self.unknown_active_nodes.get(node_id)\n\n            if repo_and_path is None or not os.path.exists(repo_and_path[1]):\n                return result.fail(f'Specified active node not exists: {node_id}')\n\n            base_path = extract_base_custom_nodes_dir(repo_and_path[1])\n            to_path = os.path.join(base_path, '.disabled', node_id)\n\n            shutil.move(repo_and_path[1], to_path)\n            result.append((repo_and_path[1], to_path))\n\n            self.unknown_inactive_nodes[node_id] = repo_and_path[0], to_path\n            del self.unknown_active_nodes[node_id]\n\n            return result\n\n        ver_and_path = self.active_nodes.get(node_id)\n\n        if ver_and_path is None or not os.path.exists(ver_and_path[1]):\n            return result.fail(f'Specified active node not exists: {node_id}')\n\n        base_path = extract_base_custom_nodes_dir(ver_and_path[1])\n\n        to_path = os.path.join(base_path, '.disabled', f\"{node_id}@{ver_and_path[0].replace('.', '_')}\")\n        shutil.move(ver_and_path[1], to_path)\n        result.append((ver_and_path[1], to_path))\n\n        if ver_and_path[0] == 'nightly':\n            self.nightly_inactive_nodes[node_id] = to_path\n        else:\n            self.add_to_cnr_inactive_nodes(node_id, ver_and_path[0], to_path)\n\n        del self.active_nodes[node_id]\n\n        return result\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport os\n\n<testcase_1>\nnode_id = \"node_123\"\nver = \"1.0.0\"\nfullpath = \"/path/to/node_123_v1.0.0\"\n\n<testcase_2>\nnode_id = \"node_456\"\nver = \"2.3.1\"\nfullpath = \"/path/to/node_456_v2.3.1\"\n\n<testcase_3>\nnode_id = \"node_789\"\nver = \"nightly\"\nfullpath = \"/path/to/node_789_nightly\"\n\n<testcase_4>\nnode_id = \"node_abc\"\nver = \"0.9.8\"\nfullpath = \"/path/to/node_abc_v0.9.8\"\n\n<testcase_5>\nnode_id = \"node_xyz\"\nver = \"unknown\"\nfullpath = \"/path/to/node_xyz_unknown\""
+  ],
+  "gpt_output": "<needimport>\nimport os\n\n<testcase_1>\nnode_id = \"node_123\"\nver = \"1.0.0\"\nfullpath = \"/path/to/node_123_v1.0.0\"\n\n<testcase_2>\nnode_id = \"node_456\"\nver = \"2.3.1\"\nfullpath = \"/path/to/node_456_v2.3.1\"\n\n<testcase_3>\nnode_id = \"node_789\"\nver = \"nightly\"\nfullpath = \"/path/to/node_789_nightly\"\n\n<testcase_4>\nnode_id = \"node_abc\"\nver = \"0.9.8\"\nfullpath = \"/path/to/node_abc_v0.9.8\"\n\n<testcase_5>\nnode_id = \"node_xyz\"\nver = \"unknown\"\nfullpath = \"/path/to/node_xyz_unknown\"",
+  "needimport": "import os\n\n",
+  "test_results": {
+    "ans1": {
+      "node_123": {
+        "1.0.0": "/path/to/node_123_v1.0.0"
+      }
+    },
+    "ans2": {
+      "node_456": {
+        "2.3.1": "/path/to/node_456_v2.3.1"
+      }
+    },
+    "ans3": {
+      "node_789": {
+        "nightly": "/path/to/node_789_nightly"
+      }
+    },
+    "ans4": {
+      "node_abc": {
+        "0.9.8": "/path/to/node_abc_v0.9.8"
+      }
+    },
+    "ans5": {
+      "node_xyz": {
+        "unknown": "/path/to/node_xyz_unknown"
+      }
+    }
+  }
+}

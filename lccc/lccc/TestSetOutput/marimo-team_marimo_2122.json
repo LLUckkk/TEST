@@ -1,0 +1,63 @@
+{
+  "input_header": "def _create_lsp_proxy_middleware(lsp_port: int) -> Middleware:",
+  "input_docstring": null,
+  "output_code": "def _create_lsp_proxy_middleware(lsp_port: int) -> Middleware:\n    return Middleware(\n        ProxyMiddleware,\n        proxy_path=\"/lsp\",\n        target_url=f\"http://localhost:{lsp_port}\",\n        path_rewrite=lambda path: path.replace(\"/lsp\", \"\"),\n    )",
+  "input_contexts": [
+    {
+      "id": "marimo-team_marimo_2122_1",
+      "input_code": "def create_starlette_app(\n    *,\n    base_url: str,\n    host: Optional[str] = None,\n    middleware: Optional[List[Middleware]] = None,\n    lifespan: Optional[Lifespan[Starlette]] = None,\n    enable_auth: bool = True,\n    allow_origins: Optional[tuple[str, ...]] = None,\n    lsp_port: Optional[int] = None,\n) -> Starlette:\n    final_middlewares: List[Middleware] = []\n\n    if allow_origins is None:\n        allow_origins = (\"localhost\", \"127.0.0.1\") + (\n            (host,) if host is not None else ()\n        )\n\n    if enable_auth:\n        final_middlewares.extend(\n            [\n                Middleware(\n                    CustomSessionMiddleware,\n                    secret_key=RANDOM_SECRET,\n                ),\n            ]\n        )\n\n    final_middlewares.extend(\n        [\n            Middleware(OpenTelemetryMiddleware),\n            Middleware(\n                AuthenticationMiddleware,\n                backend=AuthBackend(should_authenticate=enable_auth),\n                on_error=on_auth_error,\n            ),\n            Middleware(\n                CORSMiddleware,\n                allow_origins=allow_origins,\n                allow_credentials=True,\n                allow_methods=[\"*\"],\n                allow_headers=[\"*\"],\n            ),\n            Middleware(SkewProtectionMiddleware),\n            _create_mpl_proxy_middleware(),\n        ]\n    )\n\n    if lsp_port is not None:\n        final_middlewares.append(_create_lsp_proxy_middleware(lsp_port))\n\n    if middleware:\n        final_middlewares.extend(middleware)\n\n    return Starlette(\n        routes=build_routes(base_url=base_url),\n        middleware=final_middlewares,\n        lifespan=lifespan,\n        exception_handlers={\n            Exception: handle_error,\n            HTTPException: handle_error,\n            MarimoHTTPException: handle_error,\n        },\n    )\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport starlette.middleware\nfrom starlette.middleware import Middleware\n\n<testcase_1>\nlsp_port = 8080\n\n<testcase_2>\nlsp_port = 3000\n\n<testcase_3>\nlsp_port = 5001\n\n<testcase_4>\nlsp_port = 1234\n\n<testcase_5>\nlsp_port = 4500\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport starlette.middleware\nfrom starlette.middleware import Middleware\n\n<testcase_1>\nlsp_port = 8080\n\n<testcase_2>\nlsp_port = 3000\n\n<testcase_3>\nlsp_port = 5001\n\n<testcase_4>\nlsp_port = 1234\n\n<testcase_5>\nlsp_port = 4500\n```",
+  "needimport": "import starlette.middleware\nfrom starlette.middleware import Middleware\n\n",
+  "test_results": {
+    "ans1": {
+      "cls": "ProxyMiddleware",
+      "args": [],
+      "kwargs": {
+        "proxy_path": "/lsp",
+        "target_url": "http://localhost:8080",
+        "path_rewrite": "<function <lambda>>"
+      }
+    },
+    "ans2": {
+      "cls": "ProxyMiddleware",
+      "args": [],
+      "kwargs": {
+        "proxy_path": "/lsp",
+        "target_url": "http://localhost:3000",
+        "path_rewrite": "<function <lambda>>"
+      }
+    },
+    "ans3": {
+      "cls": "ProxyMiddleware",
+      "args": [],
+      "kwargs": {
+        "proxy_path": "/lsp",
+        "target_url": "http://localhost:5001",
+        "path_rewrite": "<function <lambda>>"
+      }
+    },
+    "ans4": {
+      "cls": "ProxyMiddleware",
+      "args": [],
+      "kwargs": {
+        "proxy_path": "/lsp",
+        "target_url": "http://localhost:1234",
+        "path_rewrite": "<function <lambda>>"
+      }
+    },
+    "ans5": {
+      "cls": "ProxyMiddleware",
+      "args": [],
+      "kwargs": {
+        "proxy_path": "/lsp",
+        "target_url": "http://localhost:4500",
+        "path_rewrite": "<function <lambda>>"
+      }
+    }
+  }
+}
