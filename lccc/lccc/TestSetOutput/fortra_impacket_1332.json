@@ -1,0 +1,55 @@
+{
+  "input_header": "def reset_flags(self, aValue):",
+  "input_docstring": null,
+  "output_code": "    def reset_flags(self, aValue):\n        tmp_value = self.get_th_flags() & (~aValue)\n        return self.set_th_flags(tmp_value)",
+  "input_contexts": [
+    {
+      "id": "fortra_impacket_1332_2",
+      "input_code": "    def reset_ECE(self):\n        return self.reset_flags(64)\n"
+    },
+    {
+      "id": "fortra_impacket_1332_1",
+      "input_code": "    def reset_CWR(self):\n        return self.reset_flags(128)\n"
+    },
+    {
+      "id": "fortra_impacket_1332_3",
+      "input_code": "    def reset_URG(self):\n        return self.reset_flags(32)\n"
+    },
+    {
+      "id": "fortra_impacket_1332_5",
+      "input_code": "    def reset_PSH(self):\n        return self.reset_flags(8)\n"
+    },
+    {
+      "id": "fortra_impacket_1332_6",
+      "input_code": "    def reset_RST(self):\n        return self.reset_flags(4)\n"
+    },
+    {
+      "id": "fortra_impacket_1332_8",
+      "input_code": "    def reset_FIN(self):\n        return self.reset_flags(1)\n"
+    },
+    {
+      "id": "fortra_impacket_1332_9",
+      "input_code": "    def test_08(self):\n        \n        self.tcp.set_th_flags(19)\n        self.assertEqual(self.tcp.get_th_flags(), 19) \n        self.assertEqual(self.tcp.get_ACK(), 1)\n        self.assertEqual(self.tcp.get_SYN(), 1)\n        self.assertEqual(self.tcp.get_FIN(), 1)\n        self.assertEqual(self.tcp.get_RST(), 0)\n\n        self.tcp.reset_flags(0x02)\n\n        self.assertEqual(self.tcp.get_th_flags(), 17) \n\n        flags = int('10011', 2)\n        self.tcp.set_th_flags(flags) \n        self.assertEqual(self.tcp.get_th_flags(), 19) \n\n        self.tcp.reset_flags(int('000010',2))\n\n        self.assertEqual(self.tcp.get_th_flags(), 17) \n\n        flags = int('10011', 2)\n        self.tcp.set_th_flags(flags) \n        self.assertEqual(self.tcp.get_th_flags(), 19) \n\n        self.tcp.reset_flags(int('010001',2))\n\n        self.assertEqual(self.tcp.get_th_flags(), 2) \n"
+    },
+    {
+      "id": "fortra_impacket_1332_4",
+      "input_code": "    def reset_ACK(self):\n        return self.reset_flags(16)\n"
+    },
+    {
+      "id": "fortra_impacket_1332_7",
+      "input_code": "    def reset_SYN(self):\n        return self.reset_flags(2)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport random\n\n<testcase_1>\naValue = 64\n\n<testcase_2>\naValue = 128\n\n<testcase_3>\naValue = 32\n\n<testcase_4>\naValue = 8\n\n<testcase_5>\naValue = random.choice([1, 2, 4, 16])\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport random\n\n<testcase_1>\naValue = 64\n\n<testcase_2>\naValue = 128\n\n<testcase_3>\naValue = 32\n\n<testcase_4>\naValue = 8\n\n<testcase_5>\naValue = random.choice([1, 2, 4, 16])\n```",
+  "needimport": "import random\n\n",
+  "test_results": {
+    "ans1": 191,
+    "ans2": 127,
+    "ans3": 223,
+    "ans4": 247,
+    "ans5": 239
+  }
+}

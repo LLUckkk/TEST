@@ -5,7 +5,6 @@ import sys
 import subprocess
 import time
 from typing import List, Dict
-import PyQt5.QtWidgets as QtWidgets
 
 
 def load_dataset_json(file_path: str):
@@ -204,7 +203,7 @@ def fill_template(template_path, replacements):
 
 def solve(dataset: Dict[str, Dict]) -> Dict[str, List[Dict]]:
     cnt = 1
-    index = 28
+    index = 38
 
     for item_key in dataset:
         if cnt < index:

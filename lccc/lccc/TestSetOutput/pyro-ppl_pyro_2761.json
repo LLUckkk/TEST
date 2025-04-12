@@ -1,0 +1,203 @@
+{
+  "input_header": "def velocity_verlet( z, r, potential_fn, kinetic_grad, step_size, num_steps=1, z_grads=None ):",
+  "input_docstring": "Second order symplectic integrator that uses the velocity verlet algorithm.\n\n:param dict z: dictionary of sample site names and their current values\n    (type :class:`~torch.Tensor`).\n:param dict r: dictionary of sample site names and corresponding momenta\n    (type :class:`~torch.Tensor`).\n:param callable potential_fn: function that returns potential energy given z\n    for each sample site. The negative gradient of the function with respect\n    to ``z`` determines the rate of change of the corresponding sites'\n    momenta ``r``.\n:param callable kinetic_grad: a function calculating gradient of kinetic energy\n    w.r.t. momentum variable.\n:param float step_size: step size for each time step iteration.\n:param int num_steps: number of discrete time steps over which to integrate.\n:param torch.Tensor z_grads: optional gradients of potential energy at current ``z``.\n:return tuple (z_next, r_next, z_grads, potential_energy): next position and momenta,\n    together with the potential energy and its gradient w.r.t. ``z_next``.",
+  "output_code": "def velocity_verlet(\n    z, r, potential_fn, kinetic_grad, step_size, num_steps=1, z_grads=None\n):\n    \n    z_next = z.copy()\n    r_next = r.copy()\n    for _ in range(num_steps):\n        z_next, r_next, z_grads, potential_energy = _single_step_verlet(\n            z_next, r_next, potential_fn, kinetic_grad, step_size, z_grads\n        )\n    return z_next, r_next, z_grads, potential_energy",
+  "input_contexts": [
+    {
+      "id": "pyro-ppl_pyro_2761_2",
+      "input_code": "    def sample(self, params):\n        z, potential_energy, z_grads = self._fetch_from_cache()\n        if z is None:\n            z = params\n            z_grads, potential_energy = potential_grad(self.potential_fn, z)\n            self._cache(z, potential_energy, z_grads)\n        elif len(z) == 0:\n            self._t += 1\n            self._mean_accept_prob = 1.0\n            if self._t > self._warmup_steps:\n                self._accept_cnt += 1\n            return params\n        r, r_unscaled = self._sample_r(name=\"r_t={}\".format(self._t))\n        energy_current = self._kinetic_energy(r_unscaled) + potential_energy\n\n        with optional(pyro.validation_enabled(False), self._t < self._warmup_steps):\n            z_new, r_new, z_grads_new, potential_energy_new = velocity_verlet(\n                z,\n                r,\n                self.potential_fn,\n                self.mass_matrix_adapter.kinetic_grad,\n                self.step_size,\n                self.num_steps,\n                z_grads=z_grads,\n            )\n            r_new_unscaled = self.mass_matrix_adapter.unscale(r_new)\n            energy_proposal = (\n                self._kinetic_energy(r_new_unscaled) + potential_energy_new\n            )\n        delta_energy = energy_proposal - energy_current\n        delta_energy = (\n            scalar_like(delta_energy, float(\"inf\"))\n            if torch_isnan(delta_energy)\n            else delta_energy\n        )\n        if delta_energy > self._max_sliced_energy and self._t >= self._warmup_steps:\n            self._divergences.append(self._t - self._warmup_steps)\n\n        accept_prob = (-delta_energy).exp().clamp(max=1.0)\n        rand = pyro.sample(\n            \"rand_t={}\".format(self._t),\n            dist.Uniform(scalar_like(accept_prob, 0.0), scalar_like(accept_prob, 1.0)),\n        )\n        accepted = False\n        if rand < accept_prob:\n            accepted = True\n            z = z_new\n            z_grads = z_grads_new\n            self._cache(z, potential_energy_new, z_grads)\n\n        self._t += 1\n        if self._t > self._warmup_steps:\n            n = self._t - self._warmup_steps\n            if accepted:\n                self._accept_cnt += 1\n        else:\n            n = self._t\n            self._adapter.step(self._t, z, accept_prob, z_grads)\n\n        self._mean_accept_prob += (accept_prob.item() - self._mean_accept_prob) / n\n        return z.copy()\n"
+    },
+    {
+      "id": "pyro-ppl_pyro_2761_3",
+      "input_code": "    def _build_basetree(self, z, r, z_grads, log_slice, direction, energy_current):\n        step_size = self.step_size if direction == 1 else -self.step_size\n        z_new, r_new, z_grads, potential_energy = velocity_verlet(\n            z,\n            r,\n            self.potential_fn,\n            self.mass_matrix_adapter.kinetic_grad,\n            step_size,\n            z_grads=z_grads,\n        )\n        r_new_unscaled = self.mass_matrix_adapter.unscale(r_new)\n        energy_new = potential_energy + self._kinetic_energy(r_new_unscaled)\n        energy_new = (\n            scalar_like(energy_new, float(\"inf\"))\n            if torch_isnan(energy_new)\n            else energy_new\n        )\n        sliced_energy = energy_new + log_slice\n        diverging = sliced_energy > self._max_sliced_energy\n        delta_energy = energy_new - energy_current\n        accept_prob = (-delta_energy).exp().clamp(max=1.0)\n\n        if self.use_multinomial_sampling:\n            tree_weight = -sliced_energy\n        else:\n            tree_weight = scalar_like(sliced_energy, 1.0 if sliced_energy <= 0 else 0.0)\n\n        r_sum = r_new_unscaled\n        return _TreeInfo(\n            z_new,\n            r_new,\n            r_new_unscaled,\n            z_grads,\n            z_new,\n            r_new,\n            r_new_unscaled,\n            z_grads,\n            z_new,\n            potential_energy,\n            z_grads,\n            r_sum,\n            tree_weight,\n            False,\n            diverging,\n            accept_prob,\n            1,\n        )\n"
+    },
+    {
+      "id": "pyro-ppl_pyro_2761_5",
+      "input_code": "def test_energy_conservation(example):\n    model, args = example\n    q_f, p_f, _, _ = velocity_verlet(\n        args.q_i,\n        args.p_i,\n        model.potential_fn,\n        model.kinetic_grad,\n        args.step_size,\n        args.num_steps,\n    )\n    energy_initial = model.energy(args.q_i, args.p_i)\n    energy_final = model.energy(q_f, p_f)\n    logger.info(\"initial energy: {}\".format(energy_initial.item()))\n    logger.info(\"final energy: {}\".format(energy_final.item()))\n    assert_equal(energy_final, energy_initial)\n"
+    },
+    {
+      "id": "pyro-ppl_pyro_2761_6",
+      "input_code": "def test_time_reversibility(example):\n    model, args = example\n    q_forward, p_forward, _, _ = velocity_verlet(\n        args.q_i,\n        args.p_i,\n        model.potential_fn,\n        model.kinetic_grad,\n        args.step_size,\n        args.num_steps,\n    )\n    p_reverse = {key: -val for key, val in p_forward.items()}\n    q_f, p_f, _, _ = velocity_verlet(\n        q_forward,\n        p_reverse,\n        model.potential_fn,\n        model.kinetic_grad,\n        args.step_size,\n        args.num_steps,\n    )\n    assert_equal(q_f, args.q_i, 1e-5)\n"
+    },
+    {
+      "id": "pyro-ppl_pyro_2761_4",
+      "input_code": "def test_trajectory(example):\n    model, args = example\n    q_f, p_f, _, _ = velocity_verlet(\n        args.q_i,\n        args.p_i,\n        model.potential_fn,\n        model.kinetic_grad,\n        args.step_size,\n        args.num_steps,\n    )\n    logger.info(\"initial q: {}\".format(args.q_i))\n    logger.info(\"final q: {}\".format(q_f))\n    assert_equal(q_f, args.q_f, args.prec)\n    assert_equal(p_f, args.p_f, args.prec)\n"
+    },
+    {
+      "id": "pyro-ppl_pyro_2761_1",
+      "input_code": "    def _find_reasonable_step_size(self, z):\n        step_size = self.step_size\n\n        try:\n            potential_energy = self.potential_fn(z)\n        except Exception as e:\n            if any(h(e) for h in _EXCEPTION_HANDLERS.values()):\n                return step_size\n            else:\n                raise e\n\n        r, r_unscaled = self._sample_r(name=\"r_presample_0\")\n        energy_current = self._kinetic_energy(r_unscaled) + potential_energy\n        z = {k: v.clone() for k, v in z.items()}\n        z_new, r_new, z_grads_new, potential_energy_new = velocity_verlet(\n            z, r, self.potential_fn, self.mass_matrix_adapter.kinetic_grad, step_size\n        )\n        r_new_unscaled = self.mass_matrix_adapter.unscale(r_new)\n        energy_new = self._kinetic_energy(r_new_unscaled) + potential_energy_new\n        delta_energy = energy_new - energy_current\n        direction = 1 if self._direction_threshold < -delta_energy else -1\n\n        step_size_scale = 2**direction\n        direction_new = direction\n        t = 0\n        while (\n            direction_new == direction\n            and self._min_stepsize < step_size < self._max_stepsize\n        ):\n            t += 1\n            step_size = step_size_scale * step_size\n            r, r_unscaled = self._sample_r(name=\"r_presample_{}\".format(t))\n            energy_current = self._kinetic_energy(r_unscaled) + potential_energy\n            z_new, r_new, z_grads_new, potential_energy_new = velocity_verlet(\n                z,\n                r,\n                self.potential_fn,\n                self.mass_matrix_adapter.kinetic_grad,\n                step_size,\n            )\n            r_new_unscaled = self.mass_matrix_adapter.unscale(r_new)\n            energy_new = self._kinetic_energy(r_new_unscaled) + potential_energy_new\n            delta_energy = energy_new - energy_current\n            direction_new = 1 if self._direction_threshold < -delta_energy else -1\n        step_size = max(step_size, self._min_stepsize)\n        step_size = min(step_size, self._max_stepsize)\n        return step_size\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport torch\n\n<testcase_1>\nz = {'x': torch.tensor([1.0, 2.0]), 'y': torch.tensor([3.0, 4.0])}\nr = {'x': torch.tensor([0.5, 0.5]), 'y': torch.tensor([0.1, 0.2])}\npotential_fn = lambda z: sum((val**2).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 2 * val for key, val in r.items()}\nstep_size = 0.01\nnum_steps = 10\nz_grads = {'x': torch.tensor([0.1, 0.2]), 'y': torch.tensor([0.3, 0.4])}\n\n<testcase_2>\nz = {'a': torch.tensor([0.0, 1.0]), 'b': torch.tensor([2.0, 3.0])}\nr = {'a': torch.tensor([0.2, 0.3]), 'b': torch.tensor([0.4, 0.5])}\npotential_fn = lambda z: sum((val**3).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 3 * val for key, val in r.items()}\nstep_size = 0.05\nnum_steps = 5\nz_grads = None\n\n<testcase_3>\nz = {'p': torch.tensor([1.5, 2.5]), 'q': torch.tensor([3.5, 4.5])}\nr = {'p': torch.tensor([0.6, 0.7]), 'q': torch.tensor([0.8, 0.9])}\npotential_fn = lambda z: sum((val**4).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 4 * val for key, val in r.items()}\nstep_size = 0.02\nnum_steps = 20\nz_grads = {'p': torch.tensor([0.5, 0.6]), 'q': torch.tensor([0.7, 0.8])}\n\n<testcase_4>\nz = {'m': torch.tensor([2.0, 3.0]), 'n': torch.tensor([4.0, 5.0])}\nr = {'m': torch.tensor([0.3, 0.4]), 'n': torch.tensor([0.5, 0.6])}\npotential_fn = lambda z: sum((val**5).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 5 * val for key, val in r.items()}\nstep_size = 0.03\nnum_steps = 15\nz_grads = {'m': torch.tensor([0.2, 0.3]), 'n': torch.tensor([0.4, 0.5])}\n\n<testcase_5>\nz = {'u': torch.tensor([0.5, 1.5]), 'v': torch.tensor([2.5, 3.5])}\nr = {'u': torch.tensor([0.1, 0.2]), 'v': torch.tensor([0.3, 0.4])}\npotential_fn = lambda z: sum((val**6).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 6 * val for key, val in r.items()}\nstep_size = 0.04\nnum_steps = 25\nz_grads = None"
+  ],
+  "gpt_output": "<needimport>\nimport torch\n\n<testcase_1>\nz = {'x': torch.tensor([1.0, 2.0]), 'y': torch.tensor([3.0, 4.0])}\nr = {'x': torch.tensor([0.5, 0.5]), 'y': torch.tensor([0.1, 0.2])}\npotential_fn = lambda z: sum((val**2).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 2 * val for key, val in r.items()}\nstep_size = 0.01\nnum_steps = 10\nz_grads = {'x': torch.tensor([0.1, 0.2]), 'y': torch.tensor([0.3, 0.4])}\n\n<testcase_2>\nz = {'a': torch.tensor([0.0, 1.0]), 'b': torch.tensor([2.0, 3.0])}\nr = {'a': torch.tensor([0.2, 0.3]), 'b': torch.tensor([0.4, 0.5])}\npotential_fn = lambda z: sum((val**3).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 3 * val for key, val in r.items()}\nstep_size = 0.05\nnum_steps = 5\nz_grads = None\n\n<testcase_3>\nz = {'p': torch.tensor([1.5, 2.5]), 'q': torch.tensor([3.5, 4.5])}\nr = {'p': torch.tensor([0.6, 0.7]), 'q': torch.tensor([0.8, 0.9])}\npotential_fn = lambda z: sum((val**4).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 4 * val for key, val in r.items()}\nstep_size = 0.02\nnum_steps = 20\nz_grads = {'p': torch.tensor([0.5, 0.6]), 'q': torch.tensor([0.7, 0.8])}\n\n<testcase_4>\nz = {'m': torch.tensor([2.0, 3.0]), 'n': torch.tensor([4.0, 5.0])}\nr = {'m': torch.tensor([0.3, 0.4]), 'n': torch.tensor([0.5, 0.6])}\npotential_fn = lambda z: sum((val**5).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 5 * val for key, val in r.items()}\nstep_size = 0.03\nnum_steps = 15\nz_grads = {'m': torch.tensor([0.2, 0.3]), 'n': torch.tensor([0.4, 0.5])}\n\n<testcase_5>\nz = {'u': torch.tensor([0.5, 1.5]), 'v': torch.tensor([2.5, 3.5])}\nr = {'u': torch.tensor([0.1, 0.2]), 'v': torch.tensor([0.3, 0.4])}\npotential_fn = lambda z: sum((val**6).sum() for val in z.values())\nkinetic_grad = lambda r: {key: 6 * val for key, val in r.items()}\nstep_size = 0.04\nnum_steps = 25\nz_grads = None",
+  "needimport": "import torch\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "x": [
+          1.0812944173812866,
+          2.0632479190826416
+        ],
+        "y": [
+          2.965728759765625,
+          3.967550277709961
+        ]
+      },
+      {
+        "x": [
+          0.300680935382843,
+          0.11132898926734924
+        ],
+        "y": [
+          -0.47004953026771545,
+          -0.5613949298858643
+        ]
+      },
+      {
+        "x": [
+          2.1625888347625732,
+          4.126495838165283
+        ],
+        "y": [
+          5.93145751953125,
+          7.935100555419922
+        ]
+      },
+      29.963191986083984
+    ],
+    "ans2": [
+      {
+        "a": [
+          0.14899082481861115,
+          0.9294068813323975
+        ],
+        "b": [
+          1.259920358657837,
+          1.238081693649292
+        ]
+      },
+      {
+        "a": [
+          0.19430328905582428,
+          -0.46915653347969055
+        ],
+        "b": [
+          -2.0242669582366943,
+          -4.084602355957031
+        ]
+      },
+      {
+        "a": [
+          0.06659479439258575,
+          2.5913913249969482
+        ],
+        "b": [
+          4.762197971343994,
+          4.598538875579834
+        ]
+      },
+      4.703911781311035
+    ],
+    "ans3": [
+      {
+        "p": [
+          -0.39450934529304504,
+          -2.516511917114258
+        ],
+        "q": [
+          -0.09830623865127563,
+          4.490338325500488
+        ]
+      },
+      {
+        "p": [
+          -1.745940089225769,
+          1.1108918190002441
+        ],
+        "q": [
+          8.976739883422852,
+          4.708713531494141
+        ]
+      },
+      {
+        "p": [
+          -0.24560198187828064,
+          -63.7465934753418
+        ],
+        "q": [
+          -0.003800171660259366,
+          362.1572265625
+        ]
+      },
+      446.6812438964844
+    ],
+    "ans4": [
+      {
+        "m": [
+          -Infinity,
+          -Infinity
+        ],
+        "n": [
+          -Infinity,
+          -Infinity
+        ]
+      },
+      {
+        "m": [
+          -Infinity,
+          -Infinity
+        ],
+        "n": [
+          -Infinity,
+          -Infinity
+        ]
+      },
+      {
+        "m": [
+          Infinity,
+          Infinity
+        ],
+        "n": [
+          Infinity,
+          Infinity
+        ]
+      },
+      -Infinity
+    ],
+    "ans5": [
+      {
+        "u": [
+          0.1967730075120926,
+          -1.1363545656204224
+        ],
+        "v": [
+          NaN,
+          NaN
+        ]
+      },
+      {
+        "u": [
+          -0.12334239482879639,
+          1.6211354732513428
+        ],
+        "v": [
+          NaN,
+          NaN
+        ]
+      },
+      {
+        "u": [
+          0.001770022907294333,
+          -11.3689546585083
+        ],
+        "v": [
+          NaN,
+          NaN
+        ]
+      },
+      NaN
+    ]
+  }
+}
