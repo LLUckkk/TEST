@@ -1,0 +1,75 @@
+{
+  "input_header": "def write_json(self, name, str):",
+  "input_docstring": null,
+  "output_code": "    def write_json(self, name, str):\n        try:\n            os.mkdir(os.path.join(self.data_dir))\n        except OSError:\n            pass\n        file_path = os.path.join(self.data_dir, name)\n        with open(file_path, 'w') as f:\n            f.write(str)",
+  "input_contexts": [
+    {
+      "id": "kangvcar_InfoSpider_12_13",
+      "input_code": "    def get_cart(self):\n        url = 'https://cart.jd.com/cart.action'\n        resp = self.session.get(url)\n        ele = etree.HTML(resp.content.decode())\n        obj_list = ele.xpath('//div[@class=\"item-form\"]')\n        json_list = []\n        for obj in obj_list:\n            item = {}\n            item['name'] = ''.join(obj.xpath('.//div[@class=\"p-name\"]//text()')).strip()\n            item['skus'] = ''.join(obj.xpath('.//div[@class=\"cell p-props p-props-new\"]//text()')).strip()\n            item['url'] = obj.xpath('.//div[@class=\"p-name\"]/a/@href')[0]\n            item['price'] = ''.join(obj.xpath('.//div[@class=\"cell p-sum\"]//text()')).strip()\n            item['num'] = ''.join(obj.xpath('.//div[@class=\"cell p-quantity\"]//input/@value')).strip()\n            json_list.append(item)\n        str = json.dumps(json_list)\n        self.write_json('carts.json', str)\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_11",
+      "input_code": "    def get_follow_shops(self):\n        url = 'https://t.jd.com/follow/vender'\n        resp = self.session.get(url)\n        ele = etree.HTML(resp.content.decode())\n        obj_list = ele.xpath('//div[@class=\"mf-shop-list \"]/div')\n        json_list = []\n        for obj in obj_list:\n            item = {}\n            item['name'] = ''.join(obj.xpath('.//div[@class=\"shop-name\"]//text()')).strip()\n            item['url'] = obj.xpath('.//div[@class=\"shop-name\"]/a/@href')[0]\n            json_list.append(item)\n        str = json.dumps(json_list)\n        self.write_json('follow_shops.json', str)\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_4",
+      "input_code": "    def get_income(self):\n        url = 'https://trade.jr.jd.com/centre/getOverviewInData.action'\n        resp = self.session.get(url)\n        self.write_json('income.json', resp.content.decode())\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_1",
+      "input_code": "    def get_user_info(self):\n        url = 'https://wq.jd.com/user/info/QueryXBCreditScore?_=1556338705353&sceneval=2&g_login_type=1&callback=getCreditInfoCb&g_tk=2127038752&g_ty=ls'\n        self.headers['Referer'] = 'https://wqs.jd.com/my/asset.html'\n        resp = self.session.get(url, headers=self.headers).content.decode().replace('try{getCreditInfoCb(', '').replace(\n            ');}catch(e){}', '')\n\n        json_data = json.loads(resp)['data']\n        url = 'https://api.m.jd.com/api?appid=pc_home_page&functionId=getBaseUserInfo&loginType=3'\n        resp = json.loads(self.session.get(url, headers=self.headers).content.decode())['returnObj']\n        json_data.append(resp)\n        str = json.dumps(json_data)\n        self.write_json('user_info.json', str)\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_10",
+      "input_code": "    def get_JY_bill(self):\n        url = 'https://trade.jr.jd.com/trade/tradebuynew.action?pageNo=0&pageSize=10&timeFlag=0&projectType=0&orderStatus=-1&date1=&date2='\n        resp = self.session.get(url, headers=self.headers)\n        self.write_json('jiaoyi_bill.json', resp.content.decode())\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_14",
+      "input_code": "    def get_orders(self):\n        for i in [2020, 2019, 2018]:\n            url = 'https://order.jd.com/center/list.action?search=0&d={}&s=4096'.format(i)\n            resp = self.session.get(url)\n            ele = etree.HTML(resp.content.decode('gbk'))\n            obj_list = ele.xpath('//table[@class=\"td-void order-tb\"]/tbody')[1:]\n            json_list = []\n            url = 'https://order.jd.com/lazy/getOrderProductInfo.action'\n            try:\n                data = {\n                    'orderWareIds': '{}'.format(\n                        re.findall(r\"ORDER_CONFIG\\['orderWareIds'\\]='([\\d,]+)'\", resp.content.decode('gbk'))[0]),\n                    'orderWareTypes': '{}'.format(\n                        re.findall(r\"ORDER_CONFIG\\['orderWareTypes'\\]='([\\d,]+)'\", resp.content.decode('gbk'))[0]),\n                    'orderIds': '{}'.format(\n                        re.findall(r\"ORDER_CONFIG\\['orderIds'\\]='([\\d,]+)'\", resp.content.decode('gbk'))[0]),\n                    'orderTypes': '{}'.format(\n                        re.findall(r\"ORDER_CONFIG\\['orderTypes'\\]='([\\d,]+)'\", resp.content.decode('gbk'))[0]),\n                    'orderSiteIds': '{}'.format(\n                        re.findall(r\"ORDER_CONFIG\\['orderSiteIds'\\]='([\\d,]+)'\", resp.content.decode('gbk'))[0]),\n                    'sendPays': '{}'.format(\n                        re.findall(r\"ORDER_CONFIG\\['sendPays'\\]='([\\d,]+)'\", resp.content.decode('gbk'))[0]),\n                }\n            except Exception:\n                return\n            json_list = json.loads(self.session.post(url, data=data).content.decode('gbk'))\n            ret_list = []\n            for obj in obj_list:\n                try:\n                    item = json_list[obj_list.index(obj)]\n                    item['goods-number'] = ''.join(obj.xpath('.//div[@class=\"goods-number\"]//text()')).strip()\n                    item['consignee tooltip'] = ''.join(obj.xpath('.//div[@class=\"consignee tooltip\"]/text()')).strip()\n                    item['amount'] = ''.join(obj.xpath('.//div[@class=\"amount\"]//text()')).strip()\n                    item['order-shop'] = ''.join(obj.xpath('.//span[@class=\"order-shop\"]//text()')).strip()\n                    ret_list.append(item)\n                except Exception:\n                    continue\n\n            self.write_json('jd_orders_{}.json'.format(i), json.dumps(ret_list))\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_2",
+      "input_code": "    def get_creditData(self):\n        url = 'https://trade.jr.jd.com/async/creditData.action'\n        resp = self.session.get(url, headers=self.headers)\n        self.write_json('creditData.json', resp.content.decode())\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_12",
+      "input_code": "    def get_follow_products(self):\n        url = 'https://t.jd.com/follow/product'\n        resp = self.session.get(url)\n        ele = etree.HTML(resp.content.decode())\n        obj_list = ele.xpath('//div[@class=\"mf-goods-list clearfix \"]/div')\n        json_list = []\n        for obj in obj_list:\n            item = {}\n            item['name'] = ''.join(obj.xpath('.//div[@class=\"p-name\"]//text()')).strip()\n            item['url'] = obj.xpath('.//div[@class=\"p-name\"]/a/@href')[0]\n            item['price'] = ''.join(obj.xpath('.//div[@class=\"p-price\"]/strong/@price')).strip()\n            item['status'] = ''.join(obj.xpath('.//div[@class=\"p-stats\"]//text()')).strip()\n            json_list.append(item)\n        str = json.dumps(json_list)\n        self.write_json('follow_products.json', str)\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_9",
+      "input_code": "    def get_GB_num(self):\n        url = 'https://gb.jd.com/asset/myassets.html?from=myzc-left-gb'\n        resp = self.session.get(url)\n        num = etree.HTML(resp.content.decode()).xpath('//em[@class=\"h-i-num\"]/text()')[0]\n        str = json.dumps({'gb_num': num})\n        self.write_json('GB_num.json', str)\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_6",
+      "input_code": "    def get_YHK(self):\n        url = 'https://authpay.jd.com/card/queryBindCard.action'\n        resp = self.session.get(url, headers=self.headers)\n        item = {}\n        item['name'] = etree.HTML(resp.content.decode()).xpath('//span[contains(text(),\"持卡人姓名\")]/text()')[0].replace(\n            '持卡人姓名：', '')\n        item['mobile'] = etree.HTML(resp.content.decode()).xpath('//span[contains(text(),\"手机号：\")]/text()')[0].replace(\n            '手机号：', '')\n        item['last_num'] = etree.HTML(resp.content.decode()).xpath('//span[contains(text(),\"尾号\")]/text()')[0].replace(\n            '尾号', '')\n        str = json.dumps(item)\n        self.write_json('YHK_info.json', str)\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_3",
+      "input_code": "    def get_browseDataNew(self):\n        url = 'https://trade.jr.jd.com/async/browseDataNew.action'\n        resp = self.session.get(url)\n        self.write_json('wallet.json', resp.content.decode())\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_5",
+      "input_code": "    def get_addr(self):\n        url = 'https://easybuy.jd.com/address/getEasyBuyList.action'\n        headers = {\n            'Host': 'easybuy.jd.com',\n            'Connection': 'keep-alive',\n            'Cache-Control': 'max-age=0',\n            'Upgrade-Insecure-Requests': '1',\n            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',\n            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',\n            'Referer': 'https://home.jd.com/',\n            'Accept-Encoding': 'gzip, deflate, br',\n            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'\n        }\n        resp = self.session.get(url, headers=headers)\n        obj_list = etree.HTML(resp.content.decode()).xpath('//div[@class=\"item-lcol\"]')\n        json_list = []\n        for obj in obj_list:\n            item = {}\n            item['name'] = obj.xpath('./div[1]/div[1]/text()')[0].strip()\n            item['addr'] = obj.xpath('./div[2]/div[1]/text()')[0].strip()\n            item['detail_addr'] = obj.xpath('./div[3]/div[1]/text()')[0].strip()\n            item['mobile'] = obj.xpath('./div[4]/div[1]/text()')[0].strip()\n            item['tel'] = obj.xpath('./div[5]/div[1]/text()')[0].strip()\n            item['email'] = obj.xpath('./div[6]/div[1]/text()')[0].strip()\n            json_list.append(item)\n        self.write_json('addr.json', json.dumps(json_list))\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_8",
+      "input_code": "    def get_finance_income(self):\n        url = 'https://trade.jr.jd.com/ajaxFinance/queryFundInfo.action'\n        resp = self.session.get(url)\n        self.write_json('finance_income.json', resp.content.decode())\n"
+    },
+    {
+      "id": "kangvcar_InfoSpider_12_7",
+      "input_code": "    def get_xjk_info(self):\n        url = 'https://xjk.jr.jd.com/gold/account'\n        resp = self.session.get(url)\n        self.write_json('xjk.json', resp.content.decode())\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport os\nimport json\n\n<testcase_1>\nname = 'test_cart.json'\nstr = json.dumps([{\"name\": \"Product A\", \"skus\": \"SKU123\", \"url\": \"http://example.com/productA\", \"price\": \"100\", \"num\": \"2\"}])\n\n<testcase_2>\nname = 'test_follow_shops.json'\nstr = json.dumps([{\"name\": \"Shop A\", \"url\": \"http://example.com/shopA\"}, {\"name\": \"Shop B\", \"url\": \"http://example.com/shopB\"}])\n\n<testcase_3>\nname = 'test_income.json'\nstr = '{\"income\": \"5000\"}'\n\n<testcase_4>\nname = 'test_user_info.json'\nstr = json.dumps([{\"name\": \"User A\", \"credit_score\": \"750\"}, {\"name\": \"User B\", \"credit_score\": \"800\"}])\n\n<testcase_5>\nname = 'test_orders.json'\nstr = json.dumps([{\"order_id\": \"12345\", \"amount\": \"250\", \"goods-number\": \"3\", \"consignee tooltip\": \"John Doe\", \"order-shop\": \"Shop A\"}])"
+  ],
+  "gpt_output": "<needimport>\nimport os\nimport json\n\n<testcase_1>\nname = 'test_cart.json'\nstr = json.dumps([{\"name\": \"Product A\", \"skus\": \"SKU123\", \"url\": \"http://example.com/productA\", \"price\": \"100\", \"num\": \"2\"}])\n\n<testcase_2>\nname = 'test_follow_shops.json'\nstr = json.dumps([{\"name\": \"Shop A\", \"url\": \"http://example.com/shopA\"}, {\"name\": \"Shop B\", \"url\": \"http://example.com/shopB\"}])\n\n<testcase_3>\nname = 'test_income.json'\nstr = '{\"income\": \"5000\"}'\n\n<testcase_4>\nname = 'test_user_info.json'\nstr = json.dumps([{\"name\": \"User A\", \"credit_score\": \"750\"}, {\"name\": \"User B\", \"credit_score\": \"800\"}])\n\n<testcase_5>\nname = 'test_orders.json'\nstr = json.dumps([{\"order_id\": \"12345\", \"amount\": \"250\", \"goods-number\": \"3\", \"consignee tooltip\": \"John Doe\", \"order-shop\": \"Shop A\"}])",
+  "needimport": "import os\nimport json\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": true,
+    "ans4": true,
+    "ans5": true
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "input_header": "def _to_dict_of_blocks(self):",
+  "input_docstring": "Return a dict of dtype -> Constructor Types that\neach is a homogeneous dtype.\n\nInternal ONLY.",
+  "output_code": "    def _to_dict_of_blocks(self):\n        \n        mgr = self._mgr\n        return {\n            k: self._constructor_from_mgr(v, axes=v.axes).__finalize__(self)\n            for k, v in mgr.to_iter_dict()\n        }",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_3986_1",
+      "input_code": "def assert_frame_equal(\n    left,\n    right,\n    check_dtype: bool | Literal[\"equiv\"] = True,\n    check_index_type: bool | Literal[\"equiv\"] = \"equiv\",\n    check_column_type: bool | Literal[\"equiv\"] = \"equiv\",\n    check_frame_type: bool = True,\n    check_names: bool = True,\n    by_blocks: bool = False,\n    check_exact: bool | lib.NoDefault = lib.no_default,\n    check_datetimelike_compat: bool = False,\n    check_categorical: bool = True,\n    check_like: bool = False,\n    check_freq: bool = True,\n    check_flags: bool = True,\n    rtol: float | lib.NoDefault = lib.no_default,\n    atol: float | lib.NoDefault = lib.no_default,\n    obj: str = \"DataFrame\",\n) -> None:\n    \n    __tracebackhide__ = True\n    _rtol = rtol if rtol is not lib.no_default else 1.0e-5\n    _atol = atol if atol is not lib.no_default else 1.0e-8\n    _check_exact = check_exact if check_exact is not lib.no_default else False\n\n    _check_isinstance(left, right, DataFrame)\n\n    if check_frame_type:\n        assert isinstance(left, type(right))\n\n    if left.shape != right.shape:\n        raise_assert_detail(\n            obj, f\"{obj} shape mismatch\", f\"{left.shape!r}\", f\"{right.shape!r}\"\n        )\n\n    if check_flags:\n        assert left.flags == right.flags, f\"{left.flags!r} != {right.flags!r}\"\n\n    assert_index_equal(\n        left.index,\n        right.index,\n        exact=check_index_type,\n        check_names=check_names,\n        check_exact=_check_exact,\n        check_categorical=check_categorical,\n        check_order=not check_like,\n        rtol=_rtol,\n        atol=_atol,\n        obj=f\"{obj}.index\",\n    )\n\n    assert_index_equal(\n        left.columns,\n        right.columns,\n        exact=check_column_type,\n        check_names=check_names,\n        check_exact=_check_exact,\n        check_categorical=check_categorical,\n        check_order=not check_like,\n        rtol=_rtol,\n        atol=_atol,\n        obj=f\"{obj}.columns\",\n    )\n\n    if check_like:\n        left = left.reindex_like(right)\n\n    if by_blocks:\n        rblocks = right._to_dict_of_blocks()\n        lblocks = left._to_dict_of_blocks()\n        for dtype in list(set(list(lblocks.keys()) + list(rblocks.keys()))):\n            assert dtype in lblocks\n            assert dtype in rblocks\n            assert_frame_equal(\n                lblocks[dtype], rblocks[dtype], check_dtype=check_dtype, obj=obj\n            )\n\n    else:\n        for i, col in enumerate(left.columns):\n            lcol = left._ixs(i, axis=1)\n            rcol = right._ixs(i, axis=1)\n\n            assert_series_equal(\n                lcol,\n                rcol,\n                check_dtype=check_dtype,\n                check_index_type=check_index_type,\n                check_exact=check_exact,\n                check_names=check_names,\n                check_datetimelike_compat=check_datetimelike_compat,\n                check_categorical=check_categorical,\n                check_freq=check_freq,\n                obj=f'{obj}.iloc[:, {i}] (column name=\"{col}\")',\n                rtol=rtol,\n                atol=atol,\n                check_index=False,\n                check_flags=False,\n            )\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3986_6",
+      "input_code": "def test_set_change_dtype_slice():\n    cols = MultiIndex.from_tuples([(\"1st\", \"a\"), (\"2nd\", \"b\"), (\"3rd\", \"c\")])\n    df = DataFrame([[1.0, 2, 3], [4.0, 5, 6]], columns=cols)\n    df[\"2nd\"] = df[\"2nd\"] * 2.0\n\n    blocks = df._to_dict_of_blocks()\n    assert sorted(blocks.keys()) == [\"float64\", \"int64\"]\n    tm.assert_frame_equal(\n        blocks[\"float64\"], DataFrame([[1.0, 4.0], [4.0, 10.0]], columns=cols[:2])\n    )\n    tm.assert_frame_equal(blocks[\"int64\"], DataFrame([[3], [6]], columns=cols[2:]))\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3986_4",
+      "input_code": "    def test_no_copy_blocks(self, float_frame):\n        df = DataFrame(float_frame, copy=True)\n        column = df.columns[0]\n\n        _last_df = None\n        blocks = df._to_dict_of_blocks()\n        for _df in blocks.values():\n            _last_df = _df\n            if column in _df:\n                _df.loc[:, column] = _df[column] + 1\n        assert _last_df is not None and not _last_df[column].equals(df[column])\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3986_2",
+      "input_code": "    def test_from_records_sequencelike(self):\n        df = DataFrame(\n            {\n                \"A\": np.array(\n                    np.random.default_rng(2).standard_normal(6), dtype=np.float64\n                ),\n                \"A1\": np.array(\n                    np.random.default_rng(2).standard_normal(6), dtype=np.float64\n                ),\n                \"B\": np.array(np.arange(6), dtype=np.int64),\n                \"C\": [\"foo\"] * 6,\n                \"D\": np.array([True, False] * 3, dtype=bool),\n                \"E\": np.array(\n                    np.random.default_rng(2).standard_normal(6), dtype=np.float32\n                ),\n                \"E1\": np.array(\n                    np.random.default_rng(2).standard_normal(6), dtype=np.float32\n                ),\n                \"F\": np.array(np.arange(6), dtype=np.int32),\n            }\n        )\n\n        blocks = df._to_dict_of_blocks()\n        tuples = []\n        columns = []\n        dtypes = []\n        for dtype, b in blocks.items():\n            columns.extend(b.columns)\n            dtypes.extend([(c, np.dtype(dtype).descr[0][1]) for c in b.columns])\n        for i in range(len(df.index)):\n            tup = []\n            for _, b in blocks.items():\n                tup.extend(b.iloc[i].values)\n            tuples.append(tuple(tup))\n\n        recarray = np.array(tuples, dtype=dtypes).view(np.rec.recarray)\n        recarray2 = df.to_records()\n        lists = [list(x) for x in tuples]\n\n        result = DataFrame.from_records(tuples, columns=columns).reindex(\n            columns=df.columns\n        )\n\n        result2 = DataFrame.from_records(recarray, columns=columns).reindex(\n            columns=df.columns\n        )\n        result3 = DataFrame.from_records(recarray2, columns=columns).reindex(\n            columns=df.columns\n        )\n\n        result4 = DataFrame.from_records(lists, columns=columns).reindex(\n            columns=df.columns\n        )\n\n        tm.assert_frame_equal(result, df, check_dtype=False)\n        tm.assert_frame_equal(result2, df)\n        tm.assert_frame_equal(result3, df)\n        tm.assert_frame_equal(result4, df, check_dtype=False)\n\n        result = DataFrame.from_records(tuples)\n        tm.assert_index_equal(result.columns, RangeIndex(8))\n\n        columns_to_test = [columns.index(\"C\"), columns.index(\"E1\")]\n\n        exclude = list(set(range(8)) - set(columns_to_test))\n        result = DataFrame.from_records(tuples, exclude=exclude)\n        result.columns = [columns[i] for i in sorted(columns_to_test)]\n        tm.assert_series_equal(result[\"C\"], df[\"C\"])\n        tm.assert_series_equal(result[\"E1\"], df[\"E1\"])\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3986_5",
+      "input_code": "def test_to_dict_of_blocks_item_cache():\n    df = DataFrame({\"a\": [1, 2, 3, 4], \"b\": [\"a\", \"b\", \"c\", \"d\"]})\n    df[\"c\"] = NumpyExtensionArray(np.array([1, 2, None, 3], dtype=object))\n    mgr = df._mgr\n    assert len(mgr.blocks) == 3\n\n    ser = df[\"b\"]\n\n    df._to_dict_of_blocks()\n\n    with pytest.raises(ValueError, match=\"read-only\"):\n        ser.values[0] = \"foo\"\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3986_3",
+      "input_code": "    def test_from_records_dictlike(self):\n        df = DataFrame(\n            {\n                \"A\": np.array(\n                    np.random.default_rng(2).standard_normal(6), dtype=np.float64\n                ),\n                \"A1\": np.array(\n                    np.random.default_rng(2).standard_normal(6), dtype=np.float64\n                ),\n                \"B\": np.array(np.arange(6), dtype=np.int64),\n                \"C\": [\"foo\"] * 6,\n                \"D\": np.array([True, False] * 3, dtype=bool),\n                \"E\": np.array(\n                    np.random.default_rng(2).standard_normal(6), dtype=np.float32\n                ),\n                \"E1\": np.array(\n                    np.random.default_rng(2).standard_normal(6), dtype=np.float32\n                ),\n                \"F\": np.array(np.arange(6), dtype=np.int32),\n            }\n        )\n\n        blocks = df._to_dict_of_blocks()\n        columns = []\n        for b in blocks.values():\n            columns.extend(b.columns)\n\n        asdict = dict(df.items())\n        asdict2 = {x: y.values for x, y in df.items()}\n\n        results = []\n        results.append(DataFrame.from_records(asdict).reindex(columns=df.columns))\n        results.append(\n            DataFrame.from_records(asdict, columns=columns).reindex(columns=df.columns)\n        )\n        results.append(\n            DataFrame.from_records(asdict2, columns=columns).reindex(columns=df.columns)\n        )\n\n        for r in results:\n            tm.assert_frame_equal(r, df)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport pandas as pd\nimport numpy as np\nfrom pandas import MultiIndex, DataFrame\n\n<testcase_1>\ndf = DataFrame({\n    \"A\": np.random.rand(10),\n    \"B\": np.random.randint(0, 100, size=10),\n    \"C\": [\"foo\", \"bar\", \"baz\", \"qux\", \"quux\", \"corge\", \"grault\", \"garply\", \"waldo\", \"fred\"]\n})\nblocks = df._to_dict_of_blocks()\n\n<testcase_2>\ndf = DataFrame({\n    \"A\": np.array([1.0, 2.0, 3.0], dtype=np.float64),\n    \"B\": np.array([1, 2, 3], dtype=np.int64),\n    \"C\": np.array([True, False, True], dtype=bool)\n})\nblocks = df._to_dict_of_blocks()\n\n<testcase_3>\ncols = MultiIndex.from_tuples([(\"first\", \"A\"), (\"second\", \"B\"), (\"third\", \"C\")])\ndf = DataFrame([[1.0, 2, 3], [4.0, 5, 6]], columns=cols)\nblocks = df._to_dict_of_blocks()\n\n<testcase_4>\ndf = DataFrame({\n    \"A\": np.array([1, 2, 3, 4], dtype=np.int32),\n    \"B\": np.array([5.0, 6.0, 7.0, 8.0], dtype=np.float32),\n    \"C\": np.array([\"x\", \"y\", \"z\", \"w\"], dtype=object)\n})\nblocks = df._to_dict_of_blocks()\n\n<testcase_5>\ndf = DataFrame({\n    \"A\": np.random.default_rng(2).standard_normal(5),\n    \"B\": np.random.default_rng(2).integers(0, 10, size=5),\n    \"C\": [\"alpha\", \"beta\", \"gamma\", \"delta\", \"epsilon\"]\n})\nblocks = df._to_dict_of_blocks()\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport pandas as pd\nimport numpy as np\nfrom pandas import MultiIndex, DataFrame\n\n<testcase_1>\ndf = DataFrame({\n    \"A\": np.random.rand(10),\n    \"B\": np.random.randint(0, 100, size=10),\n    \"C\": [\"foo\", \"bar\", \"baz\", \"qux\", \"quux\", \"corge\", \"grault\", \"garply\", \"waldo\", \"fred\"]\n})\nblocks = df._to_dict_of_blocks()\n\n<testcase_2>\ndf = DataFrame({\n    \"A\": np.array([1.0, 2.0, 3.0], dtype=np.float64),\n    \"B\": np.array([1, 2, 3], dtype=np.int64),\n    \"C\": np.array([True, False, True], dtype=bool)\n})\nblocks = df._to_dict_of_blocks()\n\n<testcase_3>\ncols = MultiIndex.from_tuples([(\"first\", \"A\"), (\"second\", \"B\"), (\"third\", \"C\")])\ndf = DataFrame([[1.0, 2, 3], [4.0, 5, 6]], columns=cols)\nblocks = df._to_dict_of_blocks()\n\n<testcase_4>\ndf = DataFrame({\n    \"A\": np.array([1, 2, 3, 4], dtype=np.int32),\n    \"B\": np.array([5.0, 6.0, 7.0, 8.0], dtype=np.float32),\n    \"C\": np.array([\"x\", \"y\", \"z\", \"w\"], dtype=object)\n})\nblocks = df._to_dict_of_blocks()\n\n<testcase_5>\ndf = DataFrame({\n    \"A\": np.random.default_rng(2).standard_normal(5),\n    \"B\": np.random.default_rng(2).integers(0, 10, size=5),\n    \"C\": [\"alpha\", \"beta\", \"gamma\", \"delta\", \"epsilon\"]\n})\nblocks = df._to_dict_of_blocks()\n```",
+  "needimport": "import pandas as pd\nimport numpy as np\nfrom pandas import MultiIndex, DataFrame\n\n",
+  "test_results": {
+    "ans1": {
+      "0": [
+        [
+          0.3192820790059864,
+          0.0065957236365095095,
+          0.4430588614534464,
+          0.5116989034570193,
+          0.7813843744324211,
+          0.2271392161644833,
+          0.6336803305271457,
+          0.21834896250351188,
+          0.936799591186869,
+          0.5333832472201849
+        ]
+      ],
+      "1": [
+        [
+          42,
+          68,
+          4,
+          87,
+          22,
+          50,
+          49,
+          76,
+          52,
+          32
+        ]
+      ],
+      "2": [
+        [
+          "foo",
+          "bar",
+          "baz",
+          "qux",
+          "quux",
+          "corge",
+          "grault",
+          "garply",
+          "waldo",
+          "fred"
+        ]
+      ]
+    },
+    "ans2": {
+      "0": [
+        [
+          1.0,
+          2.0,
+          3.0
+        ]
+      ],
+      "1": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "2": [
+        [
+          true,
+          false,
+          true
+        ]
+      ]
+    },
+    "ans3": {
+      "0": [
+        [
+          1.0,
+          4.0
+        ]
+      ],
+      "1": [
+        [
+          2,
+          5
+        ],
+        [
+          3,
+          6
+        ]
+      ]
+    },
+    "ans4": {
+      "0": [
+        [
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "1": [
+        [
+          5.0,
+          6.0,
+          7.0,
+          8.0
+        ]
+      ],
+      "2": [
+        [
+          "x",
+          "y",
+          "z",
+          "w"
+        ]
+      ]
+    },
+    "ans5": {
+      "0": [
+        [
+          0.18905338179353307,
+          -0.5227484414807474,
+          -0.41306354339189344,
+          -2.4414673826398556,
+          1.799707382720902
+        ]
+      ],
+      "1": [
+        [
+          8,
+          2,
+          1,
+          2,
+          4
+        ]
+      ],
+      "2": [
+        [
+          "alpha",
+          "beta",
+          "gamma",
+          "delta",
+          "epsilon"
+        ]
+      ]
+    }
+  }
+}

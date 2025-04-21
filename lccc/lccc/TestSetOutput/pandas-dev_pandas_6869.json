@@ -1,0 +1,88 @@
+{
+  "input_header": "def maybe_convert_css_to_tuples(style: CSSProperties) -> CSSList:",
+  "input_docstring": "Convert css-string to sequence of tuples format if needed.\n'color:red; border:1px solid black;' -> [('color', 'red'),\n                                         ('border','1px solid red')]",
+  "output_code": "def maybe_convert_css_to_tuples(style: CSSProperties) -> CSSList:\n    \n    if isinstance(style, str):\n        if style and \":\" not in style:\n            raise ValueError(\n                \"Styles supplied as string must follow CSS rule formats, \"\n                f\"for example 'attr: val;'. '{style}' was given.\"\n            )\n        s = style.split(\";\")\n        return [\n            (x.split(\":\")[0].strip(), \":\".join(x.split(\":\")[1:]).strip())\n            for x in s\n            if x.strip() != \"\"\n        ]\n\n    return style",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_6869_5",
+      "input_code": "    def test_maybe_convert_css_to_tuples(self):\n        expected = [(\"a\", \"b\"), (\"c\", \"d e\")]\n        assert maybe_convert_css_to_tuples(\"a:b;c:d e;\") == expected\n        assert maybe_convert_css_to_tuples(\"a: b ;c:  d e  \") == expected\n        expected = []\n        assert maybe_convert_css_to_tuples(\"\") == expected\n\n        expected = [(\"a\", \"b\"), (\"c\", \"url('data:123')\")]\n        assert maybe_convert_css_to_tuples(\"a:b;c: url('data:123');\") == expected\n\n        expected = [(\"a\", \"\"), (\"c\", \"\")]\n        assert maybe_convert_css_to_tuples(\"a:;c: \") == expected\n"
+    },
+    {
+      "id": "pandas-dev_pandas_6869_2",
+      "input_code": "    def _update_ctx_header(self, attrs: DataFrame, axis: AxisInt) -> None:\n        \n        for j in attrs.columns:\n            ser = attrs[j]\n            for i, c in ser.items():\n                if not c or pd.isna(c):\n                    continue\n                css_list = maybe_convert_css_to_tuples(c)\n                if axis == 0:\n                    self.ctx_index[(i, j)].extend(css_list)\n                else:\n                    self.ctx_columns[(j, i)].extend(css_list)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_6869_1",
+      "input_code": "    def _update_ctx(self, attrs: DataFrame) -> None:\n        \n        if not self.index.is_unique or not self.columns.is_unique:\n            raise KeyError(\n                \"`Styler.apply` and `.map` are not compatible \"\n                \"with non-unique index or columns.\"\n            )\n\n        for cn in attrs.columns:\n            j = self.columns.get_loc(cn)\n            ser = attrs[cn]\n            for rn, c in ser.items():\n                if not c or pd.isna(c):\n                    continue\n                css_list = maybe_convert_css_to_tuples(c)\n                i = self.index.get_loc(rn)\n                self.ctx[(i, j)].extend(css_list)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_6869_3",
+      "input_code": "    def set_table_styles(\n        self,\n        table_styles: dict[Any, CSSStyles] | CSSStyles | None = None,\n        axis: AxisInt = 0,\n        overwrite: bool = True,\n        css_class_names: dict[str, str] | None = None,\n    ) -> Styler:\n        \n        if css_class_names is not None:\n            self.css = {**self.css, **css_class_names}\n\n        if table_styles is None:\n            return self\n        elif isinstance(table_styles, dict):\n            axis = self.data._get_axis_number(axis)\n            obj = self.data.index if axis == 1 else self.data.columns\n            idf = f\".{self.css['row']}\" if axis == 1 else f\".{self.css['col']}\"\n\n            table_styles = [\n                {\n                    \"selector\": str(s[\"selector\"]) + idf + str(idx),\n                    \"props\": maybe_convert_css_to_tuples(s[\"props\"]),\n                }\n                for key, styles in table_styles.items()\n                for idx in obj.get_indexer_for([key])\n                for s in format_table_styles(styles)\n            ]\n        else:\n            table_styles = [\n                {\n                    \"selector\": s[\"selector\"],\n                    \"props\": maybe_convert_css_to_tuples(s[\"props\"]),\n                }\n                for s in table_styles\n            ]\n\n        if not overwrite and self.table_styles is not None:\n            self.table_styles.extend(table_styles)\n        else:\n            self.table_styles = table_styles\n        return self\n"
+    },
+    {
+      "id": "pandas-dev_pandas_6869_4",
+      "input_code": "    def _class_styles(self):\n        \n        return [\n            {\n                \"selector\": f\".{self.class_name}\",\n                \"props\": maybe_convert_css_to_tuples(self.class_properties),\n            }\n        ]\n"
+    },
+    {
+      "id": "pandas-dev_pandas_6869_6",
+      "input_code": "    def test_maybe_convert_css_to_tuples_err(self):\n        msg = (\n            \"Styles supplied as string must follow CSS rule formats, \"\n            \"for example 'attr: val;'. 'err' was given.\"\n        )\n        with pytest.raises(ValueError, match=msg):\n            maybe_convert_css_to_tuples(\"err\")\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\n\n<testcase_1>\nstyle = \"color:red; border:1px solid black;\"\n\n<testcase_2>\nstyle = \"background-color: blue; font-size: 14px;\"\n\n<testcase_3>\nstyle = \"margin: 10px; padding: 5px;\"\n\n<testcase_4>\nstyle = \"width: 100%; height: 50px;\"\n\n<testcase_5>\nstyle = \"display: block; visibility: hidden;\""
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\n\n<testcase_1>\nstyle = \"color:red; border:1px solid black;\"\n\n<testcase_2>\nstyle = \"background-color: blue; font-size: 14px;\"\n\n<testcase_3>\nstyle = \"margin: 10px; padding: 5px;\"\n\n<testcase_4>\nstyle = \"width: 100%; height: 50px;\"\n\n<testcase_5>\nstyle = \"display: block; visibility: hidden;\"",
+  "needimport": "import pandas as pd\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        "color",
+        "red"
+      ],
+      [
+        "border",
+        "1px solid black"
+      ]
+    ],
+    "ans2": [
+      [
+        "background-color",
+        "blue"
+      ],
+      [
+        "font-size",
+        "14px"
+      ]
+    ],
+    "ans3": [
+      [
+        "margin",
+        "10px"
+      ],
+      [
+        "padding",
+        "5px"
+      ]
+    ],
+    "ans4": [
+      [
+        "width",
+        "100%"
+      ],
+      [
+        "height",
+        "50px"
+      ]
+    ],
+    "ans5": [
+      [
+        "display",
+        "block"
+      ],
+      [
+        "visibility",
+        "hidden"
+      ]
+    ]
+  }
+}

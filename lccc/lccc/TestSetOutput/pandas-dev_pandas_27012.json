@@ -1,0 +1,39 @@
+{
+  "input_header": "def _assert_series_equal_both(a, b, **kwargs):",
+  "input_docstring": "Check that two Series equal.\n\nThis check is performed commutatively.\n\nParameters\n----------\na : Series\n    The first Series to compare.\nb : Series\n    The second Series to compare.\nkwargs : dict\n    The arguments passed to `tm.assert_series_equal`.",
+  "output_code": "def _assert_series_equal_both(a, b, **kwargs):\n    \n    tm.assert_series_equal(a, b, **kwargs)\n    tm.assert_series_equal(b, a, **kwargs)",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_27012_4",
+      "input_code": "def test_series_equal_index_mismatch(check_index):\n    s1 = Series([1, 2, 3], index=[\"a\", \"b\", \"c\"])\n    s2 = Series([1, 2, 3], index=[\"c\", \"b\", \"a\"])\n\n    if check_index:\n        with pytest.raises(AssertionError, match=\"Series.index are different\"):\n            tm.assert_series_equal(s1, s2, check_index=check_index)\n    else:\n        _assert_series_equal_both(s1, s2, check_index=check_index)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_27012_5",
+      "input_code": "def test_series_equal_categorical_mismatch(check_categorical, using_infer_string):\n    if using_infer_string:\n        dtype = \"str\"\n    else:\n        dtype = \"object\"\n    msg = f\"\"\"Attributes of Series are different\n\nAttribute \"dtype\" are different\n\\\\[left\\\\]:  CategoricalDtype\\\\(categories=\\\\['a', 'b'\\\\], ordered=False, \\\ncategories_dtype={dtype}\\\\)\n\\\\[right\\\\]: CategoricalDtype\\\\(categories=\\\\['a', 'b', 'c'\\\\], \\\nordered=False, categories_dtype={dtype}\\\\)\"\"\"\n\n    s1 = Series(Categorical([\"a\", \"b\"]))\n    s2 = Series(Categorical([\"a\", \"b\"], categories=list(\"abc\")))\n\n    if check_categorical:\n        with pytest.raises(AssertionError, match=msg):\n            tm.assert_series_equal(s1, s2, check_categorical=check_categorical)\n    else:\n        _assert_series_equal_both(s1, s2, check_categorical=check_categorical)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_27012_2",
+      "input_code": "def test_less_precise(data1, data2, any_float_dtype, decimals):\n    rtol = 10**-decimals\n    s1 = Series([data1], dtype=any_float_dtype)\n    s2 = Series([data2], dtype=any_float_dtype)\n\n    if decimals in (5, 10) or (decimals >= 3 and abs(data1 - data2) >= 0.0005):\n        msg = \"Series values are different\"\n        with pytest.raises(AssertionError, match=msg):\n            tm.assert_series_equal(s1, s2, rtol=rtol)\n    else:\n        _assert_series_equal_both(s1, s2, rtol=rtol)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_27012_3",
+      "input_code": "def test_series_equal_order_mismatch(check_like):\n    s1 = Series([1, 2, 3], index=[\"a\", \"b\", \"c\"])\n    s2 = Series([3, 2, 1], index=[\"c\", \"b\", \"a\"])\n\n    if not check_like:\n        with pytest.raises(AssertionError, match=\"Series.index are different\"):\n            tm.assert_series_equal(s1, s2, check_like=check_like)\n    else:\n        _assert_series_equal_both(s1, s2, check_like=check_like)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_27012_1",
+      "input_code": "def test_series_equal(data):\n    _assert_series_equal_both(Series(data), Series(data))\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nimport pandas.testing as tm\nfrom pandas import Series, Categorical\nimport pytest\n\n<testcase_1>\na = Series([1, 2, 3], index=[\"a\", \"b\", \"c\"])\nb = Series([1, 2, 3], index=[\"c\", \"b\", \"a\"])\nkwargs = {\"check_index\": False}\n\n<testcase_2>\na = Series(Categorical([\"a\", \"b\"]))\nb = Series(Categorical([\"a\", \"b\"], categories=list(\"abc\")))\nkwargs = {\"check_categorical\": False}\n\n<testcase_3>\na = Series([1.0001], dtype=\"float64\")\nb = Series([1.0002], dtype=\"float64\")\nkwargs = {\"rtol\": 10**-4}\n\n<testcase_4>\na = Series([1, 2, 3], index=[\"a\", \"b\", \"c\"])\nb = Series([3, 2, 1], index=[\"c\", \"b\", \"a\"])\nkwargs = {\"check_like\": True}\n\n<testcase_5>\na = Series([1, 2, 3, 4, 5])\nb = Series([1, 2, 3, 4, 5])\nkwargs = {}"
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nimport pandas.testing as tm\nfrom pandas import Series, Categorical\nimport pytest\n\n<testcase_1>\na = Series([1, 2, 3], index=[\"a\", \"b\", \"c\"])\nb = Series([1, 2, 3], index=[\"c\", \"b\", \"a\"])\nkwargs = {\"check_index\": False}\n\n<testcase_2>\na = Series(Categorical([\"a\", \"b\"]))\nb = Series(Categorical([\"a\", \"b\"], categories=list(\"abc\")))\nkwargs = {\"check_categorical\": False}\n\n<testcase_3>\na = Series([1.0001], dtype=\"float64\")\nb = Series([1.0002], dtype=\"float64\")\nkwargs = {\"rtol\": 10**-4}\n\n<testcase_4>\na = Series([1, 2, 3], index=[\"a\", \"b\", \"c\"])\nb = Series([3, 2, 1], index=[\"c\", \"b\", \"a\"])\nkwargs = {\"check_like\": True}\n\n<testcase_5>\na = Series([1, 2, 3, 4, 5])\nb = Series([1, 2, 3, 4, 5])\nkwargs = {}",
+  "needimport": "import pandas as pd\nimport pandas.testing as tm\nfrom pandas import Series, Categorical\nimport pytest\n\n",
+  "test_results": {
+    "ans1": "pass",
+    "ans2": "pass",
+    "ans3": "pass",
+    "ans4": "pass",
+    "ans5": "pass"
+  }
+}

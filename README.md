@@ -12,3 +12,18 @@
     ```
 
 + test文件里面除了ans1-5不要有额外的打印
+
++ ```python
+  script_dir = os.path.dirname(__file__)  # 脚本所在目录
+  target_dir = os.path.join(script_dir, "Supplement")  # 目标目录
+  ```
+
+  使用该代码获取未来测试环境下的工作目录
+
+  
+
+  
+
+  
+
+  

@@ -1,0 +1,153 @@
+{
+  "input_header": "def isetitem(self, loc, value) -> None:",
+  "input_docstring": "Set the given value in the column with position `loc`.\n\nThis is a positional analogue to ``__setitem__``.\n\nParameters\n----------\nloc : int or sequence of ints\n    Index position for the column.\nvalue : scalar or arraylike\n    Value(s) for the column.\n\nSee Also\n--------\nDataFrame.iloc : Purely integer-location based indexing for selection by\n    position.\n\nNotes\n-----\n``frame.isetitem(loc, value)`` is an in-place method as it will\nmodify the DataFrame in place (not returning a new object). In contrast to\n``frame.iloc[:, i] = value`` which will try to update the existing values in\nplace, ``frame.isetitem(loc, value)`` will not update the values of the column\nitself in place, it will instead insert a new array.\n\nIn cases where ``frame.columns`` is unique, this is equivalent to\n``frame[frame.columns[i]] = value``.\n\nExamples\n--------\n>>> df = pd.DataFrame({\"A\": [1, 2], \"B\": [3, 4]})\n>>> df.isetitem(1, [5, 6])\n>>> df\n      A  B\n0     1  5\n1     2  6",
+  "output_code": "    def isetitem(self, loc, value) -> None:\n        \n        if isinstance(value, DataFrame):\n            if is_integer(loc):\n                loc = [loc]\n\n            if len(loc) != len(value.columns):\n                raise ValueError(\n                    f\"Got {len(loc)} positions but value has {len(value.columns)} \"\n                    f\"columns.\"\n                )\n\n            for i, idx in enumerate(loc):\n                arraylike, refs = self._sanitize_column(value.iloc[:, i])\n                self._iset_item_mgr(idx, arraylike, inplace=False, refs=refs)\n            return\n\n        arraylike, refs = self._sanitize_column(value)\n        self._iset_item_mgr(loc, arraylike, inplace=False, refs=refs)",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_3854_13",
+      "input_code": "    def test_isetitem_ea_df(self):\n        df = DataFrame([[1, 2, 3], [4, 5, 6]])\n        rhs = DataFrame([[11, 12], [13, 14]], dtype=\"Int64\")\n\n        df.isetitem([0, 1], rhs)\n        expected = DataFrame(\n            {\n                0: Series([11, 13], dtype=\"Int64\"),\n                1: Series([12, 14], dtype=\"Int64\"),\n                2: [3, 6],\n            }\n        )\n        tm.assert_frame_equal(df, expected)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_3",
+      "input_code": "    def _setitem_single_column(self, loc: int, value, plane_indexer) -> None:\n        \n        pi = plane_indexer\n\n        is_full_setter = com.is_null_slice(pi) or com.is_full_slice(pi, len(self.obj))\n\n        is_null_setter = com.is_empty_slice(pi) or (is_array_like(pi) and len(pi) == 0)\n\n        if is_null_setter:\n            return\n\n        elif is_full_setter:\n            try:\n                self.obj._mgr.column_setitem(\n                    loc, plane_indexer, value, inplace_only=True\n                )\n            except (ValueError, TypeError, LossySetitemError) as exc:\n                dtype = self.obj.dtypes.iloc[loc]\n                if dtype not in (np.void, object) and not self.obj.empty:\n                    raise TypeError(\n                        f\"Invalid value '{value}' for dtype '{dtype}'\"\n                    ) from exc\n                self.obj.isetitem(loc, value)\n        else:\n            dtype = self.obj.dtypes.iloc[loc]\n            if dtype == np.void:\n                self.obj.iloc[:, loc] = construct_1d_array_from_inferred_fill_value(\n                    value, len(self.obj)\n                )\n            self.obj._mgr.column_setitem(loc, plane_indexer, value)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_6",
+      "input_code": "    def read(\n        self,\n        nrows: int | None = None,\n        convert_dates: bool | None = None,\n        convert_categoricals: bool | None = None,\n        index_col: str | None = None,\n        convert_missing: bool | None = None,\n        preserve_dtypes: bool | None = None,\n        columns: Sequence[str] | None = None,\n        order_categoricals: bool | None = None,\n    ) -> DataFrame:\n        self._ensure_open()\n\n        if convert_dates is None:\n            convert_dates = self._convert_dates\n        if convert_categoricals is None:\n            convert_categoricals = self._convert_categoricals\n        if convert_missing is None:\n            convert_missing = self._convert_missing\n        if preserve_dtypes is None:\n            preserve_dtypes = self._preserve_dtypes\n        if columns is None:\n            columns = self._columns\n        if order_categoricals is None:\n            order_categoricals = self._order_categoricals\n        if index_col is None:\n            index_col = self._index_col\n        if nrows is None:\n            nrows = self._nobs\n\n        if (self._nobs == 0) and nrows == 0:\n            data = DataFrame(columns=self._varlist)\n            for i, col in enumerate(data.columns):\n                dt = self._dtyplist[i]\n                if isinstance(dt, np.dtype):\n                    if dt.char != \"S\":\n                        data[col] = data[col].astype(dt)\n            if columns is not None:\n                data = self._do_select_columns(data, columns)\n            return data\n\n        if (self._format_version >= 117) and (not self._value_labels_read):\n            self._read_strls()\n\n        assert self._dtype is not None\n        dtype = self._dtype\n        max_read_len = (self._nobs - self._lines_read) * dtype.itemsize\n        read_len = nrows * dtype.itemsize\n        read_len = min(read_len, max_read_len)\n        if read_len <= 0:\n            if convert_categoricals:\n                self._read_value_labels()\n            raise StopIteration\n        offset = self._lines_read * dtype.itemsize\n        self._path_or_buf.seek(self._data_location + offset)\n        read_lines = min(nrows, self._nobs - self._lines_read)\n        raw_data = np.frombuffer(\n            self._path_or_buf.read(read_len), dtype=dtype, count=read_lines\n        )\n\n        self._lines_read += read_lines\n\n        if self._byteorder != self._native_byteorder:\n            raw_data = raw_data.byteswap().view(raw_data.dtype.newbyteorder())\n\n        if convert_categoricals:\n            self._read_value_labels()\n\n        if len(raw_data) == 0:\n            data = DataFrame(columns=self._varlist)\n        else:\n            data = DataFrame.from_records(raw_data)\n            data.columns = Index(self._varlist)\n\n        if index_col is None:\n            data.index = RangeIndex(\n                self._lines_read - read_lines, self._lines_read\n            )\n\n        if columns is not None:\n            data = self._do_select_columns(data, columns)\n\n        for col, typ in zip(data, self._typlist):\n            if isinstance(typ, int):\n                data[col] = data[col].apply(self._decode)\n\n        data = self._insert_strls(data)\n\n        valid_dtypes = [i for i, dtyp in enumerate(self._dtyplist) if dtyp is not None]\n        object_type = np.dtype(object)\n        for idx in valid_dtypes:\n            dtype = data.iloc[:, idx].dtype\n            if dtype not in (object_type, self._dtyplist[idx]):\n                data.isetitem(idx, data.iloc[:, idx].astype(dtype))\n\n        data = self._do_convert_missing(data, convert_missing)\n\n        if convert_dates:\n            for i, fmt in enumerate(self._fmtlist):\n                if any(fmt.startswith(date_fmt) for date_fmt in _date_formats):\n                    data.isetitem(\n                        i, _stata_elapsed_date_to_datetime_vec(data.iloc[:, i], fmt)\n                    )\n\n        if convert_categoricals:\n            data = self._do_convert_categoricals(\n                data, self._value_label_dict, self._lbllist, order_categoricals\n            )\n\n        if not preserve_dtypes:\n            retyped_data = []\n            convert = False\n            for col in data:\n                dtype = data[col].dtype\n                if dtype in (np.dtype(np.float16), np.dtype(np.float32)):\n                    dtype = np.dtype(np.float64)\n                    convert = True\n                elif dtype in (\n                    np.dtype(np.int8),\n                    np.dtype(np.int16),\n                    np.dtype(np.int32),\n                ):\n                    dtype = np.dtype(np.int64)\n                    convert = True\n                retyped_data.append((col, data[col].astype(dtype)))\n            if convert:\n                data = DataFrame.from_dict(dict(retyped_data))\n\n        if index_col is not None:\n            data = data.set_index(data.pop(index_col))\n\n        return data\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_14",
+      "input_code": "    def test_isetitem_ea_df_scalar_indexer(self):\n        df = DataFrame([[1, 2, 3], [4, 5, 6]])\n        rhs = DataFrame([[11], [13]], dtype=\"Int64\")\n\n        df.isetitem(2, rhs)\n        expected = DataFrame(\n            {\n                0: [1, 4],\n                1: [2, 5],\n                2: Series([11, 13], dtype=\"Int64\"),\n            }\n        )\n        tm.assert_frame_equal(df, expected)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_2",
+      "input_code": "    def fillna(\n        self,\n        value: Hashable | Mapping | Series | DataFrame,\n        *,\n        axis: Axis | None = None,\n        inplace: bool = False,\n        limit: int | None = None,\n    ) -> Self | None:\n        \n        inplace = validate_bool_kwarg(inplace, \"inplace\")\n        if inplace:\n            if not PYPY:\n                if sys.getrefcount(self) <= REF_COUNT:\n                    warnings.warn(\n                        _chained_assignment_method_msg,\n                        ChainedAssignmentError,\n                        stacklevel=2,\n                    )\n\n        if isinstance(value, (list, tuple)):\n            raise TypeError(\n                '\"value\" parameter must be a scalar or dict, but '\n                f'you passed a \"{type(value).__name__}\"'\n            )\n\n        if axis is None:\n            axis = 0\n        axis = self._get_axis_number(axis)\n\n        if self.ndim == 1:\n            if isinstance(value, (dict, ABCSeries)):\n                if not len(value):\n                    if inplace:\n                        return None\n                    return self.copy(deep=False)\n                from pandas import Series\n\n                value = Series(value)\n                value = value.reindex(self.index)\n                value = value._values\n            elif not is_list_like(value):\n                pass\n            else:\n                raise TypeError(\n                    '\"value\" parameter must be a scalar, dict '\n                    \"or Series, but you passed a \"\n                    f'\"{type(value).__name__}\"'\n                )\n\n            new_data = self._mgr.fillna(value=value, limit=limit, inplace=inplace)\n\n        elif isinstance(value, (dict, ABCSeries)):\n            if axis == 1:\n                raise NotImplementedError(\n                    \"Currently only can fill with dict/Series column by column\"\n                )\n            result = self if inplace else self.copy(deep=False)\n            for k, v in value.items():\n                if k not in result:\n                    continue\n\n                res_k = result[k].fillna(v, limit=limit)\n\n                if not inplace:\n                    result[k] = res_k\n                else:\n                    if isinstance(res_k, ABCSeries):\n                        if res_k.dtype == result[k].dtype:\n                            result.loc[:, k] = res_k\n                        else:\n                            result[k] = res_k\n                    else:\n                        locs = result.columns.get_loc(k)\n                        if isinstance(locs, slice):\n                            locs = range(self.shape[1])[locs]\n                        elif isinstance(locs, np.ndarray) and locs.dtype.kind == \"b\":\n                            locs = locs.nonzero()[0]\n                        elif not (\n                            isinstance(locs, np.ndarray) and locs.dtype.kind == \"i\"\n                        ):\n                            raise NotImplementedError(\n                                \"Unexpected get_loc result, please report a bug at \"\n                                \"https://github.com/pandas-dev/pandas\"\n                            )\n\n                        for i, loc in enumerate(locs):\n                            res_loc = res_k.iloc[:, i]\n                            target = self.iloc[:, loc]\n\n                            if res_loc.dtype == target.dtype:\n                                result.iloc[:, loc] = res_loc\n                            else:\n                                result.isetitem(loc, res_loc)\n            if inplace:\n                return self._update_inplace(result)\n            else:\n                return result\n\n        elif not is_list_like(value):\n            if axis == 1:\n                result = self.T.fillna(value=value, limit=limit).T\n                new_data = result._mgr\n            else:\n                new_data = self._mgr.fillna(value=value, limit=limit, inplace=inplace)\n        elif isinstance(value, ABCDataFrame) and self.ndim == 2:\n            new_data = self.where(self.notna(), value)._mgr\n        else:\n            raise ValueError(f\"invalid fill value with a {type(value)}\")\n\n        result = self._constructor_from_mgr(new_data, axes=new_data.axes)\n        if inplace:\n            return self._update_inplace(result)\n        else:\n            return result.__finalize__(self, method=\"fillna\")\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_8",
+      "input_code": "    def _insert_strls(self, data: DataFrame) -> DataFrame:\n        if not hasattr(self, \"GSO\") or len(self.GSO) == 0:\n            return data\n        for i, typ in enumerate(self._typlist):\n            if typ != \"Q\":\n                continue\n            data.isetitem(i, [self.GSO[str(k)] for k in data.iloc[:, i]])\n        return data\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_7",
+      "input_code": "    def _do_convert_missing(self, data: DataFrame, convert_missing: bool) -> DataFrame:\n        old_missingdouble = float.fromhex(\"0x1.0p333\")\n\n        replacements = {}\n        for i in range(len(data.columns)):\n            fmt = self._typlist[i]\n            if self._format_version <= 105 and fmt == \"d\":\n                data.iloc[:, i] = data.iloc[:, i].replace(\n                    old_missingdouble, self.MISSING_VALUES[\"d\"]\n                )\n\n            if self._format_version <= 111:\n                if fmt not in self.OLD_VALID_RANGE:\n                    continue\n\n                fmt = cast(str, fmt)\n                nmin, nmax = self.OLD_VALID_RANGE[fmt]\n            else:\n                if fmt not in self.VALID_RANGE:\n                    continue\n\n                fmt = cast(str, fmt)\n                nmin, nmax = self.VALID_RANGE[fmt]\n            series = data.iloc[:, i]\n\n            svals = series._values\n            missing = (svals < nmin) | (svals > nmax)\n\n            if not missing.any():\n                continue\n\n            if convert_missing:\n                missing_loc = np.nonzero(np.asarray(missing))[0]\n                umissing, umissing_loc = np.unique(series[missing], return_inverse=True)\n                replacement = Series(series, dtype=object)\n                for j, um in enumerate(umissing):\n                    if self._format_version <= 111:\n                        missing_value = StataMissingValue(\n                            float(self.MISSING_VALUES[fmt])\n                        )\n                    else:\n                        missing_value = StataMissingValue(um)\n\n                    loc = missing_loc[umissing_loc == j]\n                    replacement.iloc[loc] = missing_value\n            else:\n                dtype = series.dtype\n                if dtype not in (np.float32, np.float64):\n                    dtype = np.float64\n                replacement = Series(series, dtype=dtype)\n                replacement._values[missing] = np.nan\n            replacements[i] = replacement\n        if replacements:\n            for idx, value in replacements.items():\n                data.isetitem(idx, value)\n        return data\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_1",
+      "input_code": "    def _set_item_frame_value(self, key, value: DataFrame) -> None:\n        self._ensure_valid_index(value)\n\n        if key in self.columns:\n            loc = self.columns.get_loc(key)\n            cols = self.columns[loc]\n            len_cols = 1 if is_scalar(cols) or isinstance(cols, tuple) else len(cols)\n            if len_cols != len(value.columns):\n                raise ValueError(\"Columns must be same length as key\")\n\n            if isinstance(self.columns, MultiIndex) and isinstance(\n                loc, (slice, Series, np.ndarray, Index)\n            ):\n                cols_droplevel = maybe_droplevels(cols, key)\n                if len(cols_droplevel) and not cols_droplevel.equals(value.columns):\n                    value = value.reindex(cols_droplevel, axis=1)\n\n                for col, col_droplevel in zip(cols, cols_droplevel):\n                    self[col] = value[col_droplevel]\n                return\n\n            if is_scalar(cols):\n                self[cols] = value[value.columns[0]]\n                return\n\n            locs: np.ndarray | list\n            if isinstance(loc, slice):\n                locs = np.arange(loc.start, loc.stop, loc.step)\n            elif is_scalar(loc):\n                locs = [loc]\n            else:\n                locs = loc.nonzero()[0]\n\n            return self.isetitem(locs, value)\n\n        if len(value.columns) > 1:\n            raise ValueError(\n                \"Cannot set a DataFrame with multiple columns to the single \"\n                f\"column {key}\"\n            )\n        elif len(value.columns) == 0:\n            raise ValueError(\n                f\"Cannot set a DataFrame without columns to the column {key}\"\n            )\n\n        self[key] = value[value.columns[0]]\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_4",
+      "input_code": "    def __init__(self, df: DataFrame, allow_copy: bool = True) -> None:\n        \n        self._df = df.rename(columns=str)\n        self._allow_copy = allow_copy\n        for i, _col in enumerate(self._df.columns):\n            rechunked = maybe_rechunk(self._df.iloc[:, i], allow_copy=allow_copy)\n            if rechunked is not None:\n                self._df.isetitem(i, rechunked)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_11",
+      "input_code": "def test_isetitem_frame():\n    df = DataFrame({\"a\": [1, 2, 3], \"b\": 1, \"c\": 2})\n    rhs = DataFrame({\"a\": [4, 5, 6], \"b\": 2})\n    df.isetitem([0, 1], rhs)\n    assert np.shares_memory(get_array(df, \"a\"), get_array(rhs, \"a\"))\n    assert np.shares_memory(get_array(df, \"b\"), get_array(rhs, \"b\"))\n    assert not df._mgr._has_no_reference(0)\n    expected = df.copy()\n    rhs.iloc[0, 0] = 100\n    rhs.iloc[0, 1] = 100\n    tm.assert_frame_equal(df, expected)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_10",
+      "input_code": "def test_isetitem_series(dtype):\n    df = DataFrame({\"a\": [1, 2, 3], \"b\": np.array([4, 5, 6], dtype=dtype)})\n    ser = Series([7, 8, 9])\n    ser_orig = ser.copy()\n    df.isetitem(0, ser)\n\n    assert np.shares_memory(get_array(df, \"a\"), get_array(ser))\n    assert not df._mgr._has_no_reference(0)\n\n    df.loc[0, \"a\"] = 0\n    tm.assert_series_equal(ser, ser_orig)\n\n    df = DataFrame({\"a\": [1, 2, 3], \"b\": np.array([4, 5, 6], dtype=dtype)})\n    ser = Series([7, 8, 9])\n    df.isetitem(0, ser)\n\n    ser.loc[0] = 0\n    expected = DataFrame({\"a\": [7, 8, 9], \"b\": np.array([4, 5, 6], dtype=dtype)})\n    tm.assert_frame_equal(df, expected)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_18",
+      "input_code": "def data_test_ix(request, dirpath):\n    i, test_ix = request.param\n    fname = os.path.join(dirpath, f\"test_sas7bdat_{i}.csv\")\n    df = pd.read_csv(fname)\n    epoch = datetime(1960, 1, 1)\n    t1 = pd.to_timedelta(df[\"Column4\"], unit=\"D\")\n    df[\"Column4\"] = (epoch + t1).astype(\"M8[s]\")\n    t2 = pd.to_timedelta(df[\"Column12\"], unit=\"D\")\n    df[\"Column12\"] = (epoch + t2).astype(\"M8[s]\")\n    for k in range(df.shape[1]):\n        col = df.iloc[:, k]\n        if col.dtype == np.int64:\n            df.isetitem(k, df.iloc[:, k].astype(np.float64))\n    return df, test_ix\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_5",
+      "input_code": "def _parse_date_columns(data_frame: DataFrame, parse_dates) -> DataFrame:\n    \n    parse_dates = _process_parse_dates_argument(parse_dates)\n\n    for i, (col_name, df_col) in enumerate(data_frame.items()):\n        if isinstance(df_col.dtype, DatetimeTZDtype) or col_name in parse_dates:\n            try:\n                fmt = parse_dates[col_name]\n            except (KeyError, TypeError):\n                fmt = None\n            data_frame.isetitem(i, _handle_date_column(df_col, format=fmt))\n\n    return data_frame\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_17",
+      "input_code": "    def test_frame_non_unique_columns(self, orient, data, request):\n        if isinstance(data[0][0], Timestamp) and orient == \"split\":\n            mark = pytest.mark.xfail(\n                reason=\"GH#55827 non-nanosecond dt64 fails to round-trip\"\n            )\n            request.applymarker(mark)\n\n        df = DataFrame(data, index=[1, 2], columns=[\"x\", \"x\"])\n\n        expected_warning = None\n        msg = (\n            \"The default 'epoch' date format is deprecated and will be removed \"\n            \"in a future version, please use 'iso' date format instead.\"\n        )\n        if df.iloc[:, 0].dtype == \"datetime64[s]\":\n            expected_warning = FutureWarning\n\n        with tm.assert_produces_warning(expected_warning, match=msg):\n            result = read_json(\n                StringIO(df.to_json(orient=orient)), orient=orient, convert_dates=[\"x\"]\n            )\n        if orient == \"values\":\n            expected = DataFrame(data)\n            if expected.iloc[:, 0].dtype == \"datetime64[s]\":\n                expected.isetitem(0, expected.iloc[:, 0].astype(np.int64) // 1000000)\n        elif orient == \"split\":\n            expected = df\n            expected.columns = [\"x\", \"x.1\"]\n\n        tm.assert_frame_equal(result, expected)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_16",
+      "input_code": "    def test_dict_data_arrow_column_expansion(self, key_val, col_vals, col_type):\n        pa = pytest.importorskip(\"pyarrow\")\n        cols = pd.arrays.ArrowExtensionArray(\n            pa.array(col_vals, type=pa.dictionary(pa.int8(), getattr(pa, col_type)()))\n        )\n        result = DataFrame({key_val: [1, 2]}, columns=cols)\n        expected = DataFrame([[1, np.nan], [2, np.nan]], columns=cols)\n        expected.isetitem(1, expected.iloc[:, 1].astype(object))\n        tm.assert_frame_equal(result, expected)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_12",
+      "input_code": "    def test_setitem_rhs_dataframe(self):\n        df = DataFrame({\"a\": [1, 2]})\n        df[\"a\"] = DataFrame({\"a\": [10, 11]}, index=[1, 2])\n        expected = DataFrame({\"a\": [np.nan, 10]})\n        tm.assert_frame_equal(df, expected)\n\n        df = DataFrame({\"a\": [1, 2]})\n        df.isetitem(0, DataFrame({\"a\": [10, 11]}, index=[1, 2]))\n        tm.assert_frame_equal(df, expected)\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_15",
+      "input_code": "    def test_isetitem_dimension_mismatch(self):\n        df = DataFrame({\"a\": [1, 2], \"b\": [3, 4], \"c\": [5, 6]})\n        value = df.copy()\n        with pytest.raises(ValueError, match=\"Got 2 positions but value has 3 columns\"):\n            df.isetitem([1, 2], value)\n\n        value = df.copy()\n        with pytest.raises(ValueError, match=\"Got 2 positions but value has 1 columns\"):\n            df.isetitem([1, 2], value[[\"a\"]])\n"
+    },
+    {
+      "id": "pandas-dev_pandas_3854_9",
+      "input_code": "def test_isetitem():\n    df = DataFrame({\"a\": [1, 2, 3], \"b\": [4, 5, 6], \"c\": [7, 8, 9]})\n    df_orig = df.copy()\n    df2 = df.copy(deep=False)\n    df2.isetitem(1, np.array([-1, -2, -3]))\n    assert np.shares_memory(get_array(df, \"c\"), get_array(df2, \"c\"))\n    assert np.shares_memory(get_array(df, \"a\"), get_array(df2, \"a\"))\n\n    df2.loc[0, \"a\"] = 0\n    tm.assert_frame_equal(df, df_orig)\n    assert np.shares_memory(get_array(df, \"c\"), get_array(df2, \"c\"))\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nimport numpy as np\n\n<testcase_1>\ndf = pd.DataFrame({\"A\": [1, 2], \"B\": [3, 4]})\nloc = 1\nvalue = [5, 6]\n\n<testcase_2>\ndf = pd.DataFrame({\"A\": [1, 2, 3], \"B\": [4, 5, 6], \"C\": [7, 8, 9]})\nloc = [0, 2]\nvalue = pd.DataFrame({\"X\": [10, 11, 12], \"Y\": [13, 14, 15]})\n\n<testcase_3>\ndf = pd.DataFrame({\"A\": [1, 2, 3], \"B\": [4, 5, 6]})\nloc = 0\nvalue = pd.Series([7, 8, 9])\n\n<testcase_4>\ndf = pd.DataFrame({\"A\": [1, 2], \"B\": [3, 4]})\nloc = [0, 1]\nvalue = pd.DataFrame({\"X\": [5, 6], \"Y\": [7, 8]})\n\n<testcase_5>\ndf = pd.DataFrame({\"A\": [1, 2, 3], \"B\": [4, 5, 6], \"C\": [7, 8, 9]})\nloc = 2\nvalue = np.array([10, 11, 12])"
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nimport numpy as np\n\n<testcase_1>\ndf = pd.DataFrame({\"A\": [1, 2], \"B\": [3, 4]})\nloc = 1\nvalue = [5, 6]\n\n<testcase_2>\ndf = pd.DataFrame({\"A\": [1, 2, 3], \"B\": [4, 5, 6], \"C\": [7, 8, 9]})\nloc = [0, 2]\nvalue = pd.DataFrame({\"X\": [10, 11, 12], \"Y\": [13, 14, 15]})\n\n<testcase_3>\ndf = pd.DataFrame({\"A\": [1, 2, 3], \"B\": [4, 5, 6]})\nloc = 0\nvalue = pd.Series([7, 8, 9])\n\n<testcase_4>\ndf = pd.DataFrame({\"A\": [1, 2], \"B\": [3, 4]})\nloc = [0, 1]\nvalue = pd.DataFrame({\"X\": [5, 6], \"Y\": [7, 8]})\n\n<testcase_5>\ndf = pd.DataFrame({\"A\": [1, 2, 3], \"B\": [4, 5, 6], \"C\": [7, 8, 9]})\nloc = 2\nvalue = np.array([10, 11, 12])",
+  "needimport": "import pandas as pd\nimport numpy as np\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "idx": 1,
+        "value": "[5, 6]",
+        "refs": "refs_for_[5, 6]"
+      }
+    ],
+    "ans2": [
+      {
+        "idx": 0,
+        "value": [
+          10,
+          11,
+          12
+        ],
+        "refs": "refs_for_0    10\n1    11\n2    12\nName: X, dtype: int64"
+      },
+      {
+        "idx": 2,
+        "value": [
+          13,
+          14,
+          15
+        ],
+        "refs": "refs_for_0    13\n1    14\n2    15\nName: Y, dtype: int64"
+      }
+    ],
+    "ans3": [
+      {
+        "idx": 0,
+        "value": [
+          7,
+          8,
+          9
+        ],
+        "refs": "refs_for_0    7\n1    8\n2    9\ndtype: int64"
+      }
+    ],
+    "ans4": [
+      {
+        "idx": 0,
+        "value": [
+          5,
+          6
+        ],
+        "refs": "refs_for_0    5\n1    6\nName: X, dtype: int64"
+      },
+      {
+        "idx": 1,
+        "value": [
+          7,
+          8
+        ],
+        "refs": "refs_for_0    7\n1    8\nName: Y, dtype: int64"
+      }
+    ],
+    "ans5": [
+      {
+        "idx": 2,
+        "value": [
+          10,
+          11,
+          12
+        ],
+        "refs": "refs_for_[10 11 12]"
+      }
+    ]
+  }
+}

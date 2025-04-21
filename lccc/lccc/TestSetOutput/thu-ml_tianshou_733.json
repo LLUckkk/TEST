@@ -1,0 +1,69 @@
+{
+  "input_header": "def reset( self, env_id: int | list[int] | np.ndarray | None = None, **kwargs: Any, ) -> tuple[np.ndarray, np.ndarray]:",
+  "input_docstring": null,
+  "output_code": "    def reset(\n        self,\n        env_id: int | list[int] | np.ndarray | None = None,\n        **kwargs: Any,\n    ) -> tuple[np.ndarray, np.ndarray]:\n        return self.venv.reset(env_id, **kwargs)",
+  "input_contexts": [
+    {
+      "id": "thu-ml_tianshou_733_2",
+      "input_code": "def test_venv_wrapper_envpool_gym_reset_return_info() -> None:\n    num_envs = 4\n    env = VectorEnvNormObs(\n        envpool.make_gymnasium(\"Ant-v3\", num_envs=num_envs, gym_reset_return_info=True),\n    )\n    obs, info = env.reset()\n    assert obs.shape[0] == num_envs\n    if isinstance(info, dict):\n        for _, v in info.items():\n            if not isinstance(v, dict):\n                assert v.shape[0] == num_envs\n    else:\n        for _info in info:\n            for _, v in _info.items():\n                if not isinstance(v, dict):\n                    assert v.shape[0] == num_envs\n"
+    },
+    {
+      "id": "thu-ml_tianshou_733_1",
+      "input_code": "def test_venv_wrapper_gym(num_envs: int = 4) -> None:\n    envs = DummyVectorEnv([lambda: gym.make(\"CartPole-v1\") for _ in range(num_envs)])\n    envs = VectorEnvNormObs(envs)\n    try:\n        obs, info = envs.reset()\n    except ValueError:\n        obs, info = envs.reset(return_info=True)\n    assert isinstance(obs, np.ndarray)\n    assert isinstance(info, np.ndarray)\n    assert isinstance(info[0], dict)\n    assert obs.shape[0] == len(info) == num_envs\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\n\n<testcase_1>\nenv_id = 1\nkwargs = {}\n\n<testcase_2>\nenv_id = [0, 2, 3]\nkwargs = {\"return_info\": True}\n\n<testcase_3>\nenv_id = np.array([1, 2, 3, 4])\nkwargs = {\"seed\": 42}\n\n<testcase_4>\nenv_id = None\nkwargs = {\"max_steps\": 100}\n\n<testcase_5>\nenv_id = np.array([5, 6])\nkwargs = {\"render_mode\": \"human\"}"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\n\n<testcase_1>\nenv_id = 1\nkwargs = {}\n\n<testcase_2>\nenv_id = [0, 2, 3]\nkwargs = {\"return_info\": True}\n\n<testcase_3>\nenv_id = np.array([1, 2, 3, 4])\nkwargs = {\"seed\": 42}\n\n<testcase_4>\nenv_id = None\nkwargs = {\"max_steps\": 100}\n\n<testcase_5>\nenv_id = np.array([5, 6])\nkwargs = {\"render_mode\": \"human\"}",
+  "needimport": "import numpy as np\n\n",
+  "test_results": {
+    "ans1": null,
+    "ans2": [
+      [
+        1.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "ans3": [
+      [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "ans4": [
+      [
+        1.0,
+        0.5
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "ans5": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0
+      ]
+    ]
+  }
+}

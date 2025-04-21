@@ -203,7 +203,7 @@ def fill_template(template_path, replacements):
 
 def solve(dataset: Dict[str, Dict]) -> Dict[str, List[Dict]]:
     cnt = 1
-    index = 38
+    index = 58
 
     for item_key in dataset:
         if cnt < index:
@@ -256,7 +256,7 @@ def solve(dataset: Dict[str, Dict]) -> Dict[str, List[Dict]]:
 
         # 2. 将 output_code 写入文件
         filename = os.path.join("TestSetCode", f"{item_key}.py")
-        # save_test_code(filename, output_code)
+        save_test_code(filename, output_code)
 
         # 3. 检查依赖        
         check_and_install_libraries(needimport)
