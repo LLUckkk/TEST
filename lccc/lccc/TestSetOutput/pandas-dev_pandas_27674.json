@@ -1,0 +1,23 @@
+{
+  "input_header": "def _get_wom_rule(self) -> str | None:",
+  "input_docstring": null,
+  "output_code": "    def _get_wom_rule(self) -> str | None:\n        weekdays = unique(self.index.weekday)\n        if len(weekdays) > 1:\n            return None\n\n        week_of_months = unique((self.index.day - 1) // 7)\n        week_of_months = week_of_months[week_of_months < 4]\n        if len(week_of_months) == 0 or len(week_of_months) > 1:\n            return None\n\n        week = week_of_months[0] + 1\n        wd = int_to_weekday[weekdays[0]]\n\n        return f\"WOM-{week}{wd}\"",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_27674_1",
+      "input_code": "    def _infer_daily_rule(self) -> str | None:\n        annual_rule = self._get_annual_rule()\n        if annual_rule:\n            nyears = self.ydiffs[0]\n            month = MONTH_ALIASES[self.rep_stamp.month]\n            alias = f\"{annual_rule}-{month}\"\n            return _maybe_add_count(alias, nyears)\n\n        quarterly_rule = self._get_quarterly_rule()\n        if quarterly_rule:\n            nquarters = self.mdiffs[0] / 3\n            mod_dict = {0: 12, 2: 11, 1: 10}\n            month = MONTH_ALIASES[mod_dict[self.rep_stamp.month % 3]]\n            alias = f\"{quarterly_rule}-{month}\"\n            return _maybe_add_count(alias, nquarters)\n\n        monthly_rule = self._get_monthly_rule()\n        if monthly_rule:\n            return _maybe_add_count(monthly_rule, self.mdiffs[0])\n\n        if self.is_unique:\n            return self._get_daily_rule()\n\n        if self._is_business_daily():\n            return \"B\"\n\n        wom_rule = self._get_wom_rule()\n        if wom_rule:\n            return wom_rule\n\n        return None\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nimport numpy as np\n\n<testcase_1>\nself.index = pd.date_range(start=\"2023-01-01\", end=\"2023-01-31\", freq=\"WOM-1MON\")\n\n<testcase_2>\nself.index = pd.date_range(start=\"2023-02-01\", end=\"2023-02-28\", freq=\"WOM-2TUE\")\n\n<testcase_3>\nself.index = pd.date_range(start=\"2023-03-01\", end=\"2023-03-31\", freq=\"WOM-3WED\")\n\n<testcase_4>\nself.index = pd.date_range(start=\"2023-04-01\", end=\"2023-04-30\", freq=\"WOM-4THU\")\n\n<testcase_5>\nself.index = pd.date_range(start=\"2023-05-01\", end=\"2023-05-31\", freq=\"WOM-1FRI\")"
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nimport numpy as np\n\n<testcase_1>\nself.index = pd.date_range(start=\"2023-01-01\", end=\"2023-01-31\", freq=\"WOM-1MON\")\n\n<testcase_2>\nself.index = pd.date_range(start=\"2023-02-01\", end=\"2023-02-28\", freq=\"WOM-2TUE\")\n\n<testcase_3>\nself.index = pd.date_range(start=\"2023-03-01\", end=\"2023-03-31\", freq=\"WOM-3WED\")\n\n<testcase_4>\nself.index = pd.date_range(start=\"2023-04-01\", end=\"2023-04-30\", freq=\"WOM-4THU\")\n\n<testcase_5>\nself.index = pd.date_range(start=\"2023-05-01\", end=\"2023-05-31\", freq=\"WOM-1FRI\")",
+  "needimport": "import pandas as pd\nimport numpy as np\n\n",
+  "test_results": {
+    "ans1": "WOM-1MON",
+    "ans2": "WOM-2TUE",
+    "ans3": "WOM-3WED",
+    "ans4": "WOM-4THU",
+    "ans5": "WOM-1FRI"
+  }
+}

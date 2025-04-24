@@ -7,23 +7,11 @@ from contextlib import contextmanager
 import requests
 
 import pandas as pd
-import numpy as np
-from pandas import Series
-from pandas._libs.internals import BlockPlacement
-from pandas.core.internals import Block, BlockManager, make_block
 
 
 #############change###########
-def _constructor_from_mgr(self, mgr, axes):
-    ser = Series._from_mgr(mgr, axes=axes)
-    ser._name = None
-
-    if type(self) is Series:
-        return ser
-
-    return self._constructor(ser)
-
-
+def non_hyphenated_array_like(self):
+    return "array_like" in self.raw_doc
 #############change###########
 
 
@@ -35,7 +23,6 @@ def request_context():
         yield session
     finally:
         session.close()
-
 
 def safe_execute_testcase(testcase_func, timeout):
     """完全解决线程残留问题的执行器"""
@@ -50,19 +37,18 @@ def safe_execute_testcase(testcase_func, timeout):
                     result = testcase_func(session=session)
                 else:
                     result = testcase_func()
-
+                
                 if not event.is_set():
                     result_queue.put(('success', result))
         except Exception as e:
             if not event.is_set():
-                print(f'Exception occurred in worker thread: {e}')
                 result_queue.put(('error', e))
         finally:
             event.set()  # 标记线程已完成
 
     t = threading.Thread(target=worker)
     t.daemon = True  # 必须设置为守护线程
-
+    
     start_time = time.time()
     t.start()
 
@@ -82,117 +68,58 @@ def safe_execute_testcase(testcase_func, timeout):
             'error': None if status == 'success' else str(data),
             'traceback': traceback.format_exc() if status == 'error' else None
         }
-
+    
     return {
         'success': False,
         'error': f'Timeout after {timeout} seconds',
         'traceback': 'Test execution timed out'
     }
 
-
-# 定义测试用例1
 # 定义测试用例1
 def testcase_1():
     class Dummy:
         pass
-
     self = Dummy()
+    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
+    
+    return non_hyphenated_array_like(self)
 
-    # 创建一维数据
-    data = np.array([1, 2, 3])
-
-    # 使用 BlockPlacement 来代替 slice
-    placement = BlockPlacement([0])  # 这里表示数据的位置（单列）
-    block = Block(data.reshape(-1, 1), placement=placement, ndim=2)  # ndim=2 表示二维数据
-
-    # axes 需要两个轴：
-    # 第 1 个轴是行索引（index）
-    # 第 2 个轴是列索引（columns）
-    mgr = BlockManager([block], [pd.Index(['a', 'b', 'c']), pd.Index(['A'])])  # 管理器
-    axes = [pd.Index(['a', 'b', 'c']), pd.Index(['A'])]  # 两个轴
-
-    return _constructor_from_mgr(self, mgr, axes)
-
-
+# 定义测试用例2
 def testcase_2():
     class Dummy:
         pass
-
     self = Dummy()
+    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
+    
+    return non_hyphenated_array_like(self)
 
-    # 创建一维数据
-    data = np.array([4, 5, 6])
-
-    # 使用 BlockPlacement 来代替 slice
-    placement = BlockPlacement([0])
-    block = Block(data.reshape(-1, 1), placement=placement, ndim=2)
-
-    # axes 需要两个轴：
-    mgr = BlockManager([block], [pd.Index(['x', 'y', 'z']), pd.Index(['B'])])
-    axes = [pd.Index(['x', 'y', 'z']), pd.Index(['B'])]
-
-    return _constructor_from_mgr(self, mgr, axes)
-
-
+# 定义测试用例3
 def testcase_3():
     class Dummy:
         pass
-
     self = Dummy()
+    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
+    
+    return non_hyphenated_array_like(self)
 
-    # 创建一维数据
-    data = np.array([7, 8, 9])
-
-    # 使用 BlockPlacement 来代替 slice
-    placement = BlockPlacement([0])
-    block = Block(data.reshape(-1, 1), placement=placement, ndim=2)
-
-    # axes 需要两个轴：
-    mgr = BlockManager([block], [pd.Index(['foo', 'bar', 'baz']), pd.Index(['C'])])
-    axes = [pd.Index(['foo', 'bar', 'baz']), pd.Index(['C'])]
-
-    return _constructor_from_mgr(self, mgr, axes)
-
-
+# 定义测试用例4
 def testcase_4():
     class Dummy:
         pass
-
     self = Dummy()
+    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
+    
+    return non_hyphenated_array_like(self)
 
-    # 创建一维数据
-    data = np.array([10, 11, 12])
-
-    # 使用 BlockPlacement 来代替 slice
-    placement = BlockPlacement([0])
-    block = Block(data.reshape(-1, 1), placement=placement, ndim=2)
-
-    # axes 需要两个轴：
-    mgr = BlockManager([block], [pd.Index(['one', 'two', 'three']), pd.Index(['D'])])
-    axes = [pd.Index(['one', 'two', 'three']), pd.Index(['D'])]
-
-    return _constructor_from_mgr(self, mgr, axes)
-
-
+# 定义测试用例5
 def testcase_5():
     class Dummy:
         pass
-
     self = Dummy()
-
-    # 创建一维数据
-    data = np.array([13, 14, 15])
-
-    # 使用 BlockPlacement 来代替 slice
-    placement = BlockPlacement([0])
-    block = Block(data.reshape(-1, 1), placement=placement, ndim=2)
-
-    # axes 需要两个轴：
-    mgr = BlockManager([block], [pd.Index(['alpha', 'beta', 'gamma']), pd.Index(['E'])])
-    axes = [pd.Index(['alpha', 'beta', 'gamma']), pd.Index(['E'])]
-
-    return _constructor_from_mgr(self, mgr, axes)
-
+    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
+    ```
+    
+    return non_hyphenated_array_like(self)
 
 def main():
     # 执行所有测试用例
@@ -214,6 +141,6 @@ def main():
 
     print(json.dumps(output, indent=2))
 
-
 if __name__ == '__main__':
-    main()
+    main()    
+   

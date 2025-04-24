@@ -1,0 +1,53 @@
+{
+  "input_header": "def _fill_zeros(result: np.ndarray, x, y) -> np.ndarray:",
+  "input_docstring": "If this is a reversed op, then flip x,y\n\nIf we have an integer value (or array in y)\nand we have 0's, fill them with np.nan,\nreturn the result.\n\nMask the nan's from x.",
+  "output_code": "def _fill_zeros(result: np.ndarray, x, y) -> np.ndarray:\n    \n    if result.dtype.kind == \"f\":\n        return result\n\n    is_variable_type = hasattr(y, \"dtype\")\n    is_scalar_type = not isinstance(y, np.ndarray)\n\n    if not is_variable_type and not is_scalar_type:\n        return result\n\n    if is_scalar_type:\n        y = np.array(y)\n\n    if y.dtype.kind in \"iu\":\n        ymask = y == 0\n        if ymask.any():\n            mask = ymask & ~np.isnan(result)\n\n            result = result.astype(\"float64\", copy=False)\n\n            np.putmask(result, mask, np.nan)\n\n    return result",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_5594_1",
+      "input_code": "def dispatch_fill_zeros(op, left, right, result):\n    \n    if op is divmod:\n        result = (\n            mask_zero_div_zero(left, right, result[0]),\n            _fill_zeros(result[1], left, right),\n        )\n    elif op is roperator.rdivmod:\n        result = (\n            mask_zero_div_zero(right, left, result[0]),\n            _fill_zeros(result[1], right, left),\n        )\n    elif op is operator.floordiv:\n        result = mask_zero_div_zero(left, right, result)\n    elif op is roperator.rfloordiv:\n        result = mask_zero_div_zero(right, left, result)\n    elif op is operator.mod:\n        result = _fill_zeros(result, left, right)\n    elif op is roperator.rmod:\n        result = _fill_zeros(result, right, left)\n    return result\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\n\n<testcase_1>\nresult = np.array([0, 1, 2, 0, 4])\nx = np.array([1, 2, 3, 4, 5])\ny = np.array([0, 0, 0, 0, 0])\n\n<testcase_2>\nresult = np.array([10, 20, 30, 40, 50])\nx = np.array([2, 4, 6, 8, 10])\ny = 0\n\n<testcase_3>\nresult = np.array([0, 1, 2, np.nan, 4])\nx = np.array([1, 2, 3, 4, 5])\ny = np.array([0, 1, 0, 1, 0])\n\n<testcase_4>\nresult = np.array([5, 10, 15, 20, 25])\nx = np.array([1, 2, 3, 4, 5])\ny = np.array([1, 0, 1, 0, 1])\n\n<testcase_5>\nresult = np.array([0, 0, 0, 0, 0])\nx = np.array([1, 2, 3, 4, 5])\ny = np.array([0, 0, 0, 0, 0])"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\n\n<testcase_1>\nresult = np.array([0, 1, 2, 0, 4])\nx = np.array([1, 2, 3, 4, 5])\ny = np.array([0, 0, 0, 0, 0])\n\n<testcase_2>\nresult = np.array([10, 20, 30, 40, 50])\nx = np.array([2, 4, 6, 8, 10])\ny = 0\n\n<testcase_3>\nresult = np.array([0, 1, 2, np.nan, 4])\nx = np.array([1, 2, 3, 4, 5])\ny = np.array([0, 1, 0, 1, 0])\n\n<testcase_4>\nresult = np.array([5, 10, 15, 20, 25])\nx = np.array([1, 2, 3, 4, 5])\ny = np.array([1, 0, 1, 0, 1])\n\n<testcase_5>\nresult = np.array([0, 0, 0, 0, 0])\nx = np.array([1, 2, 3, 4, 5])\ny = np.array([0, 0, 0, 0, 0])",
+  "needimport": "import numpy as np\n\n",
+  "test_results": {
+    "ans1": [
+      NaN,
+      NaN,
+      NaN,
+      NaN,
+      NaN
+    ],
+    "ans2": [
+      NaN,
+      NaN,
+      NaN,
+      NaN,
+      NaN
+    ],
+    "ans3": [
+      0.0,
+      1.0,
+      2.0,
+      NaN,
+      4.0
+    ],
+    "ans4": [
+      5.0,
+      NaN,
+      15.0,
+      NaN,
+      25.0
+    ],
+    "ans5": [
+      NaN,
+      NaN,
+      NaN,
+      NaN,
+      NaN
+    ]
+  }
+}

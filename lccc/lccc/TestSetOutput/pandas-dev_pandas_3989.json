@@ -1,0 +1,93 @@
+{
+  "input_header": "def _reindex_for_setitem( value: DataFrame | Series, index: Index ) -> tuple[ArrayLike, BlockValuesRefs | None]:",
+  "input_docstring": null,
+  "output_code": "def _reindex_for_setitem(\n    value: DataFrame | Series, index: Index\n) -> tuple[ArrayLike, BlockValuesRefs | None]:\n\n    if value.index.equals(index) or not len(index):\n        if isinstance(value, Series):\n            return value._values, value._references\n        return value._values.copy(), None\n\n    try:\n        reindexed_value = value.reindex(index)._values\n    except ValueError as err:\n        if not value.index.is_unique:\n            raise err\n\n        raise TypeError(\n            \"incompatible index of inserted column with frame index\"\n        ) from err\n    return reindexed_value, None",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_3989_1",
+      "input_code": "    def _sanitize_column(self, value) -> tuple[ArrayLike, BlockValuesRefs | None]:\n        \n        self._ensure_valid_index(value)\n\n        assert not isinstance(value, DataFrame)\n        if is_dict_like(value):\n            if not isinstance(value, Series):\n                value = Series(value)\n            return _reindex_for_setitem(value, self.index)\n\n        if is_list_like(value):\n            com.require_length_match(value, self.index)\n        return sanitize_array(value, self.index, copy=True, allow_2d=True), None\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport pandas as pd\nimport numpy as np\n\n<testcase_1>\nvalue = pd.Series([10, 20, 30], index=['a', 'b', 'c'])\nindex = pd.Index(['a', 'b', 'c'])\n\n<testcase_2>\nvalue = pd.Series([1, 2, 3, 4], index=['x', 'y', 'z', 'w'])\nindex = pd.Index(['w', 'x', 'y', 'z'])\n\n<testcase_3>\nvalue = pd.DataFrame({'col1': [5, 6], 'col2': [7, 8]}, index=['row1', 'row2'])\nindex = pd.Index(['row1', 'row2'])\n\n<testcase_4>\nvalue = pd.Series([100, 200, 300], index=['one', 'two', 'three'])\nindex = pd.Index(['three', 'two', 'one'])\n\n<testcase_5>\nvalue = pd.DataFrame({'A': [9, 8, 7], 'B': [6, 5, 4]}, index=['first', 'second', 'third'])\nindex = pd.Index(['third', 'first', 'second'])\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport pandas as pd\nimport numpy as np\n\n<testcase_1>\nvalue = pd.Series([10, 20, 30], index=['a', 'b', 'c'])\nindex = pd.Index(['a', 'b', 'c'])\n\n<testcase_2>\nvalue = pd.Series([1, 2, 3, 4], index=['x', 'y', 'z', 'w'])\nindex = pd.Index(['w', 'x', 'y', 'z'])\n\n<testcase_3>\nvalue = pd.DataFrame({'col1': [5, 6], 'col2': [7, 8]}, index=['row1', 'row2'])\nindex = pd.Index(['row1', 'row2'])\n\n<testcase_4>\nvalue = pd.Series([100, 200, 300], index=['one', 'two', 'three'])\nindex = pd.Index(['three', 'two', 'one'])\n\n<testcase_5>\nvalue = pd.DataFrame({'A': [9, 8, 7], 'B': [6, 5, 4]}, index=['first', 'second', 'third'])\nindex = pd.Index(['third', 'first', 'second'])\n```",
+  "needimport": "import pandas as pd\nimport numpy as np\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        10,
+        20,
+        30
+      ],
+      {
+        "__type__": "BlockValuesRefs",
+        "length": "unknown",
+        "note": "Internal pandas reference block"
+      }
+    ],
+    "ans2": [
+      [
+        4,
+        1,
+        2,
+        3
+      ],
+      {
+        "__type__": "BlockValuesRefs",
+        "length": "unknown",
+        "note": "Internal pandas reference block"
+      }
+    ],
+    "ans3": [
+      [
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          8
+        ]
+      ],
+      {
+        "__type__": "BlockValuesRefs",
+        "length": "unknown",
+        "note": "Internal pandas reference block"
+      }
+    ],
+    "ans4": [
+      [
+        300,
+        200,
+        100
+      ],
+      {
+        "__type__": "BlockValuesRefs",
+        "length": "unknown",
+        "note": "Internal pandas reference block"
+      }
+    ],
+    "ans5": [
+      [
+        [
+          7,
+          4
+        ],
+        [
+          9,
+          6
+        ],
+        [
+          8,
+          5
+        ]
+      ],
+      {
+        "__type__": "BlockValuesRefs",
+        "length": "unknown",
+        "note": "Internal pandas reference block"
+      }
+    ]
+  }
+}

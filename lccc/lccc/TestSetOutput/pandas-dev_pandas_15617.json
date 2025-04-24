@@ -1,0 +1,23 @@
+{
+  "input_header": "def assert_index_parameters(self, index):",
+  "input_docstring": null,
+  "output_code": "    def assert_index_parameters(self, index):\n        assert index.freq == \"40960ns\"\n        assert index.inferred_freq == \"40960ns\"",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_15617_1",
+      "input_code": "    def test_ns_index(self):\n        nsamples = 400\n        ns = int(1e9 / 24414)\n        dtstart = np.datetime64(\"2012-09-20T00:00:00\")\n\n        dt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\n        freq = ns * offsets.Nano()\n        index = DatetimeIndex(dt, freq=freq, name=\"time\")\n        self.assert_index_parameters(index)\n\n        new_index = date_range(start=index[0], end=index[-1], freq=index.freq)\n        self.assert_index_parameters(new_index)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\nimport pandas as pd\nfrom pandas.tseries import offsets\nfrom pandas import DatetimeIndex, date_range\n\n<testcase_1>\nnsamples = 400\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2012-09-20T00:00:00\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"time\")\n\n<testcase_2>\nnsamples = 100\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2020-01-01T00:00:00\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"test_index\")\n\n<testcase_3>\nnsamples = 50\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2015-05-15T12:00:00\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"sample_index\")\n\n<testcase_4>\nnsamples = 200\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2018-07-07T07:07:07\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"index_4\")\n\n<testcase_5>\nnsamples = 300\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2019-11-11T11:11:11\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"index_5\")"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\nimport pandas as pd\nfrom pandas.tseries import offsets\nfrom pandas import DatetimeIndex, date_range\n\n<testcase_1>\nnsamples = 400\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2012-09-20T00:00:00\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"time\")\n\n<testcase_2>\nnsamples = 100\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2020-01-01T00:00:00\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"test_index\")\n\n<testcase_3>\nnsamples = 50\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2015-05-15T12:00:00\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"sample_index\")\n\n<testcase_4>\nnsamples = 200\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2018-07-07T07:07:07\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"index_4\")\n\n<testcase_5>\nnsamples = 300\nns = int(1e9 / 24414)\ndtstart = np.datetime64(\"2019-11-11T11:11:11\")\ndt = dtstart + np.arange(nsamples) * np.timedelta64(ns, \"ns\")\nfreq = ns * offsets.Nano()\nindex = DatetimeIndex(dt, freq=freq, name=\"index_5\")",
+  "needimport": "import numpy as np\nimport pandas as pd\nfrom pandas.tseries import offsets\nfrom pandas import DatetimeIndex, date_range\n\n",
+  "test_results": {
+    "ans1": "pass",
+    "ans2": "pass",
+    "ans3": "pass",
+    "ans4": "pass",
+    "ans5": "pass"
+  }
+}
