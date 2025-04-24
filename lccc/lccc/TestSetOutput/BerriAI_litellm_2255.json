@@ -1,0 +1,43 @@
+{
+  "input_header": "def get_mapped_special_auth_params(self) -> dict:",
+  "input_docstring": "Common auth params across bedrock/vertex_ai/azure/watsonx",
+  "output_code": "    def get_mapped_special_auth_params(self) -> dict:\n        \n        return {\n            \"project\": \"watsonx_project\",\n            \"region_name\": \"watsonx_region_name\",\n            \"token\": \"watsonx_token\",\n        }",
+  "input_contexts": [
+    {
+      "id": "BerriAI_litellm_2255_1",
+      "input_code": "    def map_special_auth_params(self, non_default_params: dict, optional_params: dict):\n        mapped_params = self.get_mapped_special_auth_params()\n\n        for param, value in non_default_params.items():\n            if param in mapped_params:\n                optional_params[mapped_params[param]] = value\n        return optional_params\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport None\n\n<testcase_1>\nself = None\n\n<testcase_2>\nself = None\n\n<testcase_3>\nself = None\n\n<testcase_4>\nself = None\n\n<testcase_5>\nself = None"
+  ],
+  "gpt_output": "<needimport>\nimport None\n\n<testcase_1>\nself = None\n\n<testcase_2>\nself = None\n\n<testcase_3>\nself = None\n\n<testcase_4>\nself = None\n\n<testcase_5>\nself = None",
+  "needimport": "import None\n\n",
+  "test_results": {
+    "ans1": {
+      "project": "watsonx_project",
+      "region_name": "watsonx_region_name",
+      "token": "watsonx_token"
+    },
+    "ans2": {
+      "project": "watsonx_project",
+      "region_name": "watsonx_region_name",
+      "token": "watsonx_token"
+    },
+    "ans3": {
+      "project": "watsonx_project",
+      "region_name": "watsonx_region_name",
+      "token": "watsonx_token"
+    },
+    "ans4": {
+      "project": "watsonx_project",
+      "region_name": "watsonx_region_name",
+      "token": "watsonx_token"
+    },
+    "ans5": {
+      "project": "watsonx_project",
+      "region_name": "watsonx_region_name",
+      "token": "watsonx_token"
+    }
+  }
+}

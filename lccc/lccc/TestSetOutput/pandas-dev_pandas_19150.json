@@ -1,0 +1,23 @@
+{
+  "input_header": "def platform_name():",
+  "input_docstring": null,
+  "output_code": "def platform_name():\n    return \"_\".join(\n        [\n            str(pandas.__version__),\n            str(pl.machine()),\n            str(pl.system().lower()),\n            str(pl.python_version()),\n        ]\n    )",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_19150_1",
+      "input_code": "def write_legacy_pickles(output_dir):\n    version = pandas.__version__\n\n    print(\n        \"This script generates a storage file for the current arch, system, \"\n        \"and python version\"\n    )\n    print(f\"  pandas version: {version}\")\n    print(f\"  output dir    : {output_dir}\")\n    print(\"  storage format: pickle\")\n\n    pth = f\"{platform_name()}.pickle\"\n\n    with open(os.path.join(output_dir, pth), \"wb\") as fh:\n        pickle.dump(create_pickle_data(), fh, pickle.DEFAULT_PROTOCOL)\n\n    print(f\"created pickle file: {pth}\")\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nimport platform as pl\n\n<testcase_1>\npandas.__version__ = \"1.3.3\"\npl.machine = lambda: \"x86_64\"\npl.system = lambda: \"Linux\"\npl.python_version = lambda: \"3.8.10\"\n\n<testcase_2>\npandas.__version__ = \"1.2.5\"\npl.machine = lambda: \"arm64\"\npl.system = lambda: \"Darwin\"\npl.python_version = lambda: \"3.9.7\"\n\n<testcase_3>\npandas.__version__ = \"1.1.5\"\npl.machine = lambda: \"AMD64\"\npl.system = lambda: \"Windows\"\npl.python_version = lambda: \"3.7.9\"\n\n<testcase_4>\npandas.__version__ = \"1.0.3\"\npl.machine = lambda: \"x86_64\"\npl.system = lambda: \"Linux\"\npl.python_version = lambda: \"3.6.12\"\n\n<testcase_5>\npandas.__version__ = \"1.4.0\"\npl.machine = lambda: \"armv7l\"\npl.system = lambda: \"Linux\"\npl.python_version = lambda: \"3.10.0\""
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nimport platform as pl\n\n<testcase_1>\npandas.__version__ = \"1.3.3\"\npl.machine = lambda: \"x86_64\"\npl.system = lambda: \"Linux\"\npl.python_version = lambda: \"3.8.10\"\n\n<testcase_2>\npandas.__version__ = \"1.2.5\"\npl.machine = lambda: \"arm64\"\npl.system = lambda: \"Darwin\"\npl.python_version = lambda: \"3.9.7\"\n\n<testcase_3>\npandas.__version__ = \"1.1.5\"\npl.machine = lambda: \"AMD64\"\npl.system = lambda: \"Windows\"\npl.python_version = lambda: \"3.7.9\"\n\n<testcase_4>\npandas.__version__ = \"1.0.3\"\npl.machine = lambda: \"x86_64\"\npl.system = lambda: \"Linux\"\npl.python_version = lambda: \"3.6.12\"\n\n<testcase_5>\npandas.__version__ = \"1.4.0\"\npl.machine = lambda: \"armv7l\"\npl.system = lambda: \"Linux\"\npl.python_version = lambda: \"3.10.0\"",
+  "needimport": "import pandas as pd\nimport platform as pl\n\n",
+  "test_results": {
+    "ans1": "1.3.3_x86_64_linux_3.8.10",
+    "ans2": "1.2.5_arm64_darwin_3.9.7",
+    "ans3": "1.1.5_AMD64_windows_3.7.9",
+    "ans4": "1.0.3_x86_64_linux_3.6.12",
+    "ans5": "1.4.0_armv7l_linux_3.10.0"
+  }
+}

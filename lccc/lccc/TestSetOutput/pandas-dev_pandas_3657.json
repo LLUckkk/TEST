@@ -1,0 +1,23 @@
+{
+  "input_header": "def validate_ordered(ordered: Ordered) -> None:",
+  "input_docstring": "Validates that we have a valid ordered parameter. If\nit is not a boolean, a TypeError will be raised.\n\nParameters\n----------\nordered : object\n    The parameter to be verified.\n\nRaises\n------\nTypeError\n    If 'ordered' is not a boolean.",
+  "output_code": "    def validate_ordered(ordered: Ordered) -> None:\n        \n        if not is_bool(ordered):\n            raise TypeError(\"'ordered' must either be 'True' or 'False'\")",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_3657_1",
+      "input_code": "    def _finalize(self, categories, ordered: Ordered, fastpath: bool = False) -> None:\n        if ordered is not None:\n            self.validate_ordered(ordered)\n\n        if categories is not None:\n            categories = self.validate_categories(categories, fastpath=fastpath)\n\n        self._categories = categories\n        self._ordered = ordered\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\n\n<testcase_1>\nordered = True\n\n<testcase_2>\nordered = False\n\n<testcase_3>\nordered = pd.CategoricalDtype(categories=['a', 'b', 'c'], ordered=True).ordered\n\n<testcase_4>\nordered = pd.CategoricalDtype(categories=['x', 'y', 'z'], ordered=False).ordered\n\n<testcase_5>\nordered = bool(pd.Series([1, 2, 3]).is_monotonic)"
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\n\n<testcase_1>\nordered = True\n\n<testcase_2>\nordered = False\n\n<testcase_3>\nordered = pd.CategoricalDtype(categories=['a', 'b', 'c'], ordered=True).ordered\n\n<testcase_4>\nordered = pd.CategoricalDtype(categories=['x', 'y', 'z'], ordered=False).ordered\n\n<testcase_5>\nordered = bool(pd.Series([1, 2, 3]).is_monotonic)",
+  "needimport": "import pandas as pd\n\n",
+  "test_results": {
+    "ans1": "pass test",
+    "ans2": "pass test",
+    "ans3": "pass test",
+    "ans4": "pass test",
+    "ans5": "pass test"
+  }
+}

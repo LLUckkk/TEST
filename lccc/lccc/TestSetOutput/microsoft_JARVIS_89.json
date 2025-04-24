@@ -1,0 +1,31 @@
+{
+  "input_header": "def replace_slot(text, entries):",
+  "input_docstring": null,
+  "output_code": "def replace_slot(text, entries):\n    for key, value in entries.items():\n        if not isinstance(value, str):\n            value = str(value)\n        text = text.replace(\"{{\" + key +\"}}\", value.replace('\"', \"'\").replace('\\n', \"\"))\n    return text",
+  "input_contexts": [
+    {
+      "id": "microsoft_JARVIS_89_2",
+      "input_code": "def choose_model(input, task, metas, api_key, api_type, api_endpoint):\n    prompt = replace_slot(choose_model_prompt, {\n        \"input\": input,\n        \"task\": task,\n        \"metas\": metas,\n    })\n    demos_or_presteps = replace_slot(choose_model_demos_or_presteps, {\n        \"input\": input,\n        \"task\": task,\n        \"metas\": metas\n    })\n    messages = json.loads(demos_or_presteps)\n    messages.insert(0, {\"role\": \"system\", \"content\": choose_model_tprompt})\n    messages.append({\"role\": \"user\", \"content\": prompt})\n    logger.debug(messages)\n    data = {\n        \"model\": LLM,\n        \"messages\": messages,\n        \"temperature\": 0,\n        \"logit_bias\": {item: config[\"logit_bias\"][\"choose_model\"] for item in choose_model_highlight_ids},        \"api_key\": api_key,\n        \"api_type\": api_type,\n        \"api_endpoint\": api_endpoint\n    }\n    return send_request(data)\n"
+    },
+    {
+      "id": "microsoft_JARVIS_89_1",
+      "input_code": "def parse_task(context, input, api_key, api_type, api_endpoint):\n    demos_or_presteps = parse_task_demos_or_presteps\n    messages = json.loads(demos_or_presteps)\n    messages.insert(0, {\"role\": \"system\", \"content\": parse_task_tprompt})\n\n    start = 0\n    while start <= len(context):\n        history = context[start:]\n        prompt = replace_slot(parse_task_prompt, {\n            \"input\": input,\n            \"context\": history \n        })\n        messages.append({\"role\": \"user\", \"content\": prompt})\n        history_text = \"<im_end>\\nuser<im_start>\".join([m[\"content\"] for m in messages])\n        num = count_tokens(LLM_encoding, history_text)\n        if get_max_context_length(LLM) - num > 800:\n            break\n        messages.pop()\n        start += 2\n    \n    logger.debug(messages)\n    data = {\n        \"model\": LLM,\n        \"messages\": messages,\n        \"temperature\": 0,\n        \"logit_bias\": {item: config[\"logit_bias\"][\"parse_task\"] for item in task_parsing_highlight_ids},\n        \"api_key\": api_key,\n        \"api_type\": api_type,\n        \"api_endpoint\": api_endpoint\n    }\n    return send_request(data)\n"
+    },
+    {
+      "id": "microsoft_JARVIS_89_3",
+      "input_code": "def response_results(input, results, api_key, api_type, api_endpoint):\n    results = [v for k, v in sorted(results.items(), key=lambda item: item[0])]\n    prompt = replace_slot(response_results_prompt, {\n        \"input\": input,\n    })\n    demos_or_presteps = replace_slot(response_results_demos_or_presteps, {\n        \"input\": input,\n        \"processes\": results\n    })\n    messages = json.loads(demos_or_presteps)\n    messages.insert(0, {\"role\": \"system\", \"content\": response_results_tprompt})\n    messages.append({\"role\": \"user\", \"content\": prompt})\n    logger.debug(messages)\n    data = {\n        \"model\": LLM,\n        \"messages\": messages,\n        \"temperature\": 0,\n        \"api_key\": api_key,\n        \"api_type\": api_type,\n        \"api_endpoint\": api_endpoint\n    }\n    return send_request(data)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\n\n<testcase_1>\ntext = \"Hello, {{name}}! Welcome to {{place}}.\"\nentries = {\n    \"name\": \"Alice\",\n    \"place\": \"Wonderland\"\n}\n\n<testcase_2>\ntext = \"The quick {{color}} fox jumps over the lazy {{animal}}.\"\nentries = {\n    \"color\": \"brown\",\n    \"animal\": \"dog\"\n}\n\n<testcase_3>\ntext = \"Your order number {{order_id}} has been shipped and will arrive by {{date}}.\"\nentries = {\n    \"order_id\": \"12345\",\n    \"date\": \"2023-10-15\"\n}\n\n<testcase_4>\ntext = \"Dear {{title}} {{last_name}}, your appointment is scheduled for {{time}} on {{date}}.\"\nentries = {\n    \"title\": \"Dr.\",\n    \"last_name\": \"Smith\",\n    \"time\": \"3:00 PM\",\n    \"date\": \"2023-10-20\"\n}\n\n<testcase_5>\ntext = \"The temperature in {{city}} is currently {{temperature}} degrees Celsius.\"\nentries = {\n    \"city\": \"Paris\",\n    \"temperature\": \"18\"\n}"
+  ],
+  "gpt_output": "<needimport>\nimport json\n\n<testcase_1>\ntext = \"Hello, {{name}}! Welcome to {{place}}.\"\nentries = {\n    \"name\": \"Alice\",\n    \"place\": \"Wonderland\"\n}\n\n<testcase_2>\ntext = \"The quick {{color}} fox jumps over the lazy {{animal}}.\"\nentries = {\n    \"color\": \"brown\",\n    \"animal\": \"dog\"\n}\n\n<testcase_3>\ntext = \"Your order number {{order_id}} has been shipped and will arrive by {{date}}.\"\nentries = {\n    \"order_id\": \"12345\",\n    \"date\": \"2023-10-15\"\n}\n\n<testcase_4>\ntext = \"Dear {{title}} {{last_name}}, your appointment is scheduled for {{time}} on {{date}}.\"\nentries = {\n    \"title\": \"Dr.\",\n    \"last_name\": \"Smith\",\n    \"time\": \"3:00 PM\",\n    \"date\": \"2023-10-20\"\n}\n\n<testcase_5>\ntext = \"The temperature in {{city}} is currently {{temperature}} degrees Celsius.\"\nentries = {\n    \"city\": \"Paris\",\n    \"temperature\": \"18\"\n}",
+  "needimport": "import json\n\n",
+  "test_results": {
+    "ans1": "Hello, Alice! Welcome to Wonderland.",
+    "ans2": "The quick brown fox jumps over the lazy dog.",
+    "ans3": "Your order number 12345 has been shipped and will arrive by 2023-10-15.",
+    "ans4": "Dear Dr. Smith, your appointment is scheduled for 3:00 PM on 2023-10-20.",
+    "ans5": "The temperature in Paris is currently 18 degrees Celsius."
+  }
+}

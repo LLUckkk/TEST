@@ -1,0 +1,31 @@
+{
+  "input_header": "def convert(data):",
+  "input_docstring": null,
+  "output_code": "def convert(data):\n    data = re.sub(\n        r'((?:\\\\(?:expandafter|global|long|outer|protected)(?:\\s+|\\r?\\n\\s*)?)*)?\\\\def\\s*(\\\\[a-zA-Z]+)\\s*(?:#+([0-9]))*\\{',\n        replace,\n        data,\n    )\n    return re.sub(r'\\\\let[\\sĊ]*(\\\\[a-zA-Z]+)\\s*=?[\\sĊ]*(\\\\?\\w+)*', r'\\\\newcommand*{\\1}{\\2}\\n', data)",
+  "input_contexts": [
+    {
+      "id": "lukas-blecher_LaTeX-OCR_43_3",
+      "input_code": "def pydemacro(t: str) -> str:\n    \n    return unfold(convert(re.sub('\\n+', '\\n', re.sub(r'(?<!\\\\)%.*\\n', '\\n', t))))\n"
+    },
+    {
+      "id": "lukas-blecher_LaTeX-OCR_43_1",
+      "input_code": "def pad(img: Image, divable: int = 32) -> Image:\n    \n    threshold = 128\n    data = np.array(img.convert('LA'))\n    if data[..., -1].var() == 0:\n        data = (data[..., 0]).astype(np.uint8)\n    else:\n        data = (255-data[..., -1]).astype(np.uint8)\n    data = (data-data.min())/(data.max()-data.min())*255\n    if data.mean() > threshold:\n        gray = 255*(data < threshold).astype(np.uint8)\n    else:\n        gray = 255*(data > threshold).astype(np.uint8)\n        data = 255-data\n\n    coords = cv2.findNonZero(gray)\n    a, b, w, h = cv2.boundingRect(coords)\n    rect = data[b:b+h, a:a+w]\n    im = Image.fromarray(rect).convert('L')\n    dims = []\n    for x in [w, h]:\n        div, mod = divmod(x, divable)\n        dims.append(divable*(div + (1 if mod > 0 else 0)))\n    padded = Image.new('L', dims, 255)\n    padded.paste(im, (0, 0, im.size[0], im.size[1]))\n    return padded\n"
+    },
+    {
+      "id": "lukas-blecher_LaTeX-OCR_43_2",
+      "input_code": "    def __call__(self, img=None, resize=True) -> str:\n        \n        if type(img) is bool:\n            img = None\n        if img is None:\n            if self.last_pic is None:\n                return ''\n            else:\n                print('\\nLast image is: ', end='')\n                img = self.last_pic.copy()\n        else:\n            self.last_pic = img.copy()\n        img = minmax_size(pad(img), self.args.max_dimensions, self.args.min_dimensions)\n        if (self.image_resizer is not None and not self.args.no_resize) and resize:\n            with torch.no_grad():\n                input_image = img.convert('RGB').copy()\n                r, w, h = 1, input_image.size[0], input_image.size[1]\n                for _ in range(10):\n                    h = int(h * r)\n                    img = pad(minmax_size(input_image.resize((w, h), Image.Resampling.BILINEAR if r > 1 else Image.Resampling.LANCZOS), self.args.max_dimensions, self.args.min_dimensions))\n                    t = test_transform(image=np.array(img.convert('RGB')))['image'][:1].unsqueeze(0)\n                    w = (self.image_resizer(t.to(self.args.device)).argmax(-1).item()+1)*32\n                    logging.info(r, img.size, (w, int(input_image.size[1]*r)))\n                    if (w == img.size[0]):\n                        break\n                    r = w/img.size[0]\n        else:\n            img = np.array(pad(img).convert('RGB'))\n            t = test_transform(image=img)['image'][:1].unsqueeze(0)\n        im = t.to(self.args.device)\n\n        dec = self.model.generate(im.to(self.args.device), temperature=self.args.get('temperature', .25))\n        pred = post_process(token2str(dec, self.tokenizer)[0])\n        try:\n            clipboard.copy(pred)\n        except:\n            pass\n        return pred\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport re\n\n<testcase_1>\ndata = r\"\"\"\n\\def\\exampleMacro#1{\n    \\textbf{#1}\n}\n\\let\\oldMacro=\\newMacro\n\"\"\"\n\n<testcase_2>\ndata = r\"\"\"\n\\expandafter\\def\\anotherMacro#2{\n    \\textit{#2}\n}\n\\let\\macroA=macroB\n\"\"\"\n\n<testcase_3>\ndata = r\"\"\"\n\\global\\def\\yetAnotherMacro#3{\n    \\underline{#3}\n}\n\\let\\macroX=macroY\n\"\"\"\n\n<testcase_4>\ndata = r\"\"\"\n\\protected\\def\\sampleMacro#4{\n    \\textsc{#4}\n}\n\\let\\macroOne=macroTwo\n\"\"\"\n\n<testcase_5>\ndata = r\"\"\"\n\\outer\\def\\finalMacro#5{\n    \\texttt{#5}\n}\n\\let\\macroAlpha=macroBeta\n\"\"\""
+  ],
+  "gpt_output": "<needimport>\nimport re\n\n<testcase_1>\ndata = r\"\"\"\n\\def\\exampleMacro#1{\n    \\textbf{#1}\n}\n\\let\\oldMacro=\\newMacro\n\"\"\"\n\n<testcase_2>\ndata = r\"\"\"\n\\expandafter\\def\\anotherMacro#2{\n    \\textit{#2}\n}\n\\let\\macroA=macroB\n\"\"\"\n\n<testcase_3>\ndata = r\"\"\"\n\\global\\def\\yetAnotherMacro#3{\n    \\underline{#3}\n}\n\\let\\macroX=macroY\n\"\"\"\n\n<testcase_4>\ndata = r\"\"\"\n\\protected\\def\\sampleMacro#4{\n    \\textsc{#4}\n}\n\\let\\macroOne=macroTwo\n\"\"\"\n\n<testcase_5>\ndata = r\"\"\"\n\\outer\\def\\finalMacro#5{\n    \\texttt{#5}\n}\n\\let\\macroAlpha=macroBeta\n\"\"\"",
+  "needimport": "import re\n\n",
+  "test_results": {
+    "ans1": "\n    \\newcommand*{\\exampleMacro}{1}\n\n        \\textbf{#1}\n    }\n    \\newcommand*{\\oldMacro}{\\newMacro}\n\n    ",
+    "ans2": "\n    \\newcommand*{\\anotherMacro}{2}\n\n        \\textit{#2}\n    }\n    \\newcommand*{\\macroA}{macroB}\n\n    ",
+    "ans3": "\n    \\newcommand*{\\yetAnotherMacro}{3}\n\n        \\underline{#3}\n    }\n    \\newcommand*{\\macroX}{macroY}\n\n    ",
+    "ans4": "\n    \\newcommand*{\\sampleMacro}{4}\n\n        \\textsc{#4}\n    }\n    \\newcommand*{\\macroOne}{macroTwo}\n\n    ",
+    "ans5": "\n    \\newcommand*{\\finalMacro}{5}\n\n        \\texttt{#5}\n    }\n    \\newcommand*{\\macroAlpha}{macroBeta}\n\n    "
+  }
+}

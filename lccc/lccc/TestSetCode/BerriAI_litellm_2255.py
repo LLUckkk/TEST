@@ -6,12 +6,15 @@ import time
 from contextlib import contextmanager
 import requests
 
-import pandas as pd
 
 
 #############change###########
-def non_hyphenated_array_like(self):
-    return "array_like" in self.raw_doc
+def get_mapped_special_auth_params(self) -> dict:
+    return {
+        "project": "watsonx_project",
+        "region_name": "watsonx_region_name",
+        "token": "watsonx_token",
+    }
 
 
 #############change###########
@@ -45,7 +48,6 @@ def safe_execute_testcase(testcase_func, timeout):
                     result_queue.put(('success', result))
         except Exception as e:
             if not event.is_set():
-                print(e)
                 result_queue.put(('error', e))
         finally:
             event.set()  # 标记线程已完成
@@ -86,9 +88,9 @@ def testcase_1():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
+    self = None
 
-    return non_hyphenated_array_like(self)
+    return get_mapped_special_auth_params(self)
 
 
 # 定义测试用例2
@@ -97,9 +99,9 @@ def testcase_2():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
+    self = None
 
-    return non_hyphenated_array_like(self)
+    return get_mapped_special_auth_params(self)
 
 
 # 定义测试用例3
@@ -108,9 +110,9 @@ def testcase_3():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
+    self = None
 
-    return non_hyphenated_array_like(self)
+    return get_mapped_special_auth_params(self)
 
 
 # 定义测试用例4
@@ -119,9 +121,9 @@ def testcase_4():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
+    self = None
 
-    return non_hyphenated_array_like(self)
+    return get_mapped_special_auth_params(self)
 
 
 # 定义测试用例5
@@ -130,9 +132,9 @@ def testcase_5():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
+    self = None
 
-    return non_hyphenated_array_like(self)
+    return get_mapped_special_auth_params(self)
 
 
 def main():

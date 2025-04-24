@@ -1,0 +1,23 @@
+{
+  "input_header": "def non_hyphenated_array_like(self):",
+  "input_docstring": null,
+  "output_code": "    def non_hyphenated_array_like(self):\n        return \"array_like\" in self.raw_doc",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_27821_1",
+      "input_code": "def pandas_validate(func_name: str):\n    \n    func_obj = Validator._load_obj(func_name)\n    doc_obj = get_doc_object(func_obj, doc=func_obj.__doc__)\n    doc = PandasDocstring(func_name, doc_obj)\n    result = validate(doc_obj)\n    mentioned_errs = doc.mentioned_private_classes\n    if mentioned_errs:\n        result[\"errors\"].append(\n            pandas_error(\"GL04\", mentioned_private_classes=\", \".join(mentioned_errs))\n        )\n\n    if doc.see_also:\n        result[\"errors\"].extend(\n            pandas_error(\n                \"SA05\",\n                reference_name=rel_name,\n                right_reference=rel_name[len(\"pandas.\"):],\n            )\n            for rel_name in doc.see_also\n            if rel_name.startswith(\"pandas.\")\n        )\n\n    result[\"examples_errs\"] = \"\"\n    if doc.examples:\n        for error_code, error_message, line_number, col_number in doc.validate_pep8():\n            result[\"errors\"].append(\n                pandas_error(\n                    \"EX03\",\n                    error_code=error_code,\n                    error_message=error_message,\n                    line_number=line_number,\n                    col_number=col_number,\n                )\n            )\n        examples_source_code = \"\".join(doc.examples_source_code)\n        result[\"errors\"].extend(\n            pandas_error(\"EX04\", imported_library=wrong_import)\n            for wrong_import in (\"numpy\", \"pandas\")\n            if f\"import {wrong_import}\" in examples_source_code\n        )\n\n    if doc.non_hyphenated_array_like():\n        result[\"errors\"].append(pandas_error(\"PD01\"))\n\n    plt.close(\"all\")\n    return result\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport pandas as pd\n\n<testcase_1>\nself = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()\n\n<testcase_2>\nself = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()\n\n<testcase_3>\nself = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()\n\n<testcase_4>\nself = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()\n\n<testcase_5>\nself = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport pandas as pd\n\n<testcase_1>\nself = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()\n\n<testcase_2>\nself = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()\n\n<testcase_3>\nself = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()\n\n<testcase_4>\nself = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()\n\n<testcase_5>\nself = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()\n```",
+  "needimport": "import pandas as pd\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": true,
+    "ans4": true,
+    "ans5": false
+  }
+}

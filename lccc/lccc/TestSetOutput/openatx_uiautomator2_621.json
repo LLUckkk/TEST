@@ -1,0 +1,71 @@
+{
+  "input_header": "def get(self, timeout=None) -> \"XMLElement\":",
+  "input_docstring": "Get first matched element\n\nArgs:\n    timeout (float): max seconds to wait\n\nReturns:\n    XMLElement\n\nRaises:\n    XPathElementNotFoundError",
+  "output_code": "    def get(self, timeout=None) -> \"XMLElement\":\n        \n        if not self.wait(timeout or self._global_timeout):\n            raise XPathElementNotFoundError(self)\n        return self.get_last_match()",
+  "input_contexts": [
+    {
+      "id": "openatx_uiautomator2_621_4",
+      "input_code": "    def get_text(self) -> Optional[str]:\n        \n        return self.get().text\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_8",
+      "input_code": "    def long_click(self):\n        \n        self.get().long_click()\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_9",
+      "input_code": "    def screenshot(self) -> Image.Image:\n        \n        el = self.get()\n        return el.screenshot()\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_3",
+      "input_code": "def test_xpath_element():\n    el = x(\"n1\").get(timeout=0)\n    assert el.text == \"n1\"\n    assert el.center() == (540, 50)\n    assert el.offset(0, 0) == (0, 0)\n    assert el.offset(1, 1) == (1080, 100)\n    assert el.screenshot().size == (1080, 100)\n    assert el.bounds == (0, 0, 1080, 100)\n    assert el.rect == (0, 0, 1080, 100)\n    assert isinstance(el.info, dict)\n    assert el.get_xpath(strip_index=True) == \"/hierarchy/FrameLayout/TextView\"\n    \n    mock.click.reset_mock()\n    el.click()\n    assert mock.click.called\n    assert mock.click.call_args[0] == (540, 50)\n\n    mock.long_click.reset_mock()\n    el.long_click()\n    assert mock.long_click.called\n    assert mock.long_click.call_args[0] == (540, 50)\n\n    mock.swipe.reset_mock()\n    el.swipe(\"up\")\n    assert mock.swipe.called\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_2",
+      "input_code": "def test_xpath_get():\n    assert x(\"n1\").get().text == \"n1\"\n    assert x(\"n2\").get().text == \"n2\"\n\n    with pytest.raises(XPathElementNotFoundError):\n        x(\"n3\").get(timeout=.1)\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_10",
+      "input_code": "    def __getattr__(self, key: str):\n        \n        if key.startswith(\"_\"):\n            raise AttributeError(\"Invalid attr\", key)\n        if not hasattr(XMLElement, key):\n            raise AttributeError(\"Invalid attr\", key)\n        el = self.get()\n        return getattr(el, key)\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_13",
+      "input_code": "    def info(self) -> Dict[str, Any]:\n        ret = {}\n        for k, v in dict(self.attrib).items():\n            if k in (\"bounds\", \"class\", \"package\", \"content-desc\"):\n                continue\n            if k in (\"checkable\", \"checked\", \"clickable\", \"enabled\", \"focusable\", \"focused\", \"scrollable\",\n                     \"long-clickable\", \"password\", \"selected\", \"visible-to-user\"):\n                ret[convert_to_camel_case(k)] = v == \"true\"\n            elif k == \"index\":\n                ret[k] = int(v)\n            else:\n                ret[convert_to_camel_case(k)] = v\n\n        ret[\"childCount\"] = len(self.elem.getchildren())\n        ret[\"className\"] = self.elem.tag\n        lx, ly, rx, ry = self.bounds\n        ret[\"bounds\"] = {\"left\": lx, \"top\": ly, \"right\": rx, \"bottom\": ry}\n\n        ret[\"packageName\"] = self.attrib.get(\"package\")\n        ret[\"contentDescription\"] = self.attrib.get(\"content-desc\")\n        ret[\"resourceName\"] = self.attrib.get(\"resource-id\")\n        return ret\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_5",
+      "input_code": "    def set_text(self, text: str):\n        el = self.get()\n        el.click()\n        self._parent._d.send_keys(text)\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_6",
+      "input_code": "    def click(self, timeout=None):\n        \n        try:\n            el = self.get(timeout=timeout)\n            el.click()\n        except XPathElementNotFoundError:\n            if not self._fallback:\n                raise\n            logger.info(\"element not found, run fallback\")\n            return inject_call(self._fallback, d=self._d)\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_7",
+      "input_code": "    def click_exists(self, timeout=None) -> bool:\n        \n        try:\n            el = self.get(timeout=timeout)\n            el.click()\n            return True\n        except XPathElementNotFoundError:\n            return False\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_1",
+      "input_code": "def test_xpath_with_instance():\n    el = x('(//TextView)[2]').get(0)\n    assert el.text == \"n2\"\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_12",
+      "input_code": "    def text(self):\n        return self.elem.attrib.get(\"text\")\n"
+    },
+    {
+      "id": "openatx_uiautomator2_621_11",
+      "input_code": "    def bounds(self) -> Tuple[int, int, int, int]:\n        \n        bounds = self.elem.attrib.get(\"bounds\")\n        if not bounds:\n            return (0, 0, 0, 0)\n        lx, ly, rx, ry = map(int, re.findall(r\"\\d+\", bounds))\n        return (lx, ly, rx, ry)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport pytest\n\n<testcase_1>\ntimeout = 0.5\n\n<testcase_2>\ntimeout = 2.0\n\n<testcase_3>\ntimeout = None\n\n<testcase_4>\ntimeout = 1.5\n\n<testcase_5>\ntimeout = 0.1\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport pytest\n\n<testcase_1>\ntimeout = 0.5\n\n<testcase_2>\ntimeout = 2.0\n\n<testcase_3>\ntimeout = None\n\n<testcase_4>\ntimeout = 1.5\n\n<testcase_5>\ntimeout = 0.1\n```",
+  "needimport": "import pytest\n\n",
+  "test_results": {
+    "ans1": "catch exception",
+    "ans2": "模拟元素内容",
+    "ans3": "模拟元素内容",
+    "ans4": "模拟元素内容",
+    "ans5": "catch exception"
+  }
+}

@@ -7,11 +7,18 @@ from contextlib import contextmanager
 import requests
 
 import pandas as pd
+from pandas import Index
+import numpy as np
 
 
 #############change###########
-def non_hyphenated_array_like(self):
-    return "array_like" in self.raw_doc
+def _construct_result(self, result, name):
+    if isinstance(result, tuple):
+        return (
+            Index(result[0], name=name, dtype=result[0].dtype),
+            Index(result[1], name=name, dtype=result[1].dtype),
+        )
+    return Index(result, name=name, dtype=result.dtype)
 
 
 #############change###########
@@ -86,9 +93,10 @@ def testcase_1():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
+    result = pd.Series([1, 2, 3])
+    name = "test_series"
 
-    return non_hyphenated_array_like(self)
+    return _construct_result(self, result, name)
 
 
 # 定义测试用例2
@@ -97,9 +105,10 @@ def testcase_2():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
+    result = pd.Series([4, 5, 6])
+    name = "another_series"
 
-    return non_hyphenated_array_like(self)
+    return _construct_result(self, result, name)
 
 
 # 定义测试用例3
@@ -108,9 +117,10 @@ def testcase_3():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
+    result = pd.Series([7, 8, 9])
+    name = "yet_another_series"
 
-    return non_hyphenated_array_like(self)
+    return _construct_result(self, result, name)
 
 
 # 定义测试用例4
@@ -119,9 +129,10 @@ def testcase_4():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
+    result = (pd.Series([10, 11, 12]), pd.Series([13, 14, 15]))
+    name = "tuple_series"
 
-    return non_hyphenated_array_like(self)
+    return _construct_result(self, result, name)
 
 
 # 定义测试用例5
@@ -130,9 +141,10 @@ def testcase_5():
         pass
 
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
+    result = pd.Series([16, 17, 18])
+    name = "final_series"
 
-    return non_hyphenated_array_like(self)
+    return _construct_result(self, result, name)
 
 
 def main():
@@ -145,12 +157,34 @@ def main():
         "ans5": safe_execute_testcase(testcase_5, timeout=5)
     }
 
+    def json_serializable(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, tuple):
+            return [json_serializable(i) for i in obj]
+        elif isinstance(obj, pd.Series):
+            return obj.tolist()
+        elif isinstance(obj, pd.DataFrame):
+            return obj.to_dict(orient="records")
+        elif isinstance(obj, pd.Index):
+            return serialize_index(obj)
+        else:
+            return str(obj)
+
+    def serialize_index(index: pd.Index) -> dict:
+        return {
+            "__type__": "Index",
+            "values": index.tolist(),
+            "dtype": str(index.dtype),
+            "name": index.name
+        }
+
     output = {
-        "ans1": test_results["ans1"]["result"] if test_results["ans1"]["success"] else None,
-        "ans2": test_results["ans2"]["result"] if test_results["ans2"]["success"] else None,
-        "ans3": test_results["ans3"]["result"] if test_results["ans3"]["success"] else None,
-        "ans4": test_results["ans4"]["result"] if test_results["ans4"]["success"] else None,
-        "ans5": test_results["ans5"]["result"] if test_results["ans5"]["success"] else None
+        "ans1": json_serializable(test_results["ans1"]["result"]) if test_results["ans1"]["success"] else None,
+        "ans2": json_serializable(test_results["ans2"]["result"]) if test_results["ans2"]["success"] else None,
+        "ans3": json_serializable(test_results["ans3"]["result"]) if test_results["ans3"]["success"] else None,
+        "ans4": json_serializable(test_results["ans4"]["result"]) if test_results["ans4"]["success"] else None,
+        "ans5": json_serializable(test_results["ans5"]["result"]) if test_results["ans5"]["success"] else None
     }
 
     print(json.dumps(output, indent=2))

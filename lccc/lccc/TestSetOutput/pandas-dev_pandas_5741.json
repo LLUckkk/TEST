@@ -1,0 +1,149 @@
+{
+  "input_header": "def _generate_marginal_results_without_values( table: DataFrame, data: DataFrame, rows, cols, aggfunc, kwargs, observed: bool, margins_name: Hashable = \"All\", ):",
+  "input_docstring": null,
+  "output_code": "def _generate_marginal_results_without_values(\n    table: DataFrame,\n    data: DataFrame,\n    rows,\n    cols,\n    aggfunc,\n    kwargs,\n    observed: bool,\n    margins_name: Hashable = \"All\",\n):\n    margin_keys: list | Index\n    if len(cols) > 0:\n        margin_keys = []\n\n        def _all_key():\n            if len(cols) == 1:\n                return margins_name\n            return (margins_name,) + (\"\",) * (len(cols) - 1)\n\n        if len(rows) > 0:\n            margin = data.groupby(rows, observed=observed)[rows].apply(\n                aggfunc, **kwargs\n            )\n            all_key = _all_key()\n            table[all_key] = margin\n            result = table\n            margin_keys.append(all_key)\n\n        else:\n            margin = data.groupby(level=0, observed=observed).apply(aggfunc, **kwargs)\n            all_key = _all_key()\n            table[all_key] = margin\n            result = table\n            margin_keys.append(all_key)\n            return result\n    else:\n        result = table\n        margin_keys = table.columns\n\n    if len(cols):\n        row_margin = data.groupby(cols, observed=observed)[cols].apply(\n            aggfunc, **kwargs\n        )\n    else:\n        row_margin = Series(np.nan, index=result.columns)\n\n    return result, margin_keys, row_margin",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_5741_1",
+      "input_code": "def _add_margins(\n    table: DataFrame | Series,\n    data: DataFrame,\n    values,\n    rows,\n    cols,\n    aggfunc,\n    kwargs,\n    observed: bool,\n    margins_name: Hashable = \"All\",\n    fill_value=None,\n):\n    if not isinstance(margins_name, str):\n        raise ValueError(\"margins_name argument must be a string\")\n\n    msg = f'Conflicting name \"{margins_name}\" in margins'\n    for level in table.index.names:\n        if margins_name in table.index.get_level_values(level):\n            raise ValueError(msg)\n\n    grand_margin = _compute_grand_margin(data, values, aggfunc, kwargs, margins_name)\n\n    if table.ndim == 2:\n        for level in table.columns.names[1:]:\n            if margins_name in table.columns.get_level_values(level):\n                raise ValueError(msg)\n\n    key: str | tuple[str, ...]\n    if len(rows) > 1:\n        key = (margins_name,) + (\"\",) * (len(rows) - 1)\n    else:\n        key = margins_name\n\n    if not values and isinstance(table, ABCSeries):\n        return table._append(table._constructor({key: grand_margin[margins_name]}))\n\n    elif values:\n        marginal_result_set = _generate_marginal_results(\n            table,\n            data,\n            values,\n            rows,\n            cols,\n            aggfunc,\n            kwargs,\n            observed,\n            margins_name,\n        )\n        if not isinstance(marginal_result_set, tuple):\n            return marginal_result_set\n        result, margin_keys, row_margin = marginal_result_set\n    else:\n        assert isinstance(table, ABCDataFrame)\n        marginal_result_set = _generate_marginal_results_without_values(\n            table, data, rows, cols, aggfunc, kwargs, observed, margins_name\n        )\n        if not isinstance(marginal_result_set, tuple):\n            return marginal_result_set\n        result, margin_keys, row_margin = marginal_result_set\n\n    row_margin = row_margin.reindex(result.columns, fill_value=fill_value)\n    for k in margin_keys:\n        if isinstance(k, str):\n            row_margin[k] = grand_margin[k]\n        else:\n            row_margin[k] = grand_margin[k[0]]\n\n    from pandas import DataFrame\n\n    margin_dummy = DataFrame(row_margin, columns=Index([key])).T\n\n    row_names = result.index.names\n\n    for dtype in set(result.dtypes):\n        if isinstance(dtype, ExtensionDtype):\n            continue\n\n        cols = result.select_dtypes([dtype]).columns\n        margin_dummy[cols] = margin_dummy[cols].apply(\n            maybe_downcast_to_dtype, args=(dtype,)\n        )\n    result = result._append(margin_dummy)\n    result.index.names = row_names\n\n    return result\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nimport numpy as np\nfrom pandas import DataFrame, Series\nfrom pandas.core.dtypes.dtypes import ExtensionDtype\n\n<testcase_1>\ntable = pd.DataFrame({\n    'A': [1, 2, 3],\n    'B': [4, 5, 6]\n})\ndata = pd.DataFrame({\n    'A': [1, 2, 3, 1, 2, 3],\n    'B': [4, 5, 6, 4, 5, 6],\n    'C': [7, 8, 9, 7, 8, 9]\n})\nrows = ['A']\ncols = ['B']\naggfunc = np.sum\nkwargs = {}\nobserved = False\nmargins_name = \"All\"\n\n<testcase_2>\ntable = pd.DataFrame({\n    'X': [10, 20, 30],\n    'Y': [40, 50, 60]\n})\ndata = pd.DataFrame({\n    'X': [10, 20, 30, 10, 20, 30],\n    'Y': [40, 50, 60, 40, 50, 60],\n    'Z': [70, 80, 90, 70, 80, 90]\n})\nrows = ['X']\ncols = ['Y']\naggfunc = np.mean\nkwargs = {}\nobserved = True\nmargins_name = \"Total\"\n\n<testcase_3>\ntable = pd.DataFrame({\n    'D': [100, 200, 300],\n    'E': [400, 500, 600]\n})\ndata = pd.DataFrame({\n    'D': [100, 200, 300, 100, 200, 300],\n    'E': [400, 500, 600, 400, 500, 600],\n    'F': [700, 800, 900, 700, 800, 900]\n})\nrows = ['D']\ncols = ['E']\naggfunc = np.max\nkwargs = {}\nobserved = False\nmargins_name = \"Sum\"\n\n<testcase_4>\ntable = pd.DataFrame({\n    'G': [1000, 2000, 3000],\n    'H': [4000, 5000, 6000]\n})\ndata = pd.DataFrame({\n    'G': [1000, 2000, 3000, 1000, 2000, 3000],\n    'H': [4000, 5000, 6000, 4000, 5000, 6000],\n    'I': [7000, 8000, 9000, 7000, 8000, 9000]\n})\nrows = ['G']\ncols = ['H']\naggfunc = np.min\nkwargs = {}\nobserved = True\nmargins_name = \"Overall\"\n\n<testcase_5>\ntable = pd.DataFrame({\n    'J': [10000, 20000, 30000],\n    'K': [40000, 50000, 60000]\n})\ndata = pd.DataFrame({\n    'J': [10000, 20000, 30000, 10000, 20000, 30000],\n    'K': [40000, 50000, 60000, 40000, 50000, 60000],\n    'L': [70000, 80000, 90000, 70000, 80000, 90000]\n})\nrows = ['J']\ncols = ['K']\naggfunc = np.median\nkwargs = {}\nobserved = False\nmargins_name ="
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nimport numpy as np\nfrom pandas import DataFrame, Series\nfrom pandas.core.dtypes.dtypes import ExtensionDtype\n\n<testcase_1>\ntable = pd.DataFrame({\n    'A': [1, 2, 3],\n    'B': [4, 5, 6]\n})\ndata = pd.DataFrame({\n    'A': [1, 2, 3, 1, 2, 3],\n    'B': [4, 5, 6, 4, 5, 6],\n    'C': [7, 8, 9, 7, 8, 9]\n})\nrows = ['A']\ncols = ['B']\naggfunc = np.sum\nkwargs = {}\nobserved = False\nmargins_name = \"All\"\n\n<testcase_2>\ntable = pd.DataFrame({\n    'X': [10, 20, 30],\n    'Y': [40, 50, 60]\n})\ndata = pd.DataFrame({\n    'X': [10, 20, 30, 10, 20, 30],\n    'Y': [40, 50, 60, 40, 50, 60],\n    'Z': [70, 80, 90, 70, 80, 90]\n})\nrows = ['X']\ncols = ['Y']\naggfunc = np.mean\nkwargs = {}\nobserved = True\nmargins_name = \"Total\"\n\n<testcase_3>\ntable = pd.DataFrame({\n    'D': [100, 200, 300],\n    'E': [400, 500, 600]\n})\ndata = pd.DataFrame({\n    'D': [100, 200, 300, 100, 200, 300],\n    'E': [400, 500, 600, 400, 500, 600],\n    'F': [700, 800, 900, 700, 800, 900]\n})\nrows = ['D']\ncols = ['E']\naggfunc = np.max\nkwargs = {}\nobserved = False\nmargins_name = \"Sum\"\n\n<testcase_4>\ntable = pd.DataFrame({\n    'G': [1000, 2000, 3000],\n    'H': [4000, 5000, 6000]\n})\ndata = pd.DataFrame({\n    'G': [1000, 2000, 3000, 1000, 2000, 3000],\n    'H': [4000, 5000, 6000, 4000, 5000, 6000],\n    'I': [7000, 8000, 9000, 7000, 8000, 9000]\n})\nrows = ['G']\ncols = ['H']\naggfunc = np.min\nkwargs = {}\nobserved = True\nmargins_name = \"Overall\"\n\n<testcase_5>\ntable = pd.DataFrame({\n    'J': [10000, 20000, 30000],\n    'K': [40000, 50000, 60000]\n})\ndata = pd.DataFrame({\n    'J': [10000, 20000, 30000, 10000, 20000, 30000],\n    'K': [40000, 50000, 60000, 40000, 50000, 60000],\n    'L': [70000, 80000, 90000, 70000, 80000, 90000]\n})\nrows = ['J']\ncols = ['K']\naggfunc = np.median\nkwargs = {}\nobserved = False\nmargins_name =",
+  "needimport": "import pandas as pd\nimport numpy as np\nfrom pandas import DataFrame, Series\nfrom pandas.core.dtypes.dtypes import ExtensionDtype\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        {
+          "A": 1,
+          "B": 4,
+          "All": NaN
+        },
+        {
+          "A": 2,
+          "B": 5,
+          "All": 2.0
+        },
+        {
+          "A": 3,
+          "B": 6,
+          "All": 4.0
+        }
+      ],
+      "['All']",
+      [
+        {
+          "B": 8
+        },
+        {
+          "B": 10
+        },
+        {
+          "B": 12
+        }
+      ]
+    ],
+    "ans2": [
+      [
+        {
+          "X": 10,
+          "Y": 40,
+          "Total": NaN
+        },
+        {
+          "X": 20,
+          "Y": 50,
+          "Total": NaN
+        },
+        {
+          "X": 30,
+          "Y": 60,
+          "Total": NaN
+        }
+      ],
+      "['Total']",
+      [
+        40.0,
+        50.0,
+        60.0
+      ]
+    ],
+    "ans3": [
+      [
+        {
+          "D": 100,
+          "E": 400,
+          "Sum": NaN
+        },
+        {
+          "D": 200,
+          "E": 500,
+          "Sum": NaN
+        },
+        {
+          "D": 300,
+          "E": 600,
+          "Sum": NaN
+        }
+      ],
+      "['Sum']",
+      [
+        400,
+        500,
+        600
+      ]
+    ],
+    "ans4": [
+      [
+        {
+          "G": 1000,
+          "H": 4000,
+          "Overall": NaN
+        },
+        {
+          "G": 2000,
+          "H": 5000,
+          "Overall": NaN
+        },
+        {
+          "G": 3000,
+          "H": 6000,
+          "Overall": NaN
+        }
+      ],
+      "['Overall']",
+      [
+        4000,
+        5000,
+        6000
+      ]
+    ],
+    "ans5": [
+      [
+        {
+          "J": 10000,
+          "K": 40000,
+          "Summary": NaN
+        },
+        {
+          "J": 20000,
+          "K": 50000,
+          "Summary": NaN
+        },
+        {
+          "J": 30000,
+          "K": 60000,
+          "Summary": NaN
+        }
+      ],
+      "['Summary']",
+      [
+        40000.0,
+        50000.0,
+        60000.0
+      ]
+    ]
+  }
+}

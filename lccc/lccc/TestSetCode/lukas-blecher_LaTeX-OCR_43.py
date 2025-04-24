@@ -4,14 +4,32 @@ import threading
 import queue
 import time
 from contextlib import contextmanager
+
 import requests
 
-import pandas as pd
+import re
+
+
+def replace(match):
+    """用于替换正则表达式匹配到的字符串"""
+    # 匹配到的内容有两个部分：宏名和宏的参数
+    macro_name = match.group(2)
+    # 这里处理宏名的替换逻辑，可以根据实际需求进行调整
+    if match.group(3):  # 如果有参数，按参数编号添加
+        param_num = match.group(3)
+        return f'\\newcommand*{{{macro_name}}}{{{param_num}}}\n'
+    else:
+        return f'\\newcommand*{{{macro_name}}}{{}}\n'
 
 
 #############change###########
-def non_hyphenated_array_like(self):
-    return "array_like" in self.raw_doc
+def convert(data):
+    data = re.sub(
+        r'((?:\\(?:expandafter|global|long|outer|protected)(?:\s+|\r?\n\s*)?)*)?\\def\s*(\\[a-zA-Z]+)\s*(?:#+([0-9]))*\{',
+        replace,
+        data,
+    )
+    return re.sub(r'\\let[\sĊ]*(\\[a-zA-Z]+)\s*=?[\sĊ]*(\\?\w+)*', r'\\newcommand*{\1}{\2}\n', data)
 
 
 #############change###########
@@ -82,57 +100,62 @@ def safe_execute_testcase(testcase_func, timeout):
 
 # 定义测试用例1
 def testcase_1():
-    class Dummy:
-        pass
+    data = r"""
+    \def\exampleMacro#1{
+        \textbf{#1}
+    }
+    \let\oldMacro=\newMacro
+    """
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
-
-    return non_hyphenated_array_like(self)
+    return convert(data)
 
 
 # 定义测试用例2
 def testcase_2():
-    class Dummy:
-        pass
+    data = r"""
+    \expandafter\def\anotherMacro#2{
+        \textit{#2}
+    }
+    \let\macroA=macroB
+    """
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
-
-    return non_hyphenated_array_like(self)
+    return convert(data)
 
 
 # 定义测试用例3
 def testcase_3():
-    class Dummy:
-        pass
+    data = r"""
+    \global\def\yetAnotherMacro#3{
+        \underline{#3}
+    }
+    \let\macroX=macroY
+    """
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
-
-    return non_hyphenated_array_like(self)
+    return convert(data)
 
 
 # 定义测试用例4
 def testcase_4():
-    class Dummy:
-        pass
+    data = r"""
+    \protected\def\sampleMacro#4{
+        \textsc{#4}
+    }
+    \let\macroOne=macroTwo
+    """
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
-
-    return non_hyphenated_array_like(self)
+    return convert(data)
 
 
 # 定义测试用例5
 def testcase_5():
-    class Dummy:
-        pass
+    data = r"""
+    \outer\def\finalMacro#5{
+        \texttt{#5}
+    }
+    \let\macroAlpha=macroBeta
+    """
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
-
-    return non_hyphenated_array_like(self)
+    return convert(data)
 
 
 def main():

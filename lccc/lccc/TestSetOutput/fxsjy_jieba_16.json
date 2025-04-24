@@ -1,0 +1,105 @@
+{
+  "input_header": "def cut_for_search(self, sentence, HMM=True):",
+  "input_docstring": "Finer segmentation for search engines.",
+  "output_code": "    def cut_for_search(self, sentence, HMM=True):\n        \n        words = self.cut(sentence, HMM=HMM)\n        for w in words:\n            if len(w) > 2:\n                for i in xrange(len(w) - 1):\n                    gram2 = w[i:i + 2]\n                    if self.FREQ.get(gram2):\n                        yield gram2\n            if len(w) > 3:\n                for i in xrange(len(w) - 2):\n                    gram3 = w[i:i + 3]\n                    if self.FREQ.get(gram3):\n                        yield gram3\n            yield w",
+  "input_contexts": [
+    {
+      "id": "fxsjy_jieba_16_4",
+      "input_code": "def cuttest(test_sent):\n    result = jieba.cut_for_search(test_sent)\n    for word in result:\n        print(word, \"/\", end=' ') \n    print(\"\")\n"
+    },
+    {
+      "id": "fxsjy_jieba_16_1",
+      "input_code": "    def lcut_for_search(self, *args, **kwargs):\n        return list(self.cut_for_search(*args, **kwargs))\n"
+    },
+    {
+      "id": "fxsjy_jieba_16_2",
+      "input_code": "    def testCutForSearch(self):\n        for content in test_contents:\n            result = jieba.cut_for_search(content)\n            assert isinstance(result, types.GeneratorType), \"Test CutForSearch Generator error\"\n            result = list(result)\n            assert isinstance(result, list), \"Test CutForSearch error on content: %s\" % content\n            print(\" , \".join(result), file=sys.stderr)\n        print(\"testCutForSearch\", file=sys.stderr)\n"
+    },
+    {
+      "id": "fxsjy_jieba_16_3",
+      "input_code": "    def testCutForSearch_NOHMM(self):\n        for content in test_contents:\n            result = jieba.cut_for_search(content,HMM=False)\n            assert isinstance(result, types.GeneratorType), \"Test CutForSearch Generator error\"\n            result = list(result)\n            assert isinstance(result, list), \"Test CutForSearch error on content: %s\" % content\n            print(\" , \".join(result), file=sys.stderr)\n        print(\"testCutForSearch_NOHMM\", file=sys.stderr)\n"
+    },
+    {
+      "id": "fxsjy_jieba_16_6",
+      "input_code": "    def run(self):\n        seg_list = jieba.cut(\"我来到北京清华大学\",cut_all=True)\n        print(\"Full Mode:\" + \"/ \".join(seg_list))\n\n        seg_list = jieba.cut(\"我来到北京清华大学\",cut_all=False)\n        print(\"Default Mode:\" + \"/ \".join(seg_list))\n\n        seg_list = jieba.cut(\"他来到了网易杭研大厦\")\n        print(\", \".join(seg_list))\n\n        seg_list = jieba.cut_for_search(\"小明硕士毕业于中国科学院计算所，后在日本京都大学深造\")\n        print(\", \".join(seg_list))\n"
+    },
+    {
+      "id": "fxsjy_jieba_16_5",
+      "input_code": "def cuttest(test_sent):\n    result = jieba.cut_for_search(test_sent)\n    for word in result:\n        print(word, \"/\", end=' ') \n    print(\"\")\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport jieba\n\n<testcase_1>\nself = jieba\nsentence = \"我来到北京清华大学\"\nHMM = True\n\n<testcase_2>\nself = jieba\nsentence = \"小明硕士毕业于中国科学院计算所，后在日本京都大学深造\"\nHMM = False\n\n<testcase_3>\nself = jieba\nsentence = \"今天是个好日子，我们去公园玩吧\"\nHMM = True\n\n<testcase_4>\nself = jieba\nsentence = \"数据科学与机器学习是当今热门的研究领域\"\nHMM = False\n\n<testcase_5>\nself = jieba\nsentence = \"在这个快节奏的时代，保持健康的生活方式很重要\"\nHMM = True\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport jieba\n\n<testcase_1>\nself = jieba\nsentence = \"我来到北京清华大学\"\nHMM = True\n\n<testcase_2>\nself = jieba\nsentence = \"小明硕士毕业于中国科学院计算所，后在日本京都大学深造\"\nHMM = False\n\n<testcase_3>\nself = jieba\nsentence = \"今天是个好日子，我们去公园玩吧\"\nHMM = True\n\n<testcase_4>\nself = jieba\nsentence = \"数据科学与机器学习是当今热门的研究领域\"\nHMM = False\n\n<testcase_5>\nself = jieba\nsentence = \"在这个快节奏的时代，保持健康的生活方式很重要\"\nHMM = True\n```",
+  "needimport": "import jieba\n\n",
+  "test_results": {
+    "ans1": [
+      "我",
+      "来到",
+      "北京",
+      "清华",
+      "大学",
+      "清华大学"
+    ],
+    "ans2": [
+      "小",
+      "明",
+      "硕士",
+      "毕业",
+      "于",
+      "中国",
+      "科学院",
+      "中国科学院",
+      "计算",
+      "计算所",
+      "，",
+      "后",
+      "在",
+      "日本",
+      "京都",
+      "大学",
+      "日本京都大学",
+      "深造"
+    ],
+    "ans3": [
+      "今天",
+      "是",
+      "个",
+      "好日子",
+      "，",
+      "我们",
+      "去",
+      "公园",
+      "玩吧"
+    ],
+    "ans4": [
+      "数据",
+      "科学",
+      "与",
+      "机器",
+      "学习",
+      "是",
+      "当今",
+      "热门",
+      "的",
+      "研究",
+      "领域"
+    ],
+    "ans5": [
+      "在",
+      "这个",
+      "快节奏",
+      "的",
+      "时代",
+      "，",
+      "保持",
+      "健康",
+      "的",
+      "生活",
+      "方式",
+      "很",
+      "重要"
+    ]
+  }
+}

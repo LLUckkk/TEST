@@ -6,12 +6,19 @@ import time
 from contextlib import contextmanager
 import requests
 
-import pandas as pd
+import pytest
+
+
+class XPathElementNotFoundError(Exception):
+    def __init__(self, obj=None):
+        super().__init__("XPathElementNotFound")
 
 
 #############change###########
-def non_hyphenated_array_like(self):
-    return "array_like" in self.raw_doc
+def get(self, timeout=None) -> "XMLElement":
+    if not self.wait(timeout or self._global_timeout):
+        raise XPathElementNotFoundError(self)
+    return self.get_last_match()
 
 
 #############change###########
@@ -45,8 +52,7 @@ def safe_execute_testcase(testcase_func, timeout):
                     result_queue.put(('success', result))
         except Exception as e:
             if not event.is_set():
-                print(e)
-                result_queue.put(('error', e))
+                result_queue.put(('success', "catch exception"))
         finally:
             event.set()  # 标记线程已完成
 
@@ -80,59 +86,56 @@ def safe_execute_testcase(testcase_func, timeout):
     }
 
 
+class Dummy:
+    def __init__(self):
+        self._global_timeout = 1.0
+
+    def wait(self, timeout):
+        # 简单模拟等待逻辑：小于 1 秒超时失败，大于等于 1 秒成功
+        return timeout is not None and timeout >= 1.0
+
+    def get_last_match(self):
+        return "模拟元素内容"
+
+
 # 定义测试用例1
 def testcase_1():
-    class Dummy:
-        pass
-
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
+    timeout = 0.5
 
-    return non_hyphenated_array_like(self)
+    return get(self, timeout)
 
 
 # 定义测试用例2
 def testcase_2():
-    class Dummy:
-        pass
-
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
+    timeout = 2.0
 
-    return non_hyphenated_array_like(self)
+    return get(self, timeout)
 
 
 # 定义测试用例3
 def testcase_3():
-    class Dummy:
-        pass
-
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
+    timeout = None
 
-    return non_hyphenated_array_like(self)
+    return get(self, timeout)
 
 
 # 定义测试用例4
 def testcase_4():
-    class Dummy:
-        pass
-
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
+    timeout = 1.5
 
-    return non_hyphenated_array_like(self)
+    return get(self, timeout)
 
 
 # 定义测试用例5
 def testcase_5():
-    class Dummy:
-        pass
-
     self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
+    timeout = 0.1
 
-    return non_hyphenated_array_like(self)
+    return get(self, timeout)
 
 
 def main():

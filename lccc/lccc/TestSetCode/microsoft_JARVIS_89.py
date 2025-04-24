@@ -6,14 +6,16 @@ import time
 from contextlib import contextmanager
 import requests
 
-import pandas as pd
+import json
 
 
 #############change###########
-def non_hyphenated_array_like(self):
-    return "array_like" in self.raw_doc
-
-
+def replace_slot(text, entries):
+    for key, value in entries.items():
+        if not isinstance(value, str):
+            value = str(value)
+        text = text.replace("{{" + key +"}}", value.replace('"', "'").replace('\n', ""))
+    return text
 #############change###########
 
 
@@ -25,7 +27,6 @@ def request_context():
         yield session
     finally:
         session.close()
-
 
 def safe_execute_testcase(testcase_func, timeout):
     """完全解决线程残留问题的执行器"""
@@ -40,19 +41,18 @@ def safe_execute_testcase(testcase_func, timeout):
                     result = testcase_func(session=session)
                 else:
                     result = testcase_func()
-
+                
                 if not event.is_set():
                     result_queue.put(('success', result))
         except Exception as e:
             if not event.is_set():
-                print(e)
                 result_queue.put(('error', e))
         finally:
             event.set()  # 标记线程已完成
 
     t = threading.Thread(target=worker)
     t.daemon = True  # 必须设置为守护线程
-
+    
     start_time = time.time()
     t.start()
 
@@ -72,68 +72,64 @@ def safe_execute_testcase(testcase_func, timeout):
             'error': None if status == 'success' else str(data),
             'traceback': traceback.format_exc() if status == 'error' else None
         }
-
+    
     return {
         'success': False,
         'error': f'Timeout after {timeout} seconds',
         'traceback': 'Test execution timed out'
     }
 
-
 # 定义测试用例1
 def testcase_1():
-    class Dummy:
-        pass
-
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
-
-    return non_hyphenated_array_like(self)
-
+    text = "Hello, {{name}}! Welcome to {{place}}."
+    entries = {
+        "name": "Alice",
+        "place": "Wonderland"
+    }
+    
+    return replace_slot(text, entries)
 
 # 定义测试用例2
 def testcase_2():
-    class Dummy:
-        pass
-
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
-
-    return non_hyphenated_array_like(self)
-
+    text = "The quick {{color}} fox jumps over the lazy {{animal}}."
+    entries = {
+        "color": "brown",
+        "animal": "dog"
+    }
+    
+    return replace_slot(text, entries)
 
 # 定义测试用例3
 def testcase_3():
-    class Dummy:
-        pass
-
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
-
-    return non_hyphenated_array_like(self)
-
+    text = "Your order number {{order_id}} has been shipped and will arrive by {{date}}."
+    entries = {
+        "order_id": "12345",
+        "date": "2023-10-15"
+    }
+    
+    return replace_slot(text, entries)
 
 # 定义测试用例4
 def testcase_4():
-    class Dummy:
-        pass
-
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
-
-    return non_hyphenated_array_like(self)
-
+    text = "Dear {{title}} {{last_name}}, your appointment is scheduled for {{time}} on {{date}}."
+    entries = {
+        "title": "Dr.",
+        "last_name": "Smith",
+        "time": "3:00 PM",
+        "date": "2023-10-20"
+    }
+    
+    return replace_slot(text, entries)
 
 # 定义测试用例5
 def testcase_5():
-    class Dummy:
-        pass
-
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
-
-    return non_hyphenated_array_like(self)
-
+    text = "The temperature in {{city}} is currently {{temperature}} degrees Celsius."
+    entries = {
+        "city": "Paris",
+        "temperature": "18"
+    }
+    
+    return replace_slot(text, entries)
 
 def main():
     # 执行所有测试用例
@@ -155,6 +151,6 @@ def main():
 
     print(json.dumps(output, indent=2))
 
-
 if __name__ == '__main__':
-    main()
+    main()    
+   

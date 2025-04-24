@@ -1,0 +1,80 @@
+{
+  "input_header": "def _construct_result(self, result, name):",
+  "input_docstring": null,
+  "output_code": "    def _construct_result(self, result, name):\n        if isinstance(result, tuple):\n            return (\n                Index(result[0], name=name, dtype=result[0].dtype),\n                Index(result[1], name=name, dtype=result[1].dtype),\n            )\n        return Index(result, name=name, dtype=result.dtype)",
+  "input_contexts": [
+    {
+      "id": "pandas-dev_pandas_4663_1",
+      "input_code": "    def _logical_method(self, other, op):\n        res_name = ops.get_op_result_name(self, other)\n\n        lvalues = self._values\n        rvalues = extract_array(other, extract_numpy=True, extract_range=True)\n\n        res_values = ops.logical_op(lvalues, rvalues, op)\n        return self._construct_result(res_values, name=res_name)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nfrom pandas import Index\n\n<testcase_1>\nresult = pd.Series([1, 2, 3])\nname = \"test_series\"\n\n<testcase_2>\nresult = pd.Series([4, 5, 6])\nname = \"another_series\"\n\n<testcase_3>\nresult = pd.Series([7, 8, 9])\nname = \"yet_another_series\"\n\n<testcase_4>\nresult = (pd.Series([10, 11, 12]), pd.Series([13, 14, 15]))\nname = \"tuple_series\"\n\n<testcase_5>\nresult = pd.Series([16, 17, 18])\nname = \"final_series\""
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nfrom pandas import Index\n\n<testcase_1>\nresult = pd.Series([1, 2, 3])\nname = \"test_series\"\n\n<testcase_2>\nresult = pd.Series([4, 5, 6])\nname = \"another_series\"\n\n<testcase_3>\nresult = pd.Series([7, 8, 9])\nname = \"yet_another_series\"\n\n<testcase_4>\nresult = (pd.Series([10, 11, 12]), pd.Series([13, 14, 15]))\nname = \"tuple_series\"\n\n<testcase_5>\nresult = pd.Series([16, 17, 18])\nname = \"final_series\"",
+  "needimport": "import pandas as pd\nfrom pandas import Index\n\n",
+  "test_results": {
+    "ans1": {
+      "__type__": "Index",
+      "values": [
+        1,
+        2,
+        3
+      ],
+      "dtype": "int64",
+      "name": "test_series"
+    },
+    "ans2": {
+      "__type__": "Index",
+      "values": [
+        4,
+        5,
+        6
+      ],
+      "dtype": "int64",
+      "name": "another_series"
+    },
+    "ans3": {
+      "__type__": "Index",
+      "values": [
+        7,
+        8,
+        9
+      ],
+      "dtype": "int64",
+      "name": "yet_another_series"
+    },
+    "ans4": [
+      {
+        "__type__": "Index",
+        "values": [
+          10,
+          11,
+          12
+        ],
+        "dtype": "int64",
+        "name": "tuple_series"
+      },
+      {
+        "__type__": "Index",
+        "values": [
+          13,
+          14,
+          15
+        ],
+        "dtype": "int64",
+        "name": "tuple_series"
+      }
+    ],
+    "ans5": {
+      "__type__": "Index",
+      "values": [
+        16,
+        17,
+        18
+      ],
+      "dtype": "int64",
+      "name": "final_series"
+    }
+  }
+}

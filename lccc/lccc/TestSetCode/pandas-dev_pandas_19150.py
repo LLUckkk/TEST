@@ -6,12 +6,20 @@ import time
 from contextlib import contextmanager
 import requests
 
-import pandas as pd
+import pandas
+import platform as pl
 
 
 #############change###########
-def non_hyphenated_array_like(self):
-    return "array_like" in self.raw_doc
+def platform_name():
+    return "_".join(
+        [
+            str(pandas.__version__),
+            str(pl.machine()),
+            str(pl.system().lower()),
+            str(pl.python_version()),
+        ]
+    )
 
 
 #############change###########
@@ -82,57 +90,52 @@ def safe_execute_testcase(testcase_func, timeout):
 
 # 定义测试用例1
 def testcase_1():
-    class Dummy:
-        pass
+    pandas.__version__ = "1.3.3"
+    pl.machine = lambda: "x86_64"
+    pl.system = lambda: "Linux"
+    pl.python_version = lambda: "3.8.10"
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
-
-    return non_hyphenated_array_like(self)
+    return platform_name()
 
 
 # 定义测试用例2
 def testcase_2():
-    class Dummy:
-        pass
+    pandas.__version__ = "1.2.5"
+    pl.machine = lambda: "arm64"
+    pl.system = lambda: "Darwin"
+    pl.python_version = lambda: "3.9.7"
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
-
-    return non_hyphenated_array_like(self)
+    return platform_name()
 
 
 # 定义测试用例3
 def testcase_3():
-    class Dummy:
-        pass
+    pandas.__version__ = "1.1.5"
+    pl.machine = lambda: "AMD64"
+    pl.system = lambda: "Windows"
+    pl.python_version = lambda: "3.7.9"
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
-
-    return non_hyphenated_array_like(self)
+    return platform_name()
 
 
 # 定义测试用例4
 def testcase_4():
-    class Dummy:
-        pass
+    pandas.__version__ = "1.0.3"
+    pl.machine = lambda: "x86_64"
+    pl.system = lambda: "Linux"
+    pl.python_version = lambda: "3.6.12"
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
-
-    return non_hyphenated_array_like(self)
+    return platform_name()
 
 
 # 定义测试用例5
 def testcase_5():
-    class Dummy:
-        pass
+    pandas.__version__ = "1.4.0"
+    pl.machine = lambda: "armv7l"
+    pl.system = lambda: "Linux"
+    pl.python_version = lambda: "3.10.0"
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
-
-    return non_hyphenated_array_like(self)
+    return platform_name()
 
 
 def main():

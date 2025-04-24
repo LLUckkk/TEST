@@ -7,11 +7,14 @@ from contextlib import contextmanager
 import requests
 
 import pandas as pd
+from pandas._typing import Ordered
+from pandas.core.dtypes.inference import is_bool
 
 
 #############change###########
-def non_hyphenated_array_like(self):
-    return "array_like" in self.raw_doc
+def validate_ordered(ordered: Ordered) -> None:
+    if not is_bool(ordered):
+        raise TypeError("'ordered' must either be 'True' or 'False'")
 
 
 #############change###########
@@ -42,11 +45,11 @@ def safe_execute_testcase(testcase_func, timeout):
                     result = testcase_func()
 
                 if not event.is_set():
-                    result_queue.put(('success', result))
+                    result_queue.put(('success', "pass test"))
         except Exception as e:
             if not event.is_set():
                 print(e)
-                result_queue.put(('error', e))
+                result_queue.put(('success', "fail test"))
         finally:
             event.set()  # 标记线程已完成
 
@@ -82,57 +85,37 @@ def safe_execute_testcase(testcase_func, timeout):
 
 # 定义测试用例1
 def testcase_1():
-    class Dummy:
-        pass
+    ordered = True
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
-
-    return non_hyphenated_array_like(self)
+    return validate_ordered(ordered)
 
 
 # 定义测试用例2
 def testcase_2():
-    class Dummy:
-        pass
+    ordered = False
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
-
-    return non_hyphenated_array_like(self)
+    return validate_ordered(ordered)
 
 
 # 定义测试用例3
 def testcase_3():
-    class Dummy:
-        pass
+    ordered = pd.CategoricalDtype(categories=['a', 'b', 'c'], ordered=True).ordered
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
-
-    return non_hyphenated_array_like(self)
+    return validate_ordered(ordered)
 
 
 # 定义测试用例4
 def testcase_4():
-    class Dummy:
-        pass
+    ordered = pd.CategoricalDtype(categories=['x', 'y', 'z'], ordered=False).ordered
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
-
-    return non_hyphenated_array_like(self)
+    return validate_ordered(ordered)
 
 
 # 定义测试用例5
 def testcase_5():
-    class Dummy:
-        pass
+    ordered = bool(pd.Series([1, 2, 3]).is_monotonic_increasing)
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
-
-    return non_hyphenated_array_like(self)
+    return validate_ordered(ordered)
 
 
 def main():

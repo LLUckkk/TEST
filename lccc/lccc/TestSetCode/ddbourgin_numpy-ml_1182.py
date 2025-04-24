@@ -6,12 +6,15 @@ import time
 from contextlib import contextmanager
 import requests
 
+import numpy as np
 import pandas as pd
 
 
 #############change###########
-def non_hyphenated_array_like(self):
-    return "array_like" in self.raw_doc
+def random_stochastic_matrix(n_examples, n_classes):
+    X = np.random.rand(n_examples, n_classes)
+    X /= X.sum(axis=1, keepdims=True)
+    return X
 
 
 #############change###########
@@ -45,7 +48,6 @@ def safe_execute_testcase(testcase_func, timeout):
                     result_queue.put(('success', result))
         except Exception as e:
             if not event.is_set():
-                print(e)
                 result_queue.put(('error', e))
         finally:
             event.set()  # 标记线程已完成
@@ -82,57 +84,42 @@ def safe_execute_testcase(testcase_func, timeout):
 
 # 定义测试用例1
 def testcase_1():
-    class Dummy:
-        pass
+    n_examples = 5
+    n_classes = 3
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This function returns an array_like object'})()
-
-    return non_hyphenated_array_like(self)
+    return random_stochastic_matrix(n_examples, n_classes)
 
 
 # 定义测试用例2
 def testcase_2():
-    class Dummy:
-        pass
+    n_examples = 10
+    n_classes = 7
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'The parameter should be array_like'})()
-
-    return non_hyphenated_array_like(self)
+    return random_stochastic_matrix(n_examples, n_classes)
 
 
 # 定义测试用例3
 def testcase_3():
-    class Dummy:
-        pass
+    n_examples = 1
+    n_classes = 2
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'Ensure the input is an array_like structure'})()
-
-    return non_hyphenated_array_like(self)
+    return random_stochastic_matrix(n_examples, n_classes)
 
 
 # 定义测试用例4
 def testcase_4():
-    class Dummy:
-        pass
+    n_examples = 50
+    n_classes = 100
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'array_like is not mentioned here'})()
-
-    return non_hyphenated_array_like(self)
+    return random_stochastic_matrix(n_examples, n_classes)
 
 
 # 定义测试用例5
 def testcase_5():
-    class Dummy:
-        pass
+    n_examples = 1000
+    n_classes = 10
 
-    self = Dummy()
-    self = type('Doc', (object,), {'raw_doc': 'This documentation does not include the term'})()
-
-    return non_hyphenated_array_like(self)
+    return random_stochastic_matrix(n_examples, n_classes)
 
 
 def main():
@@ -145,12 +132,24 @@ def main():
         "ans5": safe_execute_testcase(testcase_5, timeout=5)
     }
 
+    def json_serializable(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, tuple):
+            return [json_serializable(i) for i in obj]
+        elif isinstance(obj, pd.Series):
+            return obj.tolist()
+        elif isinstance(obj, pd.DataFrame):
+            return obj.to_dict(orient="records")
+        else:
+            return str(obj)
+
     output = {
-        "ans1": test_results["ans1"]["result"] if test_results["ans1"]["success"] else None,
-        "ans2": test_results["ans2"]["result"] if test_results["ans2"]["success"] else None,
-        "ans3": test_results["ans3"]["result"] if test_results["ans3"]["success"] else None,
-        "ans4": test_results["ans4"]["result"] if test_results["ans4"]["success"] else None,
-        "ans5": test_results["ans5"]["result"] if test_results["ans5"]["success"] else None
+        "ans1": json_serializable(test_results["ans1"]["result"]) if test_results["ans1"]["success"] else None,
+        "ans2": json_serializable(test_results["ans2"]["result"]) if test_results["ans2"]["success"] else None,
+        "ans3": json_serializable(test_results["ans3"]["result"]) if test_results["ans3"]["success"] else None,
+        "ans4": json_serializable(test_results["ans4"]["result"]) if test_results["ans4"]["success"] else None,
+        "ans5": json_serializable(test_results["ans5"]["result"]) if test_results["ans5"]["success"] else None
     }
 
     print(json.dumps(output, indent=2))
