@@ -1,0 +1,229 @@
+{
+  "input_header": "def to_png_meta(self) -> PNGHeaderAlignmentsDict:",
+  "input_docstring": "Return the detected face formatted for insertion into a png itxt header.\n\nreturns: dict\n    The alignments dict will be returned with the keys ``x``, ``w``, ``y``, ``h``,\n    ``landmarks_xy`` and ``mask``",
+  "output_code": "    def to_png_meta(self) -> PNGHeaderAlignmentsDict:\n        \n        if (self.left is None or self.width is None or self.top is None or self.height is None):\n            raise AssertionError(\"Some detected face variables have not been initialized\")\n        alignment = PNGHeaderAlignmentsDict(\n            x=self.left,\n            w=self.width,\n            y=self.top,\n            h=self.height,\n            landmarks_xy=self.landmarks_xy.tolist(),\n            mask={name: mask.to_png_meta() for name, mask in self.mask.items()},\n            identity={k: v.tolist() for k, v in self._identity.items()})\n        return alignment",
+  "input_contexts": [
+    {
+      "id": "deepfakes_faceswap_120_3",
+      "input_code": "    def _update_png_headers(self) -> None:\n        \n        items = T.cast(dict[str, list[int]], self._items.items)\n        srcs = [(x[0], x[1][\"source\"])\n                for x in T.cast(list[tuple[str, \"PNGHeaderDict\"]], self._items.file_list_sorted)]\n        to_update = [            x for x in srcs\n            if x[1][\"face_index\"] != items[x[1][\"source_filename\"]].index(x[1][\"face_index\"])]\n\n        for item in tqdm(to_update, desc=\"Updating PNG Headers\", leave=False):\n            filename, file_info = item\n            frame = file_info[\"source_filename\"]\n            face_index = file_info[\"face_index\"]\n            new_index = items[frame].index(face_index)\n\n            fullpath = os.path.join(self._items.folder, filename)\n            logger.debug(\"Updating png header for '%s': face index from %s to %s\",\n                         fullpath, face_index, new_index)\n\n            orig_filename = f\"{os.path.splitext(frame)[0]}_{new_index}.png\"\n            file_info[\"face_index\"] = new_index\n            file_info[\"original_filename\"] = orig_filename\n\n            face = DetectedFace()\n            face.from_alignment(self._alignments.get_faces_in_frame(frame)[new_index])\n            meta = {\"alignments\": face.to_png_meta(),\n                    \"source\": {\"alignments_version\": file_info[\"alignments_version\"],\n                               \"original_filename\": orig_filename,\n                               \"face_index\": new_index,\n                               \"source_filename\": frame,\n                               \"source_is_video\": file_info[\"source_is_video\"],\n                               \"source_frame_dims\": file_info.get(\"source_frame_dims\")}}\n            update_existing_metadata(fullpath, meta)\n\n        logger.info(\"%s Extracted face(s) had their header information updated\", len(to_update))\n"
+    },
+    {
+      "id": "deepfakes_faceswap_120_2",
+      "input_code": "    def _update_png_header(cls,\n                           face_path: str,\n                           new_index: int,\n                           alignment: AlignmentFileDict,\n                           source_info: dict) -> None:\n        \n        face = DetectedFace()\n        face.from_alignment(alignment)\n        new_filename = f\"{os.path.splitext(source_info['source_filename'])[0]}_{new_index}.png\"\n\n        logger.trace(\"Updating png header for '%s': (face index from %s to %s, \"                     \"original filename from '%s' to '%s'\", face_path, source_info[\"face_index\"],\n                     new_index, source_info[\"original_filename\"], new_filename)\n\n        source_info[\"face_index\"] = new_index\n        source_info[\"original_filename\"] = new_filename\n        meta = {\"alignments\": face.to_png_meta(), \"source\": source_info}\n        update_existing_metadata(face_path, meta)\n"
+    },
+    {
+      "id": "deepfakes_faceswap_120_1",
+      "input_code": "def update_legacy_png_header(filename: str, alignments: Alignments\n                             ) -> PNGHeaderDict | None:\n    \n    if alignments.version > 2.0:\n        raise FaceswapError(\"The faces being passed in do not correspond to the given Alignments \"\n                            \"file. Please double check your sources and try again.\")\n    folder = os.path.dirname(filename)\n    if folder not in _HASHES_SEEN:\n        _HASHES_SEEN[folder] = {}\n    hashes_seen = _HASHES_SEEN[folder]\n\n    in_image = read_image(filename, raise_error=True)\n    in_hash = sha1(in_image).hexdigest()\n    hashes_seen[in_hash] = hashes_seen.get(in_hash, -1) + 1\n\n    alignment = alignments.hashes_to_alignment.get(in_hash)\n    if not alignment:\n        logger.debug(\"Alignments not found for image: '%s'\", filename)\n        return None\n\n    detected_face = DetectedFace()\n    detected_face.from_alignment(alignment)\n    src_fname, face_idx = list(alignments.hashes_to_frame[in_hash].items())[hashes_seen[in_hash]]\n    orig_filename = f\"{os.path.splitext(src_fname)[0]}_{face_idx}.png\"\n    meta = PNGHeaderDict(alignments=detected_face.to_png_meta(),\n                         source=PNGHeaderSourceDict(\n                            alignments_version=alignments.version,\n                            original_filename=orig_filename,\n                            face_index=face_idx,\n                            source_filename=src_fname,\n                            source_is_video=False,                            source_frame_dims=None))\n\n    out_filename = f\"{os.path.splitext(filename)[0]}.png\"\n    out_image = encode_image(in_image, \".png\", metadata=meta)\n\n    with open(out_filename, \"wb\") as out_file:\n        out_file.write(out_image)\n\n    if filename != out_filename:\n        logger.debug(\"Removing replaced face with deprecated extension: '%s'\", filename)\n        os.remove(filename)\n\n    return meta\n"
+    },
+    {
+      "id": "deepfakes_faceswap_120_4",
+      "input_code": "    def _output_faces(self, filename: str, image: np.ndarray) -> int:\n        \n        logger.trace(\"Outputting frame: %s\", filename)\n        face_count = 0\n        frame_name = os.path.splitext(filename)[0]\n        faces = self._select_valid_faces(filename, image)\n        assert self._saver is not None\n        if not faces:\n            return face_count\n        if self._is_legacy:\n            faces = self._process_legacy(filename, image, faces)\n\n        for idx, face in enumerate(faces):\n            output = f\"{frame_name}_{idx}.png\"\n            meta: PNGHeaderDict = {\n                \"alignments\": face.to_png_meta(),\n                \"source\": {\"alignments_version\": self._alignments.version,\n                           \"original_filename\": output,\n                           \"face_index\": idx,\n                           \"source_filename\": filename,\n                           \"source_is_video\": self._frames.is_video,\n                           \"source_frame_dims\": T.cast(tuple[int, int], image.shape[:2])}}\n            assert face.aligned.face is not None\n            self._saver.save(output, encode_image(face.aligned.face, \".png\", metadata=meta))\n            if self._min_size == 0 and self._is_legacy:\n                face.thumbnail = generate_thumbnail(face.aligned.face, size=96, quality=60)\n                self._alignments.data[filename][\"faces\"][idx] = face.to_alignment()\n            face_count += 1\n        self._saver.close()\n        return face_count\n"
+    },
+    {
+      "id": "deepfakes_faceswap_120_5",
+      "input_code": "    def _background_extract(self, output_folder: str, progress_queue: Queue) -> None:\n        \n        saver = ImagesSaver(get_folder(output_folder), as_bytes=True)\n        loader = ImagesLoader(self._input_location, count=self._alignments.frames_count)\n        for frame_idx, (filename, image) in enumerate(loader.load()):\n            logger.trace(\"Outputting frame: %s: %s\",                         frame_idx, filename)\n            src_filename = os.path.basename(filename)\n            progress_queue.put(1)\n\n            for face_idx, face in enumerate(self._frame_faces[frame_idx]):\n                output = f\"{os.path.splitext(src_filename)[0]}_{face_idx}.png\"\n                aligned = AlignedFace(face.landmarks_xy,\n                                      image=image,\n                                      centering=\"head\",\n                                      size=512)\n                meta: PNGHeaderDict = {\"alignments\": face.to_png_meta(),\n                                       \"source\": {\"alignments_version\": self._alignments.version,\n                                                  \"original_filename\": output,\n                                                  \"face_index\": face_idx,\n                                                  \"source_filename\": src_filename,\n                                                  \"source_is_video\": self._globals.is_video,\n                                                  \"source_frame_dims\": image.shape[:2]}}\n\n                assert aligned.face is not None\n                b_image = encode_image(aligned.face, \".png\", metadata=meta)\n                saver.save(output, b_image)\n        saver.close()\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\n\n<testcase_1>\nself.left = 10\nself.width = 100\nself.top = 20\nself.height = 200\nself.landmarks_xy = np.array([[30, 40], [50, 60], [70, 80]])\nself.mask = {\"face\": np.array([[1, 0], [0, 1]])}\nself._identity = {\"id\": np.array([1, 2, 3])}\n\n<testcase_2>\nself.left = 15\nself.width = 150\nself.top = 25\nself.height = 250\nself.landmarks_xy = np.array([[35, 45], [55, 65], [75, 85]])\nself.mask = {\"face\": np.array([[0, 1], [1, 0]])}\nself._identity = {\"id\": np.array([4, 5, 6])}\n\n<testcase_3>\nself.left = 20\nself.width = 200\nself.top = 30\nself.height = 300\nself.landmarks_xy = np.array([[40, 50], [60, 70], [80, 90]])\nself.mask = {\"face\": np.array([[1, 1], [1, 1]])}\nself._identity = {\"id\": np.array([7, 8, 9])}\n\n<testcase_4>\nself.left = 25\nself.width = 250\nself.top = 35\nself.height = 350\nself.landmarks_xy = np.array([[45, 55], [65, 75], [85, 95]])\nself.mask = {\"face\": np.array([[0, 0], [0, 0]])}\nself._identity = {\"id\": np.array([10, 11, 12])}\n\n<testcase_5>\nself.left = 30\nself.width = 300\nself.top = 40\nself.height = 400\nself.landmarks_xy = np.array([[50, 60], [70, 80], [90, 100]])\nself.mask = {\"face\": np.array([[1, 0], [0, 1]])}\nself._identity = {\"id\": np.array([13, 14, 15])}"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\n\n<testcase_1>\nself.left = 10\nself.width = 100\nself.top = 20\nself.height = 200\nself.landmarks_xy = np.array([[30, 40], [50, 60], [70, 80]])\nself.mask = {\"face\": np.array([[1, 0], [0, 1]])}\nself._identity = {\"id\": np.array([1, 2, 3])}\n\n<testcase_2>\nself.left = 15\nself.width = 150\nself.top = 25\nself.height = 250\nself.landmarks_xy = np.array([[35, 45], [55, 65], [75, 85]])\nself.mask = {\"face\": np.array([[0, 1], [1, 0]])}\nself._identity = {\"id\": np.array([4, 5, 6])}\n\n<testcase_3>\nself.left = 20\nself.width = 200\nself.top = 30\nself.height = 300\nself.landmarks_xy = np.array([[40, 50], [60, 70], [80, 90]])\nself.mask = {\"face\": np.array([[1, 1], [1, 1]])}\nself._identity = {\"id\": np.array([7, 8, 9])}\n\n<testcase_4>\nself.left = 25\nself.width = 250\nself.top = 35\nself.height = 350\nself.landmarks_xy = np.array([[45, 55], [65, 75], [85, 95]])\nself.mask = {\"face\": np.array([[0, 0], [0, 0]])}\nself._identity = {\"id\": np.array([10, 11, 12])}\n\n<testcase_5>\nself.left = 30\nself.width = 300\nself.top = 40\nself.height = 400\nself.landmarks_xy = np.array([[50, 60], [70, 80], [90, 100]])\nself.mask = {\"face\": np.array([[1, 0], [0, 1]])}\nself._identity = {\"id\": np.array([13, 14, 15])}",
+  "needimport": "import numpy as np\n\n",
+  "test_results": {
+    "ans1": {
+      "x": 10,
+      "w": 100,
+      "y": 20,
+      "h": 200,
+      "landmarks_xy": [
+        [
+          30,
+          40
+        ],
+        [
+          50,
+          60
+        ],
+        [
+          70,
+          80
+        ]
+      ],
+      "mask": {
+        "face": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      "identity": {
+        "id": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "ans2": {
+      "x": 15,
+      "w": 150,
+      "y": 25,
+      "h": 250,
+      "landmarks_xy": [
+        [
+          35,
+          45
+        ],
+        [
+          55,
+          65
+        ],
+        [
+          75,
+          85
+        ]
+      ],
+      "mask": {
+        "face": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      },
+      "identity": {
+        "id": [
+          4,
+          5,
+          6
+        ]
+      }
+    },
+    "ans3": {
+      "x": 20,
+      "w": 200,
+      "y": 30,
+      "h": 300,
+      "landmarks_xy": [
+        [
+          40,
+          50
+        ],
+        [
+          60,
+          70
+        ],
+        [
+          80,
+          90
+        ]
+      ],
+      "mask": {
+        "face": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "identity": {
+        "id": [
+          7,
+          8,
+          9
+        ]
+      }
+    },
+    "ans4": {
+      "x": 25,
+      "w": 250,
+      "y": 35,
+      "h": 350,
+      "landmarks_xy": [
+        [
+          45,
+          55
+        ],
+        [
+          65,
+          75
+        ],
+        [
+          85,
+          95
+        ]
+      ],
+      "mask": {
+        "face": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      },
+      "identity": {
+        "id": [
+          10,
+          11,
+          12
+        ]
+      }
+    },
+    "ans5": {
+      "x": 30,
+      "w": 300,
+      "y": 40,
+      "h": 400,
+      "landmarks_xy": [
+        [
+          50,
+          60
+        ],
+        [
+          70,
+          80
+        ],
+        [
+          90,
+          100
+        ]
+      ],
+      "mask": {
+        "face": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      "identity": {
+        "id": [
+          13,
+          14,
+          15
+        ]
+      }
+    }
+  }
+}

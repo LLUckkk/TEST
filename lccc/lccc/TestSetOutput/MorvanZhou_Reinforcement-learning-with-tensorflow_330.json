@@ -1,0 +1,27 @@
+{
+  "input_header": "def _get_priority(self, error):",
+  "input_docstring": null,
+  "output_code": "    def _get_priority(self, error):\n        error += self.epsilon\n        clipped_error = np.clip(error, 0, self.abs_err_upper)\n        return np.power(clipped_error, self.alpha)",
+  "input_contexts": [
+    {
+      "id": "MorvanZhou_Reinforcement-learning-with-tensorflow_330_1",
+      "input_code": "    def store(self, error, transition):\n        p = self._get_priority(error)\n        self.tree.add_new_priority(p, transition)\n"
+    },
+    {
+      "id": "MorvanZhou_Reinforcement-learning-with-tensorflow_330_2",
+      "input_code": "    def update(self, idx, error):\n        p = self._get_priority(error)\n        self.tree.update(idx, p)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport numpy as np\n\n<testcase_1>\nerror = 0.5\n\n<testcase_2>\nerror = -0.3\n\n<testcase_3>\nerror = 1.2\n\n<testcase_4>\nerror = 0.0\n\n<testcase_5>\nerror = 3.7\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport numpy as np\n\n<testcase_1>\nerror = 0.5\n\n<testcase_2>\nerror = -0.3\n\n<testcase_3>\nerror = 1.2\n\n<testcase_4>\nerror = 0.0\n\n<testcase_5>\nerror = 3.7\n```",
+  "needimport": "import numpy as np\n\n",
+  "test_results": {
+    "ans1": 0.6597618724022438,
+    "ans2": 0.0,
+    "ans3": 1.0,
+    "ans4": 0.5770799623628855,
+    "ans5": 1.0
+  }
+}

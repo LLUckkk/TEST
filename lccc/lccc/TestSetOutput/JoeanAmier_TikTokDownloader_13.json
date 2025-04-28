@@ -1,0 +1,52 @@
+{
+  "input_header": "def __create(self) -> dict:",
+  "input_docstring": "创建默认配置文件",
+  "output_code": "    def __create(self) -> dict:\n        \n        with self.file.open(\"w\", encoding=self.encode) as f:\n            dump(self.default, f, indent=4, ensure_ascii=False)\n        self.console.info(\n            _(\"创建默认配置文件 settings.json 成功！\\n\"\n              \"请参考项目文档的快速入门部分，设置 Cookie 后重新运行程序！\\n\"\n              \"建议根据实际使用需求修改配置文件 settings.json！\\n\"),\n        )\n        return self.default",
+  "input_contexts": [
+    {
+      "id": "JoeanAmier_TikTokDownloader_13_1",
+      "input_code": "    def read(self) -> dict:\n        \n        try:\n            if self.file.exists():\n                with self.file.open(\"r\", encoding=self.encode) as f:\n                    return self.__check(load(f))\n            return self.__create()\n        except JSONDecodeError:\n            self.console.error(\n                _(\"配置文件 settings.json 格式错误，请检查 JSON 格式！\"),\n            )\n            return self.default\n"
+    },
+    {
+      "id": "JoeanAmier_TikTokDownloader_13_2",
+      "input_code": "    def __check(self, data: dict) -> dict:\n        default_keys = self.default.keys()\n        data = self.__compatible_with_old_settings(data)\n        data_keys = set(data.keys())\n        if not (miss := default_keys - data_keys):\n            return data\n        if self.console.input(\n                _(\"配置文件 settings.json 缺少 {missing_params} 参数，是否需要生成默认配置文件(YES/NO): \").format(\n                    missing_params=', '.join(miss)\n                ),\n                style=ERROR,\n        ).upper() == \"YES\":\n            self.__create()\n        self.console.warning(_(\"本次运行将会使用各项参数默认值，程序功能可能无法正常使用！\"), )\n        return self.default\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\nfrom pathlib import Path\n\n<testcase_1>\nself.file = Path(\"settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"api_key\": \"your_api_key\",\n    \"timeout\": 30,\n    \"retry\": 3,\n    \"log_level\": \"INFO\"\n}\nself.console = Console()\n\n<testcase_2>\nself.file = Path(\"config/settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"username\": \"admin\",\n    \"password\": \"password123\",\n    \"host\": \"localhost\",\n    \"port\": 8080\n}\nself.console = Console()\n\n<testcase_3>\nself.file = Path(\"settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"theme\": \"dark\",\n    \"language\": \"en\",\n    \"notifications\": True,\n    \"auto_update\": False\n}\nself.console = Console()\n\n<testcase_4>\nself.file = Path(\"settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"max_connections\": 10,\n    \"min_connections\": 1,\n    \"connection_timeout\": 60,\n    \"use_ssl\": True\n}\nself.console = Console()\n\n<testcase_5>\nself.file = Path(\"settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"backup_interval\": \"daily\",\n    \"backup_location\": \"/backups\",\n    \"backup_retention\": 30,\n    \"backup_compression\": \"zip\"\n}\nself.console = Console()"
+  ],
+  "gpt_output": "<needimport>\nimport json\nfrom pathlib import Path\n\n<testcase_1>\nself.file = Path(\"settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"api_key\": \"your_api_key\",\n    \"timeout\": 30,\n    \"retry\": 3,\n    \"log_level\": \"INFO\"\n}\nself.console = Console()\n\n<testcase_2>\nself.file = Path(\"config/settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"username\": \"admin\",\n    \"password\": \"password123\",\n    \"host\": \"localhost\",\n    \"port\": 8080\n}\nself.console = Console()\n\n<testcase_3>\nself.file = Path(\"settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"theme\": \"dark\",\n    \"language\": \"en\",\n    \"notifications\": True,\n    \"auto_update\": False\n}\nself.console = Console()\n\n<testcase_4>\nself.file = Path(\"settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"max_connections\": 10,\n    \"min_connections\": 1,\n    \"connection_timeout\": 60,\n    \"use_ssl\": True\n}\nself.console = Console()\n\n<testcase_5>\nself.file = Path(\"settings.json\")\nself.encode = \"utf-8\"\nself.default = {\n    \"backup_interval\": \"daily\",\n    \"backup_location\": \"/backups\",\n    \"backup_retention\": 30,\n    \"backup_compression\": \"zip\"\n}\nself.console = Console()",
+  "needimport": "import json\nfrom pathlib import Path\n\n",
+  "test_results": {
+    "ans1": {
+      "api_key": "your_api_key",
+      "timeout": 30,
+      "retry": 3,
+      "log_level": "INFO"
+    },
+    "ans2": {
+      "username": "admin",
+      "password": "password123",
+      "host": "localhost",
+      "port": 8080
+    },
+    "ans3": {
+      "theme": "dark",
+      "language": "en",
+      "notifications": true,
+      "auto_update": false
+    },
+    "ans4": {
+      "max_connections": 10,
+      "min_connections": 1,
+      "connection_timeout": 60,
+      "use_ssl": true
+    },
+    "ans5": {
+      "backup_interval": "daily",
+      "backup_location": "/backups",
+      "backup_retention": 30,
+      "backup_compression": "zip"
+    }
+  }
+}

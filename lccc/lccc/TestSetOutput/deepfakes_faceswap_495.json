@@ -1,0 +1,23 @@
+{
+  "input_header": "def _ask_color(self, frame, title):",
+  "input_docstring": "Pop ask color dialog set to variable and change frame color ",
+  "output_code": "    def _ask_color(self, frame, title):\n        \n        color = self.option.tk_var.get()\n        chosen = colorchooser.askcolor(parent=frame, color=color, title=f\"{title} Color\")[1]\n        if chosen is None:\n            return\n        self.option.tk_var.set(chosen)",
+  "input_contexts": [
+    {
+      "id": "deepfakes_faceswap_495_1",
+      "input_code": "    def _color_control(self):\n        \n        logger.debug(\"Add control to Options Frame: (widget: '%s', control: %s, choices: %s)\",\n                     self.option.name, self.option.control, self.option.choices)\n        frame = ttk.Frame(self.frame, style=f\"{self._style}Group.TFrame\")\n        lbl = ttk.Label(frame,\n                        text=self.option.title,\n                        width=self.label_width,\n                        anchor=tk.W,\n                        style=f\"{self._style}Group.TLabel\")\n        ctl = tk.Frame(frame,\n                       bg=self.option.tk_var.get(),\n                       bd=2,\n                       cursor=\"hand2\",\n                       relief=tk.SUNKEN,\n                       width=round(int(20 * get_config().scaling_factor)),\n                       height=round(int(14 * get_config().scaling_factor)))\n        ctl.bind(\"<Button-1>\", lambda *e, c=ctl, t=self.option.title: self._ask_color(c, t))\n        lbl.pack(side=tk.LEFT, anchor=tk.N)\n        ctl.pack(side=tk.RIGHT, anchor=tk.W)\n        frame.pack(padx=5, side=tk.LEFT, anchor=tk.W)\n        if self.option.helptext is not None:\n            _get_tooltip(frame, text=self.option.helptext)\n        self.option.tk_var.trace(\"w\", lambda *e: ctl.config(bg=self.option.tk_var.get()))\n        logger.debug(\"Added control to Options Frame: %s\", self.option.name)\n        return ctl\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport tkinter as tk\nfrom tkinter import ttk\nfrom tkinter import colorchooser\n\n<testcase_1>\nframe = ttk.Frame()\ntitle = \"Background\"\n\n<testcase_2>\nframe = ttk.Frame()\ntitle = \"Foreground\"\n\n<testcase_3>\nframe = ttk.Frame()\ntitle = \"Border\"\n\n<testcase_4>\nframe = ttk.Frame()\ntitle = \"Text\"\n\n<testcase_5>\nframe = ttk.Frame()\ntitle = \"Highlight\""
+  ],
+  "gpt_output": "<needimport>\nimport tkinter as tk\nfrom tkinter import ttk\nfrom tkinter import colorchooser\n\n<testcase_1>\nframe = ttk.Frame()\ntitle = \"Background\"\n\n<testcase_2>\nframe = ttk.Frame()\ntitle = \"Foreground\"\n\n<testcase_3>\nframe = ttk.Frame()\ntitle = \"Border\"\n\n<testcase_4>\nframe = ttk.Frame()\ntitle = \"Text\"\n\n<testcase_5>\nframe = ttk.Frame()\ntitle = \"Highlight\"",
+  "needimport": "import tkinter as tk\nfrom tkinter import ttk\nfrom tkinter import colorchooser\n\n",
+  "test_results": {
+    "ans1": null,
+    "ans2": null,
+    "ans3": null,
+    "ans4": null,
+    "ans5": null
+  }
+}

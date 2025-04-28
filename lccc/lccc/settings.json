@@ -1,0 +1,6 @@
+{
+    "backup_interval": "daily",
+    "backup_location": "/backups",
+    "backup_retention": 30,
+    "backup_compression": "zip"
+}

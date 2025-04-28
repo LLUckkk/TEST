@@ -1,0 +1,23 @@
+{
+  "input_header": "def get_estimated_inputs_size_gigabytes(self) -> Optional[float]:",
+  "input_docstring": null,
+  "output_code": "    def get_estimated_inputs_size_gigabytes(self) -> Optional[float]:\n        return self.estimated_inputs_size_gigabytes",
+  "input_contexts": [
+    {
+      "id": "skypilot-org_skypilot_2881_1",
+      "input_code": "    def _get_egress_info(\n        parent: task_lib.Task,\n        parent_resources: resources_lib.Resources,\n        node: task_lib.Task,\n        resources: resources_lib.Resources,\n    ) -> Tuple[Optional[clouds.Cloud], Optional[clouds.Cloud], Optional[float]]:\n        if isinstance(parent_resources.cloud, DummyCloud):\n            if node.get_inputs() is None:\n                return None, None, 0\n            src_cloud = node.get_inputs_cloud()\n            nbytes = node.get_estimated_inputs_size_gigabytes()\n        else:\n            src_cloud = parent_resources.cloud\n            nbytes = parent.get_estimated_outputs_size_gigabytes()\n        dst_cloud = resources.cloud\n        return src_cloud, dst_cloud, nbytes\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport random\n\n<testcase_1>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': 10.5})()\n\n<testcase_2>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': None})()\n\n<testcase_3>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': 0.0})()\n\n<testcase_4>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': 250.75})()\n\n<testcase_5>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': random.uniform(0, 500)})()\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport random\n\n<testcase_1>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': 10.5})()\n\n<testcase_2>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': None})()\n\n<testcase_3>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': 0.0})()\n\n<testcase_4>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': 250.75})()\n\n<testcase_5>\nself = type('TestNode', (object,), {'estimated_inputs_size_gigabytes': random.uniform(0, 500)})()\n```",
+  "needimport": "import random\n\n",
+  "test_results": {
+    "ans1": 10.5,
+    "ans2": null,
+    "ans3": 0.0,
+    "ans4": 250.75,
+    "ans5": 158.5
+  }
+}

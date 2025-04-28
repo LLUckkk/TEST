@@ -203,7 +203,7 @@ def fill_template(template_path, replacements):
 
 def solve(dataset: Dict[str, Dict]) -> Dict[str, List[Dict]]:
     cnt = 1
-    index = 100
+    index = 123
 
     for item_key in dataset:
         if cnt < index:
@@ -274,7 +274,6 @@ def solve(dataset: Dict[str, Dict]) -> Dict[str, List[Dict]]:
 
 
 def execute_test_code(filename):
-    # 执行该文件
     try:
         result = subprocess.run(
             [sys.executable, filename],
@@ -284,8 +283,11 @@ def execute_test_code(filename):
             check=True
         )
         # 解析标准输出的最后一行（JSON字符串）
+        print("完整输出：\n" + result.stdout)
         output_line = result.stdout.strip().split('\n')[-1]
         ans_data = json.loads(result.stdout)  # 转为字典
+        # with open('output.json', 'r', encoding='utf-8') as f:
+        #     ans_data = json.load(f)
         print(f"执行成功:\n{result.stdout}")
 
         return {

@@ -1,0 +1,105 @@
+{
+  "input_header": "def get_study(seed: int, n_trials: int, is_multi_obj: bool) -> Study:",
+  "input_docstring": null,
+  "output_code": "def get_study(seed: int, n_trials: int, is_multi_obj: bool) -> Study:\n    directions = [\"minimize\", \"minimize\"] if is_multi_obj else [\"minimize\"]\n    study = create_study(sampler=RandomSampler(seed=seed), directions=directions)\n    if is_multi_obj:\n        study.optimize(multi_objective_function, n_trials=n_trials)\n    else:\n        study.optimize(objective, n_trials=n_trials)\n\n    return study",
+  "input_contexts": [
+    {
+      "id": "optuna_optuna_1361_2",
+      "input_code": "def test_n_trials_equal_to_min_n_top_trials() -> None:\n    evaluator = PedAnovaImportanceEvaluator()\n    study = get_study(seed=0, n_trials=evaluator._min_n_top_trials, is_multi_obj=False)\n    param_importance = list(evaluator.evaluate(study).values())\n    n_params = len(param_importance)\n    assert np.allclose(param_importance, np.zeros(n_params))\n"
+    },
+    {
+      "id": "optuna_optuna_1361_7",
+      "input_code": "def test_n_trees_of_tree_based_evaluator(\n    evaluator_cls: type[FanovaImportanceEvaluator | MeanDecreaseImpurityImportanceEvaluator],\n) -> None:\n    study = get_study(seed=0, n_trials=3, is_multi_obj=False)\n    evaluator = evaluator_cls(n_trees=10, seed=0)\n    param_importance = evaluator.evaluate(study)\n\n    evaluator = evaluator_cls(n_trees=20, seed=0)\n    param_importance_different_n_trees = evaluator.evaluate(study)\n\n    assert param_importance != param_importance_different_n_trees\n"
+    },
+    {
+      "id": "optuna_optuna_1361_5",
+      "input_code": "def test_baseline_quantile() -> None:\n    study = get_study(seed=0, n_trials=20, is_multi_obj=False)\n    default_evaluator = PedAnovaImportanceEvaluator(baseline_quantile=0.1)\n    evaluator = PedAnovaImportanceEvaluator(baseline_quantile=0.3)\n    assert evaluator.evaluate(study) != default_evaluator.evaluate(study)\n"
+    },
+    {
+      "id": "optuna_optuna_1361_1",
+      "input_code": "def test_error_in_ped_anova() -> None:\n    with pytest.raises(RuntimeError):\n        evaluator = PedAnovaImportanceEvaluator()\n        study = get_study(seed=0, n_trials=5, is_multi_obj=True)\n        evaluator.evaluate(study)\n"
+    },
+    {
+      "id": "optuna_optuna_1361_9",
+      "input_code": "def test_evaluator_with_infinite(\n    evaluator: BaseImportanceEvaluator, inf_value: float, target_idx: int | None\n) -> None:\n    is_multi_obj = target_idx is not None\n    study = get_study(seed=13, n_trials=10, is_multi_obj=is_multi_obj)\n    target = (lambda t: t.values[target_idx]) if is_multi_obj else None\n    param_importance_without_inf = evaluator.evaluate(study, target=target)\n\n    study.add_trial(\n        create_trial(\n            values=[inf_value] if not is_multi_obj else [inf_value, inf_value],\n            params={\"x1\": 1.0, \"x2\": 1.0, \"x3\": 3.0},\n            distributions={\n                \"x1\": FloatDistribution(low=0.1, high=3),\n                \"x2\": FloatDistribution(low=0.1, high=3, log=True),\n                \"x3\": FloatDistribution(low=2, high=4, log=True),\n            },\n        )\n    )\n    param_importance_with_inf = evaluator.evaluate(study, target=target)\n\n    assert param_importance_with_inf == param_importance_without_inf\n"
+    },
+    {
+      "id": "optuna_optuna_1361_3",
+      "input_code": "def test_baseline_quantile_is_1() -> None:\n    study = get_study(seed=0, n_trials=100, is_multi_obj=False)\n    evaluator = PedAnovaImportanceEvaluator(baseline_quantile=1.0)\n    param_importance = list(evaluator.evaluate(study).values())\n    n_params = len(param_importance)\n    assert np.allclose(param_importance, np.zeros(n_params))\n"
+    },
+    {
+      "id": "optuna_optuna_1361_6",
+      "input_code": "def test_evaluate_on_local() -> None:\n    study = get_study(seed=0, n_trials=20, is_multi_obj=False)\n    default_evaluator = PedAnovaImportanceEvaluator(evaluate_on_local=True)\n    global_evaluator = PedAnovaImportanceEvaluator(evaluate_on_local=False)\n    assert global_evaluator.evaluate(study) != default_evaluator.evaluate(study)\n"
+    },
+    {
+      "id": "optuna_optuna_1361_4",
+      "input_code": "def test_direction() -> None:\n    study_minimize = get_study(seed=0, n_trials=20, is_multi_obj=False)\n    study_maximize = optuna.create_study(direction=\"maximize\")\n    study_maximize.add_trials(study_minimize.trials)\n\n    evaluator = PedAnovaImportanceEvaluator()\n    assert evaluator.evaluate(study_minimize) != evaluator.evaluate(study_maximize)\n"
+    },
+    {
+      "id": "optuna_optuna_1361_8",
+      "input_code": "def test_max_depth_of_tree_based_evaluator(\n    evaluator_cls: type[FanovaImportanceEvaluator | MeanDecreaseImpurityImportanceEvaluator],\n) -> None:\n    study = get_study(seed=0, n_trials=3, is_multi_obj=False)\n    evaluator = evaluator_cls(max_depth=1, seed=0)\n    param_importance = evaluator.evaluate(study)\n\n    evaluator = evaluator_cls(max_depth=2, seed=0)\n    param_importance_different_max_depth = evaluator.evaluate(study)\n\n    assert param_importance != param_importance_different_max_depth\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport optuna\nfrom optuna.samplers import RandomSampler\n\n<testcase_1>\nseed = 42\nn_trials = 10\nis_multi_obj = False\n\n<testcase_2>\nseed = 123\nn_trials = 50\nis_multi_obj = True\n\n<testcase_3>\nseed = 0\nn_trials = 5\nis_multi_obj = False\n\n<testcase_4>\nseed = 7\nn_trials = 20\nis_multi_obj = True\n\n<testcase_5>\nseed = 99\nn_trials = 100\nis_multi_obj = False\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport optuna\nfrom optuna.samplers import RandomSampler\n\n<testcase_1>\nseed = 42\nn_trials = 10\nis_multi_obj = False\n\n<testcase_2>\nseed = 123\nn_trials = 50\nis_multi_obj = True\n\n<testcase_3>\nseed = 0\nn_trials = 5\nis_multi_obj = False\n\n<testcase_4>\nseed = 7\nn_trials = 20\nis_multi_obj = True\n\n<testcase_5>\nseed = 99\nn_trials = 100\nis_multi_obj = False\n```",
+  "needimport": "import optuna\nfrom optuna.samplers import RandomSampler\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        0.0004973004749973951
+      ]
+    ],
+    "ans2": [
+      [
+        6.380438969185811,
+        38.29936205294698
+      ],
+      [
+        15.098594340963274,
+        13.973034814861379
+      ],
+      [
+        30.238471078697113,
+        4.966218176243295
+      ],
+      [
+        57.29642746927293,
+        0.5748783702540636
+      ],
+      [
+        1.4392140523334866,
+        43.059043263985664
+      ]
+    ],
+    "ans3": [
+      [
+        0.0030544989253336228
+      ]
+    ],
+    "ans4": [
+      [
+        66.23512621432769,
+        0.27398419457138623
+      ],
+      [
+        7.451425358168888,
+        40.76221353564393
+      ],
+      [
+        27.215913553541792,
+        22.22975292130412
+      ],
+      [
+        2.487246266260017,
+        77.90855265093988
+      ]
+    ],
+    "ans5": [
+      [
+        0.07706222447090186
+      ]
+    ]
+  }
+}

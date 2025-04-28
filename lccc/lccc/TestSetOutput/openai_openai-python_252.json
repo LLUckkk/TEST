@@ -1,0 +1,43 @@
+{
+  "input_header": "def stringify( self, params: Params, *, array_format: NotGivenOr[ArrayFormat] = NOT_GIVEN, nested_format: NotGivenOr[NestedFormat] = NOT_GIVEN, ) -> str:",
+  "input_docstring": null,
+  "output_code": "    def stringify(\n        self,\n        params: Params,\n        *,\n        array_format: NotGivenOr[ArrayFormat] = NOT_GIVEN,\n        nested_format: NotGivenOr[NestedFormat] = NOT_GIVEN,\n    ) -> str:\n        return urlencode(\n            self.stringify_items(\n                params,\n                array_format=array_format,\n                nested_format=nested_format,\n            )\n        )",
+  "input_contexts": [
+    {
+      "id": "openai_openai-python_252_1",
+      "input_code": "    def _build_request(\n        self,\n        options: FinalRequestOptions,\n        *,\n        retries_taken: int = 0,\n    ) -> httpx.Request:\n        if log.isEnabledFor(logging.DEBUG):\n            log.debug(\"Request options: %s\", model_dump(options, exclude_unset=True))\n\n        kwargs: dict[str, Any] = {}\n\n        json_data = options.json_data\n        if options.extra_json is not None:\n            if json_data is None:\n                json_data = cast(Body, options.extra_json)\n            elif is_mapping(json_data):\n                json_data = _merge_mappings(json_data, options.extra_json)\n            else:\n                raise RuntimeError(f\"Unexpected JSON data type, {type(json_data)}, cannot merge with `extra_body`\")\n\n        headers = self._build_headers(options, retries_taken=retries_taken)\n        params = _merge_mappings(self.default_query, options.params)\n        content_type = headers.get(\"Content-Type\")\n        files = options.files\n\n        if content_type is not None and content_type.startswith(\"multipart/form-data\"):\n            if \"boundary\" not in content_type:\n                headers.pop(\"Content-Type\")\n\n            if json_data:\n                if not is_dict(json_data):\n                    raise TypeError(\n                        f\"Expected query input to be a dictionary for multipart requests but got {type(json_data)} instead.\"\n                    )\n                kwargs[\"data\"] = self._serialize_multipartform(json_data)\n\n            if not files:\n                files = cast(HttpxRequestFiles, ForceMultipartDict())\n\n        prepared_url = self._prepare_url(options.url)\n        if \"_\" in prepared_url.host:\n            kwargs[\"extensions\"] = {\"sni_hostname\": prepared_url.host.replace(\"_\", \"-\")}\n\n        return self._client.build_request(            headers=headers,\n            timeout=self.timeout if isinstance(options.timeout, NotGiven) else options.timeout,\n            method=options.method,\n            url=prepared_url,\n            params=self.qs.stringify(cast(Mapping[str, Any], params)) if params else None,\n            json=json_data,\n            files=files,\n            **kwargs,\n        )\n"
+    },
+    {
+      "id": "openai_openai-python_252_2",
+      "input_code": "def test_empty() -> None:\n    assert stringify({}) == \"\"\n    assert stringify({\"a\": {}}) == \"\"\n    assert stringify({\"a\": {\"b\": {\"c\": {}}}}) == \"\"\n"
+    },
+    {
+      "id": "openai_openai-python_252_5",
+      "input_code": "def test_array_repeat() -> None:\n    assert unquote(stringify({\"in\": [\"foo\", \"bar\"]})) == \"in=foo&in=bar\"\n    assert unquote(stringify({\"a\": {\"b\": [True, False]}})) == \"a[b]=true&a[b]=false\"\n    assert unquote(stringify({\"a\": {\"b\": [True, False, None, True]}})) == \"a[b]=true&a[b]=false&a[b]=true\"\n    assert unquote(stringify({\"in\": [\"foo\", {\"b\": {\"c\": [\"d\", \"e\"]}}]})) == \"in=foo&in[b][c]=d&in[b][c]=e\"\n"
+    },
+    {
+      "id": "openai_openai-python_252_6",
+      "input_code": "def test_unknown_array_format() -> None:\n    with pytest.raises(NotImplementedError, match=\"Unknown array_format value: foo, choose from comma, repeat\"):\n        stringify({\"a\": [\"foo\", \"bar\"]}, array_format=cast(Any, \"foo\"))\n"
+    },
+    {
+      "id": "openai_openai-python_252_4",
+      "input_code": "def test_nested_brackets() -> None:\n    assert unquote(stringify({\"a\": {\"b\": \"c\"}})) == \"a[b]=c\"\n    assert unquote(stringify({\"a\": {\"b\": \"c\", \"d\": \"e\", \"f\": \"g\"}})) == \"a[b]=c&a[d]=e&a[f]=g\"\n    assert unquote(stringify({\"a\": {\"b\": {\"c\": {\"d\": \"e\"}}}})) == \"a[b][c][d]=e\"\n    assert unquote(stringify({\"a\": {\"b\": True}})) == \"a[b]=true\"\n"
+    },
+    {
+      "id": "openai_openai-python_252_3",
+      "input_code": "def test_basic() -> None:\n    assert stringify({\"a\": 1}) == \"a=1\"\n    assert stringify({\"a\": \"b\"}) == \"a=b\"\n    assert stringify({\"a\": True}) == \"a=true\"\n    assert stringify({\"a\": False}) == \"a=false\"\n    assert stringify({\"a\": 1.23456}) == \"a=1.23456\"\n    assert stringify({\"a\": None}) == \"\"\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport urllib.parse\nfrom typing import Any, Dict\n\n<testcase_1>\nparams: Dict[str, Any] = {\"name\": \"Alice\", \"age\": 30, \"active\": True}\n\n<testcase_2>\nparams: Dict[str, Any] = {\"search\": {\"query\": \"openai\", \"page\": 2}}\n\n<testcase_3>\nparams: Dict[str, Any] = {\"filters\": {\"category\": [\"books\", \"electronics\"], \"price\": {\"min\": 10, \"max\": 100}}}\n\n<testcase_4>\nparams: Dict[str, Any] = {\"user\": {\"id\": 123, \"preferences\": {\"newsletter\": False, \"notifications\": True}}}\n\n<testcase_5>\nparams: Dict[str, Any] = {\"order\": {\"items\": [{\"id\": 1, \"quantity\": 2}, {\"id\": 2, \"quantity\": 1}], \"total\": 59.99}}\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport urllib.parse\nfrom typing import Any, Dict\n\n<testcase_1>\nparams: Dict[str, Any] = {\"name\": \"Alice\", \"age\": 30, \"active\": True}\n\n<testcase_2>\nparams: Dict[str, Any] = {\"search\": {\"query\": \"openai\", \"page\": 2}}\n\n<testcase_3>\nparams: Dict[str, Any] = {\"filters\": {\"category\": [\"books\", \"electronics\"], \"price\": {\"min\": 10, \"max\": 100}}}\n\n<testcase_4>\nparams: Dict[str, Any] = {\"user\": {\"id\": 123, \"preferences\": {\"newsletter\": False, \"notifications\": True}}}\n\n<testcase_5>\nparams: Dict[str, Any] = {\"order\": {\"items\": [{\"id\": 1, \"quantity\": 2}, {\"id\": 2, \"quantity\": 1}], \"total\": 59.99}}\n```",
+  "needimport": "import urllib.parse\nfrom typing import Any, Dict\n\n",
+  "test_results": {
+    "ans1": "name=Alice&age=30&active=True",
+    "ans2": "search.query=openai&search.page=2",
+    "ans3": "filters%5Bcategory%5D%5B0%5D=books&filters%5Bcategory%5D%5B1%5D=electronics&filters%5Bprice%5D%5Bmin%5D=10&filters%5Bprice%5D%5Bmax%5D=100",
+    "ans4": "user.id=123&user.preferences.newsletter=False&user.preferences.notifications=True",
+    "ans5": "order%5Bitems%5D%5B%5D=id&order%5Bitems%5D%5B%5D=quantity&order%5Bitems%5D%5B%5D=id&order%5Bitems%5D%5B%5D=quantity&order%5Btotal%5D=59.99"
+  }
+}

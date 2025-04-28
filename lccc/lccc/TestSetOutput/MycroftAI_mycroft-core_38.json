@@ -1,0 +1,85 @@
+{
+  "input_header": "def get(self):",
+  "input_docstring": "Retrieve all device information from the web backend ",
+  "output_code": "    def get(self):\n        \n        return self.request({\n            \"path\": \"/\" + UUID\n        })",
+  "input_contexts": [
+    {
+      "id": "MycroftAI_mycroft-core_38_6",
+      "input_code": "    def build_query(self, params):\n        return params.get(\"query\")\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_12",
+      "input_code": "def check_remote_pairing(ignore_errors):\n    \n    try:\n        DeviceApi().get()\n        return True\n    except HTTPError as e:\n        if e.response.status_code == 401:\n            return False\n        error = e\n    except Exception as e:\n        error = e\n\n    LOG.warning('Could not get device info: {}'.format(repr(error)))\n\n    if ignore_errors:\n        return False\n\n    if isinstance(error, HTTPError):\n        if connected():\n            raise BackendDown from error\n        else:\n            raise InternetDown from error\n    else:\n        raise error\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_8",
+      "input_code": "    def build_url(self, params):\n        path = params.get(\"path\", \"\")\n        version = params.get(\"version\", self.version)\n        return self.url + \"/\" + version + \"/\" + path\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_4",
+      "input_code": "    def build_data(self, params):\n        return params.get(\"data\")\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_13",
+      "input_code": "    def account_id(self):\n        \n        if not self._account_id:\n            try:\n                self._account_id = DeviceApi().get()['user']['uuid']\n            except (requests.RequestException, AttributeError):\n                pass\n            except Exception as e:\n                LOG.debug('Unhandled exception while determining device_id, '\n                          'Error: {}'.format(repr(e)))\n\n        return self._account_id or '0'\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_2",
+      "input_code": "    def send(self, params, no_refresh=False):\n        \n        query_data = frozenset(params.get('query', {}).items())\n        params_key = (params.get('path'), query_data)\n        etag = self.params_to_etag.get(params_key)\n\n        method = params.get(\"method\", \"GET\")\n        headers = self.build_headers(params)\n        data = self.build_data(params)\n        json_body = self.build_json(params)\n        query = self.build_query(params)\n        url = self.build_url(params)\n\n        if etag:\n            headers['If-None-Match'] = etag\n\n        response = requests.request(\n            method, url, headers=headers, params=query,\n            data=data, json=json_body, timeout=(3.05, 15)\n        )\n        if response.status_code == 304:\n            response = self.etag_to_response[etag]\n        elif 'ETag' in response.headers:\n            etag = response.headers['ETag'].strip('\"')\n            self.params_to_etag[params_key] = etag\n            self.etag_to_response[etag] = response\n\n        return self.get_response(response, no_refresh)\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_9",
+      "input_code": "    def is_subscriber(self):\n        \n        try:\n            return self.get_subscription().get('@type') != 'free'\n        except Exception:\n            return False\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_1",
+      "input_code": "    def __init__(self, path):\n        self.path = path\n\n        config = Configuration.get(cache=False, remote=False)\n        config_server = config.get(\"server\")\n        self.url = config_server.get(\"url\")\n        self.version = config_server.get(\"version\")\n        self.identity = IdentityManager.get()\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_11",
+      "input_code": "    def upload_skills_data(self, data):\n        \n        if not isinstance(data, dict):\n            raise ValueError('data must be of type dict')\n\n        _data = deepcopy(data)\n        to_send = {}\n        if 'blacklist' in _data:\n            to_send['blacklist'] = _data['blacklist']\n        else:\n            LOG.warning('skills manifest lacks blacklist entry')\n            to_send['blacklist'] = []\n\n        if 'skills' in _data:\n            skills = {s['name']: s for s in _data['skills']}\n            to_send['skills'] = [skills[key] for key in skills]\n        else:\n            LOG.warning('skills manifest lacks skills entry')\n            to_send['skills'] = []\n\n        for s in to_send['skills']:\n            if 'update' in s:\n                s.pop('update')\n\n            s['skill_gid'] = s.get('skill_gid', '').replace(\n                '@|', '@{}|'.format(self.identity.uuid))\n\n        self.request({\n            \"method\": \"PUT\",\n            \"path\": \"/\" + UUID + \"/skillJson\",\n            \"json\": to_send\n            })\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_14",
+      "input_code": "    def test_device_get(self, mock_request, mock_identity_get):\n        mock_request.return_value = create_response(200)\n        mock_identity_get.return_value = create_identity('1234')\n        device = mycroft.api.DeviceApi()\n        device.get()\n        url = mock_request.call_args[0][1]\n        self.assertEqual(url, 'https://api-test.mycroft.ai/v1/device/1234')\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_5",
+      "input_code": "    def build_json(self, params):\n        json = params.get(\"json\")\n        if json and params[\"headers\"][\"Content-Type\"] == \"application/json\":\n            for k, v in json.items():\n                if v == \"\":\n                    json[k] = None\n            params[\"json\"] = json\n        return json\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_3",
+      "input_code": "    def build_headers(self, params):\n        headers = params.get(\"headers\", {})\n        self.add_content_type(headers)\n        self.add_authorization(headers)\n        params[\"headers\"] = headers\n        return headers\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_10",
+      "input_code": "    def get_subscriber_voice_url(self, voice=None):\n        self.check_token()\n        archs = {'x86_64': 'x86_64', 'armv7l': 'arm', 'aarch64': 'arm'}\n        arch = archs.get(get_arch())\n        if arch:\n            path = '/' + UUID + '/voice?arch=' + arch\n            return self.request({'path': path})['link']\n"
+    },
+    {
+      "id": "MycroftAI_mycroft-core_38_7",
+      "input_code": "    def build_path(self, params):\n        path = params.get(\"path\", \"\")\n        params[\"path\"] = self.path + path\n        return params[\"path\"]\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport requests\nimport json\nfrom unittest.mock import Mock\n\n<testcase_1>\nUUID = \"1234\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID 1234\"}\n\n<testcase_2>\nUUID = \"5678\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID 5678\"}\n\n<testcase_3>\nUUID = \"abcd\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID abcd\"}\n\n<testcase_4>\nUUID = \"efgh\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID efgh\"}\n\n<testcase_5>\nUUID = \"ijkl\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID ijkl\"}"
+  ],
+  "gpt_output": "<needimport>\nimport requests\nimport json\nfrom unittest.mock import Mock\n\n<testcase_1>\nUUID = \"1234\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID 1234\"}\n\n<testcase_2>\nUUID = \"5678\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID 5678\"}\n\n<testcase_3>\nUUID = \"abcd\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID abcd\"}\n\n<testcase_4>\nUUID = \"efgh\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID efgh\"}\n\n<testcase_5>\nUUID = \"ijkl\"\nself = Mock()\nself.request.return_value = {\"device_info\": \"Device data for UUID ijkl\"}",
+  "needimport": "import requests\nimport json\nfrom unittest.mock import Mock\n\n",
+  "test_results": {
+    "ans1": {
+      "device_info": "Device data for UUID 1234"
+    },
+    "ans2": {
+      "device_info": "Device data for UUID 5678"
+    },
+    "ans3": {
+      "device_info": "Device data for UUID abcd"
+    },
+    "ans4": {
+      "device_info": "Device data for UUID efgh"
+    },
+    "ans5": {
+      "device_info": "Device data for UUID ijkl"
+    }
+  }
+}

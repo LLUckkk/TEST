@@ -1,0 +1,31 @@
+{
+  "input_header": "def normalize_path(self, path):",
+  "input_docstring": null,
+  "output_code": "    def normalize_path(self, path):\n        orig_path = path\n        res = self.normalized_path.get(orig_path)\n        if res:\n            return res\n\n        path = str(Path(PurePosixPath((Path(self.root) / path).relative_to(self.root))))\n        self.normalized_path[orig_path] = path\n        return path",
+  "input_contexts": [
+    {
+      "id": "Aider-AI_aider_450_2",
+      "input_code": "    def ignored_file_raw(self, fname):\n        if self.subtree_only:\n            try:\n                fname_path = Path(self.normalize_path(fname))\n                cwd_path = Path.cwd().resolve().relative_to(Path(self.root).resolve())\n            except ValueError:\n                return True\n\n            if cwd_path not in fname_path.parents and fname_path != cwd_path:\n                return True\n\n        if not self.aider_ignore_file or not self.aider_ignore_file.is_file():\n            return False\n\n        try:\n            fname = self.normalize_path(fname)\n        except ValueError:\n            return True\n\n        return self.aider_ignore_spec.match_file(fname)\n"
+    },
+    {
+      "id": "Aider-AI_aider_450_1",
+      "input_code": "    def get_tracked_files(self):\n        if not self.repo:\n            return []\n\n        try:\n            commit = self.repo.head.commit\n        except ValueError:\n            commit = None\n        except ANY_GIT_ERROR as err:\n            self.git_repo_error = err\n            self.io.tool_error(f\"Unable to list files in git repo: {err}\")\n            self.io.tool_output(\"Is your git repo corrupted?\")\n            return []\n\n        files = set()\n        if commit:\n            if commit in self.tree_files:\n                files = self.tree_files[commit]\n            else:\n                try:\n                    iterator = commit.tree.traverse()\n                    while True:\n                        try:\n                            blob = next(iterator)\n                            if blob.type == \"blob\":\n                                files.add(blob.path)\n                        except IndexError:\n                            self.io.tool_warning(f\"GitRepo: read error skipping {blob.path}\")\n                            continue\n                        except StopIteration:\n                            break\n                except ANY_GIT_ERROR as err:\n                    self.git_repo_error = err\n                    self.io.tool_error(f\"Unable to list files in git repo: {err}\")\n                    self.io.tool_output(\"Is your git repo corrupted?\")\n                    return []\n                files = set(self.normalize_path(path) for path in files)\n                self.tree_files[commit] = set(files)\n\n        index = self.repo.index\n        staged_files = [path for path, _ in index.entries.keys()]\n        files.update(self.normalize_path(path) for path in staged_files)\n\n        res = [fname for fname in files if not self.ignored_file(fname)]\n\n        return res\n"
+    },
+    {
+      "id": "Aider-AI_aider_450_3",
+      "input_code": "    def path_in_repo(self, path):\n        if not self.repo:\n            return\n        if not path:\n            return\n\n        tracked_files = set(self.get_tracked_files())\n        return self.normalize_path(path) in tracked_files\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport pathlib\n\n<testcase_1>\nself = type('TestClass', (object,), {'root': '/home/user/project', 'normalized_path': {}})\npath = 'src/main.py'\n\n<testcase_2>\nself = type('TestClass', (object,), {'root': '/var/www', 'normalized_path': {}})\npath = 'index.html'\n\n<testcase_3>\nself = type('TestClass', (object,), {'root': '/usr/local/bin', 'normalized_path': {}})\npath = 'script.sh'\n\n<testcase_4>\nself = type('TestClass', (object,), {'root': '/etc', 'normalized_path': {}})\npath = 'nginx/nginx.conf'\n\n<testcase_5>\nself = type('TestClass', (object,), {'root': '/opt/app', 'normalized_path': {}})\npath = 'config/settings.yaml'\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport pathlib\n\n<testcase_1>\nself = type('TestClass', (object,), {'root': '/home/user/project', 'normalized_path': {}})\npath = 'src/main.py'\n\n<testcase_2>\nself = type('TestClass', (object,), {'root': '/var/www', 'normalized_path': {}})\npath = 'index.html'\n\n<testcase_3>\nself = type('TestClass', (object,), {'root': '/usr/local/bin', 'normalized_path': {}})\npath = 'script.sh'\n\n<testcase_4>\nself = type('TestClass', (object,), {'root': '/etc', 'normalized_path': {}})\npath = 'nginx/nginx.conf'\n\n<testcase_5>\nself = type('TestClass', (object,), {'root': '/opt/app', 'normalized_path': {}})\npath = 'config/settings.yaml'\n```",
+  "needimport": "import pathlib\n\n",
+  "test_results": {
+    "ans1": "src\\main.py",
+    "ans2": "index.html",
+    "ans3": "script.sh",
+    "ans4": "nginx\\nginx.conf",
+    "ans5": "config\\settings.yaml"
+  }
+}

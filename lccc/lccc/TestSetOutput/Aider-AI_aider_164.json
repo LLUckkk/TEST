@@ -1,0 +1,23 @@
+{
+  "input_header": "def reverse_lines(text):",
+  "input_docstring": null,
+  "output_code": "def reverse_lines(text):\n    lines = text.splitlines(keepends=True)\n    lines.reverse()\n    return \"\".join(lines)",
+  "input_contexts": [
+    {
+      "id": "Aider-AI_aider_164_1",
+      "input_code": "def try_strategy(texts, strategy, preproc):\n    preproc_strip_blank_lines, preproc_relative_indent, preproc_reverse = preproc\n    ri = None\n\n    if preproc_strip_blank_lines:\n        texts = strip_blank_lines(texts)\n    if preproc_relative_indent:\n        ri, texts = relative_indent(texts)\n    if preproc_reverse:\n        texts = list(map(reverse_lines, texts))\n\n    res = strategy(texts)\n\n    if res and preproc_reverse:\n        res = reverse_lines(res)\n\n    if res and preproc_relative_indent:\n        try:\n            res = ri.make_absolute(res)\n        except ValueError:\n            return\n\n    return res\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport None\n\n<testcase_1>\ntext = \"Hello\\nWorld\\nThis is a test.\"\n\n<testcase_2>\ntext = \"Line1\\nLine2\\nLine3\\nLine4\"\n\n<testcase_3>\ntext = \"Single line without newline\"\n\n<testcase_4>\ntext = \"First line\\n\\nThird line after a blank line\"\n\n<testcase_5>\ntext = \"Multiple\\nLines\\nWith\\nDifferent\\nLengths\\nAnd\\nCharacters!\""
+  ],
+  "gpt_output": "<needimport>\nimport None\n\n<testcase_1>\ntext = \"Hello\\nWorld\\nThis is a test.\"\n\n<testcase_2>\ntext = \"Line1\\nLine2\\nLine3\\nLine4\"\n\n<testcase_3>\ntext = \"Single line without newline\"\n\n<testcase_4>\ntext = \"First line\\n\\nThird line after a blank line\"\n\n<testcase_5>\ntext = \"Multiple\\nLines\\nWith\\nDifferent\\nLengths\\nAnd\\nCharacters!\"",
+  "needimport": "import None\n\n",
+  "test_results": {
+    "ans1": "This is a test.World\nHello\n",
+    "ans2": "Line4Line3\nLine2\nLine1\n",
+    "ans3": "Single line without newline",
+    "ans4": "Third line after a blank line\nFirst line\n",
+    "ans5": "Characters!And\nLengths\nDifferent\nWith\nLines\nMultiple\n"
+  }
+}

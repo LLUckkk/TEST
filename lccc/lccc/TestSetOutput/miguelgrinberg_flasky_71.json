@@ -1,0 +1,31 @@
+{
+  "input_header": "def has_permission(self, perm):",
+  "input_docstring": null,
+  "output_code": "    def has_permission(self, perm):\n        return self.permissions & perm == perm",
+  "input_contexts": [
+    {
+      "id": "miguelgrinberg_flasky_71_3",
+      "input_code": "    def can(self, perm):\n        return self.role is not None and self.role.has_permission(perm)\n"
+    },
+    {
+      "id": "miguelgrinberg_flasky_71_1",
+      "input_code": "    def add_permission(self, perm):\n        if not self.has_permission(perm):\n            self.permissions += perm\n"
+    },
+    {
+      "id": "miguelgrinberg_flasky_71_2",
+      "input_code": "    def remove_permission(self, perm):\n        if self.has_permission(perm):\n            self.permissions -= perm\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport bitarray\n\n<testcase_1>\nself.permissions = bitarray.bitarray('1101')\nperm = bitarray.bitarray('0100')\n\n<testcase_2>\nself.permissions = bitarray.bitarray('1011')\nperm = bitarray.bitarray('0010')\n\n<testcase_3>\nself.permissions = bitarray.bitarray('1111')\nperm = bitarray.bitarray('1000')\n\n<testcase_4>\nself.permissions = bitarray.bitarray('0110')\nperm = bitarray.bitarray('0010')\n\n<testcase_5>\nself.permissions = bitarray.bitarray('0001')\nperm = bitarray.bitarray('0001')"
+  ],
+  "gpt_output": "<needimport>\nimport bitarray\n\n<testcase_1>\nself.permissions = bitarray.bitarray('1101')\nperm = bitarray.bitarray('0100')\n\n<testcase_2>\nself.permissions = bitarray.bitarray('1011')\nperm = bitarray.bitarray('0010')\n\n<testcase_3>\nself.permissions = bitarray.bitarray('1111')\nperm = bitarray.bitarray('1000')\n\n<testcase_4>\nself.permissions = bitarray.bitarray('0110')\nperm = bitarray.bitarray('0010')\n\n<testcase_5>\nself.permissions = bitarray.bitarray('0001')\nperm = bitarray.bitarray('0001')",
+  "needimport": "import bitarray\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": true,
+    "ans4": true,
+    "ans5": true
+  }
+}

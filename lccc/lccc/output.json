@@ -1,0 +1,32 @@
+{
+  "ans1": {
+    "api_key": "your_api_key",
+    "timeout": 30,
+    "retry": 3,
+    "log_level": "INFO"
+  },
+  "ans2": {
+    "username": "admin",
+    "password": "password123",
+    "host": "localhost",
+    "port": 8080
+  },
+  "ans3": {
+    "theme": "dark",
+    "language": "en",
+    "notifications": true,
+    "auto_update": false
+  },
+  "ans4": {
+    "max_connections": 10,
+    "min_connections": 1,
+    "connection_timeout": 60,
+    "use_ssl": true
+  },
+  "ans5": {
+    "backup_interval": "daily",
+    "backup_location": "/backups",
+    "backup_retention": 30,
+    "backup_compression": "zip"
+  }
+}
