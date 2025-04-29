@@ -1,0 +1,43 @@
+{
+  "input_header": "def orders_id_has_no_nulls():",
+  "input_docstring": null,
+  "output_code": "def orders_id_has_no_nulls():\n    return AssetCheckResult(passed=True)",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_931_1",
+      "input_code": "def test_orders_check():\n    assert orders_id_has_no_nulls().passed\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport dagster\n\n<testcase_1>\n# No input variables needed as the function takes no parameters\n\n<testcase_2>\n# No input variables needed as the function takes no parameters\n\n<testcase_3>\n# No input variables needed as the function takes no parameters\n\n<testcase_4>\n# No input variables needed as the function takes no parameters\n\n<testcase_5>\n# No input variables needed as the function takes no parameters\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport dagster\n\n<testcase_1>\n# No input variables needed as the function takes no parameters\n\n<testcase_2>\n# No input variables needed as the function takes no parameters\n\n<testcase_3>\n# No input variables needed as the function takes no parameters\n\n<testcase_4>\n# No input variables needed as the function takes no parameters\n\n<testcase_5>\n# No input variables needed as the function takes no parameters\n```",
+  "needimport": "import dagster\n\n",
+  "test_results": {
+    "ans1": {
+      "passed": true,
+      "severity": "AssetCheckSeverity.ERROR",
+      "metadata": {}
+    },
+    "ans2": {
+      "passed": true,
+      "severity": "AssetCheckSeverity.ERROR",
+      "metadata": {}
+    },
+    "ans3": {
+      "passed": true,
+      "severity": "AssetCheckSeverity.ERROR",
+      "metadata": {}
+    },
+    "ans4": {
+      "passed": true,
+      "severity": "AssetCheckSeverity.ERROR",
+      "metadata": {}
+    },
+    "ans5": {
+      "passed": true,
+      "severity": "AssetCheckSeverity.ERROR",
+      "metadata": {}
+    }
+  }
+}

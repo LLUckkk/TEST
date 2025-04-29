@@ -1,0 +1,23 @@
+{
+  "input_header": "def get_client(context: OpExecutionContext):",
+  "input_docstring": null,
+  "output_code": "def get_client(context: OpExecutionContext):\n    return context.resources.client",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_1605_1",
+      "input_code": "def connect():\n    get_client()\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport dagster\nfrom dagster import OpExecutionContext\n\n<testcase_1>\ncontext = OpExecutionContext(resources={\"client\": \"ClientA\"})\n\n<testcase_2>\ncontext = OpExecutionContext(resources={\"client\": \"ClientB\"})\n\n<testcase_3>\ncontext = OpExecutionContext(resources={\"client\": \"ClientC\"})\n\n<testcase_4>\ncontext = OpExecutionContext(resources={\"client\": \"ClientD\"})\n\n<testcase_5>\ncontext = OpExecutionContext(resources={\"client\": \"ClientE\"})"
+  ],
+  "gpt_output": "<needimport>\nimport dagster\nfrom dagster import OpExecutionContext\n\n<testcase_1>\ncontext = OpExecutionContext(resources={\"client\": \"ClientA\"})\n\n<testcase_2>\ncontext = OpExecutionContext(resources={\"client\": \"ClientB\"})\n\n<testcase_3>\ncontext = OpExecutionContext(resources={\"client\": \"ClientC\"})\n\n<testcase_4>\ncontext = OpExecutionContext(resources={\"client\": \"ClientD\"})\n\n<testcase_5>\ncontext = OpExecutionContext(resources={\"client\": \"ClientE\"})",
+  "needimport": "import dagster\nfrom dagster import OpExecutionContext\n\n",
+  "test_results": {
+    "ans1": "ClientA",
+    "ans2": "ClientB",
+    "ans3": "ClientC",
+    "ans4": "ClientD",
+    "ans5": "ClientE"
+  }
+}

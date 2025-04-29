@@ -1,0 +1,23 @@
+{
+  "input_header": "def _path_is_relative_to(p: Path, u: Path) -> bool:",
+  "input_docstring": null,
+  "output_code": "def _path_is_relative_to(p: Path, u: Path) -> bool:\n    return u == p or u in p.parents",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_17_1",
+      "input_code": "    def load_from_git(cls, git_info: GitInfo) -> None:\n        if git_info.directory in cls._repositories:\n            return None\n\n        ChangedFiles.load_from_git(git_info)\n\n        logging.info(\"Finding Python packages:\")\n\n        output = subprocess.check_output(\n            [\"git\", \"ls-files\", \".\"],\n            cwd=str(git_info.directory),\n        ).decode(\"utf-8\")\n        processed = set()\n        packages = []\n        for file in output.split(\"\\n\"):\n            if not file:\n                continue\n            path_dir = (git_info.directory / Path(file)).parents[0]\n            if str(path_dir) in processed:\n                continue\n            processed |= {str(path_dir)}\n            assert path_dir.is_dir()\n            if (path_dir / \"setup.py\").exists() or (\n                path_dir / \"pyproject.toml\"\n            ).exists():\n                try:\n                    packages.append(PythonPackage(path_dir))\n                except:\n                    logging.exception(f\"Failed processing python package at {path_dir}\")\n                    raise\n\n        for package in sorted(packages):\n            logging.info(\"  - \" + package.name)\n            cls.all[package.name] = package\n\n        packages_with_changes: Set[PythonPackage] = set()\n\n        logging.info(\"Finding changed packages:\")\n        for package in packages:\n            for change in ChangedFiles.all:\n                if (\n                    _path_is_relative_to(change, package.directory)\n                    and (change.suffix in changed_filetypes)\n                    and \"_tests/\" not in str(change)\n                ):\n                    packages_with_changes.add(package)\n\n        for package in sorted(packages_with_changes):\n            logging.info(\"  - \" + package.name)\n            cls.with_changes.add(package)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport pathlib\nfrom pathlib import Path\n\n<testcase_1>\np = Path(\"/home/user/project/file.txt\")\nu = Path(\"/home/user\")\n\n<testcase_2>\np = Path(\"/var/log/syslog\")\nu = Path(\"/var/log\")\n\n<testcase_3>\np = Path(\"/usr/local/bin/script.sh\")\nu = Path(\"/usr/local\")\n\n<testcase_4>\np = Path(\"/etc/nginx/nginx.conf\")\nu = Path(\"/etc/nginx\")\n\n<testcase_5>\np = Path(\"/home/user/documents/report.pdf\")\nu = Path(\"/home/user/documents\")\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport pathlib\nfrom pathlib import Path\n\n<testcase_1>\np = Path(\"/home/user/project/file.txt\")\nu = Path(\"/home/user\")\n\n<testcase_2>\np = Path(\"/var/log/syslog\")\nu = Path(\"/var/log\")\n\n<testcase_3>\np = Path(\"/usr/local/bin/script.sh\")\nu = Path(\"/usr/local\")\n\n<testcase_4>\np = Path(\"/etc/nginx/nginx.conf\")\nu = Path(\"/etc/nginx\")\n\n<testcase_5>\np = Path(\"/home/user/documents/report.pdf\")\nu = Path(\"/home/user/documents\")\n```",
+  "needimport": "import pathlib\nfrom pathlib import Path\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": true,
+    "ans4": true,
+    "ans5": true
+  }
+}

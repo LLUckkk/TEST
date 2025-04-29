@@ -1,0 +1,51 @@
+{
+  "input_header": "def nativestr(x):",
+  "input_docstring": "Return the decoded binary string, or a string, depending on type.",
+  "output_code": "def nativestr(x):\n    \n    r = x.decode(\"utf-8\", \"replace\") if isinstance(x, bytes) else x\n    if r == \"null\":\n        return\n    return r",
+  "input_contexts": [
+    {
+      "id": "redis_redis-py_1196_7",
+      "input_code": "def parse_m_get(response):\n    \n    res = []\n    for item in response:\n        if not item[2]:\n            res.append({nativestr(item[0]): [list_to_dict(item[1]), None, None]})\n        else:\n            res.append(\n                {\n                    nativestr(item[0]): [\n                        list_to_dict(item[1]),\n                        int(item[2][0]),\n                        float(item[2][1]),\n                    ]\n                }\n            )\n    return sorted(res, key=lambda d: list(d.keys()))\n"
+    },
+    {
+      "id": "redis_redis-py_1196_3",
+      "input_code": "    def __init__(\n        self, client, version=None, decoder=JSONDecoder(), encoder=JSONEncoder()\n    ):\n        \n        self._MODULE_CALLBACKS = {\n            \"JSON.ARRPOP\": self._decode,\n            \"JSON.DEBUG\": self._decode,\n            \"JSON.GET\": self._decode,\n            \"JSON.MERGE\": lambda r: r and nativestr(r) == \"OK\",\n            \"JSON.MGET\": bulk_of_jsons(self._decode),\n            \"JSON.MSET\": lambda r: r and nativestr(r) == \"OK\",\n            \"JSON.RESP\": self._decode,\n            \"JSON.SET\": lambda r: r and nativestr(r) == \"OK\",\n            \"JSON.TOGGLE\": self._decode,\n        }\n\n        _RESP2_MODULE_CALLBACKS = {\n            \"JSON.ARRAPPEND\": self._decode,\n            \"JSON.ARRINDEX\": self._decode,\n            \"JSON.ARRINSERT\": self._decode,\n            \"JSON.ARRLEN\": self._decode,\n            \"JSON.ARRTRIM\": self._decode,\n            \"JSON.CLEAR\": int,\n            \"JSON.DEL\": int,\n            \"JSON.FORGET\": int,\n            \"JSON.GET\": self._decode,\n            \"JSON.NUMINCRBY\": self._decode,\n            \"JSON.NUMMULTBY\": self._decode,\n            \"JSON.OBJKEYS\": self._decode,\n            \"JSON.STRAPPEND\": self._decode,\n            \"JSON.OBJLEN\": self._decode,\n            \"JSON.STRLEN\": self._decode,\n            \"JSON.TOGGLE\": self._decode,\n        }\n\n        _RESP3_MODULE_CALLBACKS = {}\n\n        self.client = client\n        self.execute_command = client.execute_command\n        self.MODULE_VERSION = version\n\n        if get_protocol_version(self.client) in [\"3\", 3]:\n            self._MODULE_CALLBACKS.update(_RESP3_MODULE_CALLBACKS)\n        else:\n            self._MODULE_CALLBACKS.update(_RESP2_MODULE_CALLBACKS)\n\n        for key, value in self._MODULE_CALLBACKS.items():\n            self.client.set_response_callback(key, value)\n\n        self.__encoder__ = encoder\n        self.__decoder__ = decoder\n"
+    },
+    {
+      "id": "redis_redis-py_1196_1",
+      "input_code": "def delist(x):\n    \n    if x is None:\n        return x\n    return [nativestr(obj) for obj in x]\n"
+    },
+    {
+      "id": "redis_redis-py_1196_6",
+      "input_code": "def parse_m_range(response):\n    \n    res = []\n    for item in response:\n        res.append({nativestr(item[0]): [list_to_dict(item[1]), parse_range(item[2])]})\n    return sorted(res, key=lambda d: list(d.keys()))\n"
+    },
+    {
+      "id": "redis_redis-py_1196_5",
+      "input_code": "def list_to_dict(aList):\n    return {nativestr(aList[i][0]): nativestr(aList[i][1]) for i in range(len(aList))}\n"
+    },
+    {
+      "id": "redis_redis-py_1196_2",
+      "input_code": "def parse_to_list(response):\n    \n    res = []\n\n    if response is None:\n        return res\n\n    for item in response:\n        try:\n            res.append(int(item))\n        except ValueError:\n            try:\n                res.append(float(item))\n            except ValueError:\n                res.append(nativestr(item))\n        except TypeError:\n            res.append(None)\n    return res\n"
+    },
+    {
+      "id": "redis_redis-py_1196_8",
+      "input_code": "def test_nativestr():\n    assert nativestr(\"teststr\") == \"teststr\"\n    assert nativestr(b\"teststr\") == \"teststr\"\n    assert nativestr(\"null\") is None\n"
+    },
+    {
+      "id": "redis_redis-py_1196_4",
+      "input_code": "def decode_list(b):\n    \n    if isinstance(b, list):\n        return [nativestr(obj) for obj in b]\n    elif isinstance(b, bytes):\n        return unstring(nativestr(b))\n    elif isinstance(b, str):\n        return unstring(b)\n    return b\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\n\n<testcase_1>\nx = b\"hello world\"\n\n<testcase_2>\nx = \"hello world\"\n\n<testcase_3>\nx = b\"null\"\n\n<testcase_4>\nx = b\"\\xe4\\xbd\\xa0\\xe5\\xa5\\xbd\"  # \"你好\" in Chinese\n\n<testcase_5>\nx = b\"\\xff\\xfe\\xfd\"  # Invalid UTF-8 bytes, should be replaced during decoding"
+  ],
+  "gpt_output": "<needimport>\nimport json\n\n<testcase_1>\nx = b\"hello world\"\n\n<testcase_2>\nx = \"hello world\"\n\n<testcase_3>\nx = b\"null\"\n\n<testcase_4>\nx = b\"\\xe4\\xbd\\xa0\\xe5\\xa5\\xbd\"  # \"你好\" in Chinese\n\n<testcase_5>\nx = b\"\\xff\\xfe\\xfd\"  # Invalid UTF-8 bytes, should be replaced during decoding",
+  "needimport": "import json\n\n",
+  "test_results": {
+    "ans1": "hello world",
+    "ans2": "hello world",
+    "ans3": null,
+    "ans4": "你好",
+    "ans5": "���"
+  }
+}

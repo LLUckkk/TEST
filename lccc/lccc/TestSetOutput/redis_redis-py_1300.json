@@ -1,0 +1,71 @@
+{
+  "input_header": "def get_params_args( self, query_params: Union[Dict[str, Union[str, int, float, bytes]], None] ):",
+  "input_docstring": null,
+  "output_code": "    def get_params_args(\n        self, query_params: Union[Dict[str, Union[str, int, float, bytes]], None]\n    ):\n        if query_params is None:\n            return []\n        args = []\n        if len(query_params) > 0:\n            args.append(\"params\")\n            args.append(len(query_params) * 2)\n            for key, value in query_params.items():\n                args.append(key)\n                args.append(value)\n        return args",
+  "input_contexts": [
+    {
+      "id": "redis_redis-py_1300_1",
+      "input_code": "    def _mk_query_args(\n        self, query, query_params: Union[Dict[str, Union[str, int, float, bytes]], None]\n    ):\n        args = [self.index_name]\n\n        if isinstance(query, str):\n            query = Query(query)\n        if not isinstance(query, Query):\n            raise ValueError(f\"Bad query type {type(query)}\")\n\n        args += query.get_args()\n        args += self.get_params_args(query_params)\n\n        return args, query\n"
+    },
+    {
+      "id": "redis_redis-py_1300_2",
+      "input_code": "    def aggregate(\n        self,\n        query: Union[str, Query],\n        query_params: Dict[str, Union[str, int, float]] = None,\n    ):\n        \n        if isinstance(query, AggregateRequest):\n            has_cursor = bool(query._cursor)\n            cmd = [AGGREGATE_CMD, self.index_name] + query.build_args()\n        elif isinstance(query, Cursor):\n            has_cursor = True\n            cmd = [CURSOR_CMD, \"READ\", self.index_name] + query.build_args()\n        else:\n            raise ValueError(\"Bad query\", query)\n        cmd += self.get_params_args(query_params)\n\n        raw = self.execute_command(*cmd)\n        return self._parse_results(\n            AGGREGATE_CMD, raw, query=query, has_cursor=has_cursor\n        )\n"
+    },
+    {
+      "id": "redis_redis-py_1300_3",
+      "input_code": "    def profile(\n        self,\n        query: Union[str, Query, AggregateRequest],\n        limited: bool = False,\n        query_params: Optional[Dict[str, Union[str, int, float]]] = None,\n    ):\n        \n        st = time.time()\n        cmd = [PROFILE_CMD, self.index_name, \"\"]\n        if limited:\n            cmd.append(\"LIMITED\")\n        cmd.append(\"QUERY\")\n\n        if isinstance(query, AggregateRequest):\n            cmd[2] = \"AGGREGATE\"\n            cmd += query.build_args()\n        elif isinstance(query, Query):\n            cmd[2] = \"SEARCH\"\n            cmd += query.get_args()\n            cmd += self.get_params_args(query_params)\n        else:\n            raise ValueError(\"Must provide AggregateRequest object or Query object.\")\n\n        res = self.execute_command(*cmd)\n\n        return self._parse_results(\n            PROFILE_CMD, res, query=query, duration=(time.time() - st) * 1000.0\n        )\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nfrom typing import Dict, Union\n\n<testcase_1>\nquery_params = {\"param1\": \"value1\", \"param2\": 123, \"param3\": 45.67, \"param4\": b\"bytes_value\"}\n\n<testcase_2>\nquery_params = {\"key1\": \"string_value\", \"key2\": 987654, \"key3\": 3.14159}\n\n<testcase_3>\nquery_params = {\"alpha\": \"beta\", \"gamma\": 42, \"delta\": 0.001, \"epsilon\": b\"binary_data\"}\n\n<testcase_4>\nquery_params = {\"name\": \"John Doe\", \"age\": 30, \"height\": 175.5}\n\n<testcase_5>\nquery_params = None\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nfrom typing import Dict, Union\n\n<testcase_1>\nquery_params = {\"param1\": \"value1\", \"param2\": 123, \"param3\": 45.67, \"param4\": b\"bytes_value\"}\n\n<testcase_2>\nquery_params = {\"key1\": \"string_value\", \"key2\": 987654, \"key3\": 3.14159}\n\n<testcase_3>\nquery_params = {\"alpha\": \"beta\", \"gamma\": 42, \"delta\": 0.001, \"epsilon\": b\"binary_data\"}\n\n<testcase_4>\nquery_params = {\"name\": \"John Doe\", \"age\": 30, \"height\": 175.5}\n\n<testcase_5>\nquery_params = None\n```",
+  "needimport": "from typing import Dict, Union\n\n",
+  "test_results": {
+    "ans1": [
+      "params",
+      8,
+      "param1",
+      "value1",
+      "param2",
+      123,
+      "param3",
+      45.67,
+      "param4",
+      "bytes_value"
+    ],
+    "ans2": [
+      "params",
+      6,
+      "key1",
+      "string_value",
+      "key2",
+      987654,
+      "key3",
+      3.14159
+    ],
+    "ans3": [
+      "params",
+      8,
+      "alpha",
+      "beta",
+      "gamma",
+      42,
+      "delta",
+      0.001,
+      "epsilon",
+      "binary_data"
+    ],
+    "ans4": [
+      "params",
+      6,
+      "name",
+      "John Doe",
+      "age",
+      30,
+      "height",
+      175.5
+    ],
+    "ans5": []
+  }
+}

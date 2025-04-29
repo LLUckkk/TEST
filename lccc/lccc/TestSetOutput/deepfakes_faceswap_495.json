@@ -14,10 +14,10 @@
   "gpt_output": "<needimport>\nimport tkinter as tk\nfrom tkinter import ttk\nfrom tkinter import colorchooser\n\n<testcase_1>\nframe = ttk.Frame()\ntitle = \"Background\"\n\n<testcase_2>\nframe = ttk.Frame()\ntitle = \"Foreground\"\n\n<testcase_3>\nframe = ttk.Frame()\ntitle = \"Border\"\n\n<testcase_4>\nframe = ttk.Frame()\ntitle = \"Text\"\n\n<testcase_5>\nframe = ttk.Frame()\ntitle = \"Highlight\"",
   "needimport": "import tkinter as tk\nfrom tkinter import ttk\nfrom tkinter import colorchooser\n\n",
   "test_results": {
-    "ans1": null,
-    "ans2": null,
-    "ans3": null,
-    "ans4": null,
-    "ans5": null
+    "ans1": "#FF0000",
+    "ans2": "#00FF00",
+    "ans3": "#0000FF",
+    "ans4": "#FFFF00",
+    "ans5": "#FF00FF"
   }
 }

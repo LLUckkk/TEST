@@ -1,0 +1,62 @@
+{
+  "input_header": "def from_dict(task_dict: dict[str, Any]) -> \"TaskProxiedState\":",
+  "input_docstring": null,
+  "output_code": "    def from_dict(task_dict: dict[str, Any]) -> \"TaskProxiedState\":\n        if set(task_dict.keys()) != {\"id\", \"proxied\"}:\n            raise Exception(\n                f\"Expected 'proxied' and 'id' keys in the task dictionary. Found keys: {task_dict.keys()}\"\n            )\n        if task_dict[\"proxied\"] not in [True, False]:\n            raise Exception(\"Expected 'proxied' key to be a boolean\")\n        return TaskProxiedState(task_id=task_dict[\"id\"], proxied=task_dict[\"proxied\"])",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_23350_1",
+      "input_code": "def load_proxied_state_from_yaml(proxied_yaml_path: Path) -> AirflowProxiedState:\n    \n    dag_proxied_states = {}\n    try:\n        for dag_file in proxied_yaml_path.iterdir():\n            if dag_file.suffix not in [\".yaml\", \".yml\"]:\n                continue\n            dag_id = dag_file.stem\n            yaml_dict = yaml.safe_load(dag_file.read_text())\n            if not isinstance(yaml_dict, dict):\n                raise Exception(\"Expected a dictionary\")\n            dag_proxied_states[dag_id] = DagProxiedState.from_dict(yaml_dict)\n    except Exception as e:\n        raise ProxiedStateParsingError(\"Error parsing proxied state yaml\") from e\n    return AirflowProxiedState(dags=dag_proxied_states)\n"
+    },
+    {
+      "id": "dagster-io_dagster_23350_4",
+      "input_code": "def test_proxying_to_dagster_dags_dont_exist() -> None:\n    \n    globals_fake = build_dags_dict_given_structure({\"dag\": {\"task\": []}})\n    proxying_to_dagster(\n        global_vars=globals_fake,\n        proxied_state=AirflowProxiedState.from_dict(\n            {\n                \"doesnt_exist\": {\"tasks\": [{\"id\": \"task\", \"proxied\": True}]},\n            }\n        ),\n    )\n    dag = globals_fake[\"dag\"]\n    assert len(dag.tags) == 0\n"
+    },
+    {
+      "id": "dagster-io_dagster_23350_3",
+      "input_code": "def test_proxying_to_dagster_no_dags() -> None:\n    \n    with pytest.raises(Exception, match=\"No dags found in globals dictionary.\"):\n        proxying_to_dagster(global_vars={}, proxied_state=AirflowProxiedState.from_dict({}))\n"
+    },
+    {
+      "id": "dagster-io_dagster_23350_5",
+      "input_code": "def test_proxying_to_dagster_task_doesnt_exist() -> None:\n    \n    globals_fake = build_dags_dict_given_structure({\"dag\": {\"task\": []}})\n    with pytest.raises(Exception, match=\"Task with id `doesnt_exist` not found in dag `dag`\"):\n        proxying_to_dagster(\n            global_vars=globals_fake,\n            proxied_state=AirflowProxiedState.from_dict(\n                {\n                    \"dag\": {\"tasks\": [{\"id\": \"doesnt_exist\", \"proxied\": True}]},\n                }\n            ),\n        )\n"
+    },
+    {
+      "id": "dagster-io_dagster_23350_6",
+      "input_code": "def test_proxied_state_from_yaml() -> None:\n    proxied_state_dict = yaml.safe_load(\"\"\"\ntasks:\n  - id: load_raw_customers\n    proxied: False\n  - id: build_dbt_models\n    proxied: False\n  - id: export_customers\n    proxied: True \n \"\"\")\n\n    dag_proxied_state = DagProxiedState.from_dict(proxied_state_dict)\n    assert dag_proxied_state.is_task_proxied(\"load_raw_customers\") is False\n    assert dag_proxied_state.is_task_proxied(\"build_dbt_models\") is False\n    assert dag_proxied_state.is_task_proxied(\"export_customers\") is True\n"
+    },
+    {
+      "id": "dagster-io_dagster_23350_7",
+      "input_code": "def test_dag_level_proxied_state_from_yaml() -> None:\n    proxied_state_dict = yaml.safe_load(\"\"\"\nproxied: True\n\"\"\")\n    dag_proxied_state = DagProxiedState.from_dict(proxied_state_dict)\n    assert dag_proxied_state.proxied is True\n\n    proxied_state_dict = yaml.safe_load(\"\"\"\nproxied: False\n\"\"\")\n    dag_proxied_state = DagProxiedState.from_dict(proxied_state_dict)\n    assert dag_proxied_state.proxied is False\n\n    proxied_state_dict = yaml.safe_load(\"\"\"\nproxied: Fish\n\"\"\")\n    with pytest.raises(Exception, match=\"Expected 'proxied' key to be a boolean or None\"):\n        DagProxiedState.from_dict(proxied_state_dict)\n"
+    },
+    {
+      "id": "dagster-io_dagster_23350_2",
+      "input_code": "def test_proxying_to_dagster() -> None:\n    \n    globals_fake = build_dags_dict_given_structure(\n        {\n            \"task_is_proxied\": {\"task\": []},\n            \"initially_not_proxied\": {\"task\": []},\n            \"should_be_ignored\": {\"task\": []},\n        }\n    )\n    original_globals = copy.deepcopy(globals_fake)\n    proxying_to_dagster(\n        global_vars=globals_fake,\n        proxied_state=AirflowProxiedState.from_dict(\n            {\n                \"task_is_proxied\": {\"tasks\": [{\"id\": \"task\", \"proxied\": True}]},\n                \"initially_not_proxied\": {\"tasks\": [{\"id\": \"task\", \"proxied\": False}]},\n            }\n        ),\n    )\n    assert len(globals_fake[\"task_is_proxied\"].tags) == 1\n    assert len(globals_fake[\"initially_not_proxied\"].tags) == 1\n\n    assert \"1 Task Marked as Proxied to Dagster\" in globals_fake[\"task_is_proxied\"].tags\n    assert \"0 Tasks Marked as Proxied to Dagster\" in globals_fake[\"initially_not_proxied\"].tags\n\n    assert isinstance(globals_fake[\"task_is_proxied\"].task_dict[\"task\"], BaseDagsterAssetsOperator)\n    assert isinstance(globals_fake[\"initially_not_proxied\"].task_dict[\"task\"], PythonOperator)\n    assert isinstance(globals_fake[\"should_be_ignored\"].task_dict[\"task\"], PythonOperator)\n\n    proxying_to_dagster(\n        global_vars=original_globals,\n        proxied_state=AirflowProxiedState.from_dict(\n            {\n                \"task_is_proxied\": {\"tasks\": [{\"id\": \"task\", \"proxied\": True}]},\n                \"initially_not_proxied\": {\"tasks\": [{\"id\": \"task\", \"proxied\": True}]},\n            }\n        ),\n    )\n    assert len(original_globals[\"task_is_proxied\"].tags) == 1\n    assert len(original_globals[\"initially_not_proxied\"].tags) == 1\n\n    assert \"1 Task Marked as Proxied to Dagster\" in original_globals[\"task_is_proxied\"].tags\n    assert \"1 Task Marked as Proxied to Dagster\" in original_globals[\"initially_not_proxied\"].tags\n\n    assert isinstance(\n        original_globals[\"task_is_proxied\"].task_dict[\"task\"], BaseDagsterAssetsOperator\n    )\n    assert isinstance(\n        original_globals[\"initially_not_proxied\"].task_dict[\"task\"],\n        BaseDagsterAssetsOperator,\n    )\n    assert isinstance(original_globals[\"should_be_ignored\"].task_dict[\"task\"], PythonOperator)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport yaml\n\n<testcase_1>\ntask_dict_1 = {\n    \"id\": \"task_1\",\n    \"proxied\": True\n}\n\n<testcase_2>\ntask_dict_2 = {\n    \"id\": \"task_2\",\n    \"proxied\": False\n}\n\n<testcase_3>\ntask_dict_3 = {\n    \"id\": \"task_3\",\n    \"proxied\": True\n}\n\n<testcase_4>\ntask_dict_4 = {\n    \"id\": \"task_4\",\n    \"proxied\": False\n}\n\n<testcase_5>\ntask_dict_5 = {\n    \"id\": \"task_5\",\n    \"proxied\": True\n}\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport yaml\n\n<testcase_1>\ntask_dict_1 = {\n    \"id\": \"task_1\",\n    \"proxied\": True\n}\n\n<testcase_2>\ntask_dict_2 = {\n    \"id\": \"task_2\",\n    \"proxied\": False\n}\n\n<testcase_3>\ntask_dict_3 = {\n    \"id\": \"task_3\",\n    \"proxied\": True\n}\n\n<testcase_4>\ntask_dict_4 = {\n    \"id\": \"task_4\",\n    \"proxied\": False\n}\n\n<testcase_5>\ntask_dict_5 = {\n    \"id\": \"task_5\",\n    \"proxied\": True\n}\n```",
+  "needimport": "import yaml\n\n",
+  "test_results": {
+    "ans1": {
+      "id": "task_1",
+      "proxied": true
+    },
+    "ans2": {
+      "id": "task_2",
+      "proxied": false
+    },
+    "ans3": {
+      "id": "task_3",
+      "proxied": true
+    },
+    "ans4": {
+      "id": "task_4",
+      "proxied": false
+    },
+    "ans5": {
+      "id": "task_5",
+      "proxied": true
+    }
+  }
+}

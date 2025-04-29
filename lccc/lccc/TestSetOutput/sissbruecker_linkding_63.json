@@ -1,0 +1,59 @@
+{
+  "input_header": "def assertVisibleTags(self, titles: List[str]):",
+  "input_docstring": null,
+  "output_code": "    def assertVisibleTags(self, titles: List[str]):\n        tag_tags = self.page.locator(\".tag-cloud .unselected-tags a\")\n        expect(tag_tags).to_have_count(len(titles))\n\n        for title in titles:\n            matching_tag = tag_tags.filter(has_text=title)\n            expect(matching_tag).to_be_visible()",
+  "input_contexts": [
+    {
+      "id": "sissbruecker_linkding_63_3",
+      "input_code": "    def test_active_bookmarks_partial_update_on_bulk_archive(self):\n        self.setup_fixture()\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:index\"), p)\n\n            self.locate_bulk_edit_toggle().click()\n            self.locate_bookmark(\"Bookmark 2\").locator(\n                \"label.bulk-edit-checkbox\"\n            ).click()\n            self.select_bulk_action(\"Archive\")\n            self.locate_bulk_edit_bar().get_by_text(\"Execute\").click()\n            self.locate_bulk_edit_bar().get_by_text(\"Confirm\").click()\n\n            self.assertVisibleBookmarks([\"Bookmark 1\", \"Bookmark 3\"])\n            self.assertVisibleTags([\"Tag 1\", \"Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_7",
+      "input_code": "    def test_archived_bookmarks_partial_update_on_bulk_unarchive(self):\n        self.setup_fixture()\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:archived\"), p)\n\n            self.locate_bulk_edit_toggle().click()\n            self.locate_bookmark(\"Archived Bookmark 2\").locator(\n                \"label.bulk-edit-checkbox\"\n            ).click()\n            self.select_bulk_action(\"Unarchive\")\n            self.locate_bulk_edit_bar().get_by_text(\"Execute\").click()\n            self.locate_bulk_edit_bar().get_by_text(\"Confirm\").click()\n\n            self.assertVisibleBookmarks([\"Archived Bookmark 1\", \"Archived Bookmark 3\"])\n            self.assertVisibleTags([\"Archived Tag 1\", \"Archived Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_4",
+      "input_code": "    def test_active_bookmarks_partial_update_on_bulk_delete(self):\n        self.setup_fixture()\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:index\"), p)\n\n            self.locate_bulk_edit_toggle().click()\n            self.locate_bookmark(\"Bookmark 2\").locator(\n                \"label.bulk-edit-checkbox\"\n            ).click()\n            self.select_bulk_action(\"Delete\")\n            self.locate_bulk_edit_bar().get_by_text(\"Execute\").click()\n            self.locate_bulk_edit_bar().get_by_text(\"Confirm\").click()\n\n            self.assertVisibleBookmarks([\"Bookmark 1\", \"Bookmark 3\"])\n            self.assertVisibleTags([\"Tag 1\", \"Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_1",
+      "input_code": "    def test_active_bookmarks_partial_update_on_archive(self):\n        self.setup_fixture()\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:index\"), p)\n\n            self.locate_bookmark(\"Bookmark 2\").get_by_text(\"Archive\").click()\n\n            self.assertVisibleBookmarks([\"Bookmark 1\", \"Bookmark 3\"])\n            self.assertVisibleTags([\"Tag 1\", \"Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_2",
+      "input_code": "    def test_active_bookmarks_partial_update_on_delete(self):\n        self.setup_fixture()\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:index\"), p)\n\n            self.locate_bookmark(\"Bookmark 2\").get_by_text(\"Remove\").click()\n            self.locate_bookmark(\"Bookmark 2\").get_by_text(\"Confirm\").click()\n\n            self.assertVisibleBookmarks([\"Bookmark 1\", \"Bookmark 3\"])\n            self.assertVisibleTags([\"Tag 1\", \"Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_5",
+      "input_code": "    def test_archived_bookmarks_partial_update_on_unarchive(self):\n        self.setup_fixture()\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:archived\"), p)\n\n            self.locate_bookmark(\"Archived Bookmark 2\").get_by_text(\"Unarchive\").click()\n\n            self.assertVisibleBookmarks([\"Archived Bookmark 1\", \"Archived Bookmark 3\"])\n            self.assertVisibleTags([\"Archived Tag 1\", \"Archived Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_6",
+      "input_code": "    def test_archived_bookmarks_partial_update_on_delete(self):\n        self.setup_fixture()\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:archived\"), p)\n\n            self.locate_bookmark(\"Archived Bookmark 2\").get_by_text(\"Remove\").click()\n            self.locate_bookmark(\"Archived Bookmark 2\").get_by_text(\"Confirm\").click()\n\n            self.assertVisibleBookmarks([\"Archived Bookmark 1\", \"Archived Bookmark 3\"])\n            self.assertVisibleTags([\"Archived Tag 1\", \"Archived Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_8",
+      "input_code": "    def test_archived_bookmarks_partial_update_on_bulk_delete(self):\n        self.setup_fixture()\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:archived\"), p)\n\n            self.locate_bulk_edit_toggle().click()\n            self.locate_bookmark(\"Archived Bookmark 2\").locator(\n                \"label.bulk-edit-checkbox\"\n            ).click()\n            self.select_bulk_action(\"Delete\")\n            self.locate_bulk_edit_bar().get_by_text(\"Execute\").click()\n            self.locate_bulk_edit_bar().get_by_text(\"Confirm\").click()\n\n            self.assertVisibleBookmarks([\"Archived Bookmark 1\", \"Archived Bookmark 3\"])\n            self.assertVisibleTags([\"Archived Tag 1\", \"Archived Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_9",
+      "input_code": "    def test_shared_bookmarks_partial_update_on_unarchive(self):\n        self.setup_fixture()\n        self.setup_numbered_bookmarks(\n            3, shared=True, prefix=\"My Bookmark\", with_tags=True\n        )\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:shared\"), p)\n\n            self.locate_bookmark(\"My Bookmark 2\").get_by_text(\"Archive\").click()\n\n            self.assertVisibleBookmarks(\n                [\n                    \"My Bookmark 1\",\n                    \"My Bookmark 2\",\n                    \"My Bookmark 3\",\n                    \"Joe's Bookmark 1\",\n                    \"Joe's Bookmark 2\",\n                    \"Joe's Bookmark 3\",\n                ]\n            )\n            self.assertVisibleTags([\"Shared Tag 1\", \"Shared Tag 2\", \"Shared Tag 3\"])\n            self.assertReloads(0)\n"
+    },
+    {
+      "id": "sissbruecker_linkding_63_10",
+      "input_code": "    def test_shared_bookmarks_partial_update_on_delete(self):\n        self.setup_fixture()\n        self.setup_numbered_bookmarks(\n            3, shared=True, prefix=\"My Bookmark\", with_tags=True\n        )\n\n        with sync_playwright() as p:\n            self.open(reverse(\"bookmarks:shared\"), p)\n\n            self.locate_bookmark(\"My Bookmark 2\").get_by_text(\"Remove\").click()\n            self.locate_bookmark(\"My Bookmark 2\").get_by_text(\"Confirm\").click()\n\n            self.assertVisibleBookmarks(\n                [\n                    \"My Bookmark 1\",\n                    \"My Bookmark 3\",\n                    \"Joe's Bookmark 1\",\n                    \"Joe's Bookmark 2\",\n                    \"Joe's Bookmark 3\",\n                ]\n            )\n            self.assertVisibleTags([\"Shared Tag 1\", \"Shared Tag 3\"])\n            self.assertReloads(0)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nfrom typing import List\n\n<testcase_1>\ntitles: List[str] = [\"Tag 1\", \"Tag 2\", \"Tag 3\"]\n\n<testcase_2>\ntitles: List[str] = [\"Archived Tag 1\", \"Archived Tag 2\"]\n\n<testcase_3>\ntitles: List[str] = [\"Shared Tag 1\", \"Shared Tag 2\", \"Shared Tag 3\"]\n\n<testcase_4>\ntitles: List[str] = [\"Bookmark Tag A\", \"Bookmark Tag B\"]\n\n<testcase_5>\ntitles: List[str] = [\"Important Tag\", \"Urgent Tag\", \"Optional Tag\"]\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nfrom typing import List\n\n<testcase_1>\ntitles: List[str] = [\"Tag 1\", \"Tag 2\", \"Tag 3\"]\n\n<testcase_2>\ntitles: List[str] = [\"Archived Tag 1\", \"Archived Tag 2\"]\n\n<testcase_3>\ntitles: List[str] = [\"Shared Tag 1\", \"Shared Tag 2\", \"Shared Tag 3\"]\n\n<testcase_4>\ntitles: List[str] = [\"Bookmark Tag A\", \"Bookmark Tag B\"]\n\n<testcase_5>\ntitles: List[str] = [\"Important Tag\", \"Urgent Tag\", \"Optional Tag\"]\n```",
+  "needimport": "from typing import List\n\n",
+  "test_results": {
+    "ans1": "Testcase 1 passed",
+    "ans2": "Testcase 2 passed",
+    "ans3": "Testcase 3 passed",
+    "ans4": "Testcase 4 passed",
+    "ans5": "Testcase 5 passed"
+  }
+}

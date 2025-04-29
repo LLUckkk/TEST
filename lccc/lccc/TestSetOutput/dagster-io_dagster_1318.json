@@ -1,0 +1,23 @@
+{
+  "input_header": "def do_something(context: OpExecutionContext, config: DoSomethingConfig) -> None:",
+  "input_docstring": null,
+  "output_code": "def do_something(context: OpExecutionContext, config: DoSomethingConfig) -> None:\n    context.log.info(\"config_param: \" + config.config_param)",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_1318_1",
+      "input_code": "def do_it_all_with_simplified_config():\n    do_something()\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport logging\nfrom dataclasses import dataclass\n\n@dataclass\nclass DoSomethingConfig:\n    config_param: str\n\nclass OpExecutionContext:\n    def __init__(self):\n        self.log = logging.getLogger(\"test_logger\")\n        logging.basicConfig(level=logging.INFO)\n\n<testcase_1>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"Test configuration 1\")\n\n<testcase_2>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"Another test configuration\")\n\n<testcase_3>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"Config with special characters !@#$%^&*()\")\n\n<testcase_4>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"1234567890\")\n\n<testcase_5>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"A very long configuration parameter that exceeds normal length to test the function's handling of long strings\")"
+  ],
+  "gpt_output": "<needimport>\nimport logging\nfrom dataclasses import dataclass\n\n@dataclass\nclass DoSomethingConfig:\n    config_param: str\n\nclass OpExecutionContext:\n    def __init__(self):\n        self.log = logging.getLogger(\"test_logger\")\n        logging.basicConfig(level=logging.INFO)\n\n<testcase_1>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"Test configuration 1\")\n\n<testcase_2>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"Another test configuration\")\n\n<testcase_3>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"Config with special characters !@#$%^&*()\")\n\n<testcase_4>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"1234567890\")\n\n<testcase_5>\ncontext = OpExecutionContext()\nconfig = DoSomethingConfig(config_param=\"A very long configuration parameter that exceeds normal length to test the function's handling of long strings\")",
+  "needimport": "import logging\nfrom dataclasses import dataclass\n\n@dataclass\nclass DoSomethingConfig:\n    config_param: str\n\nclass OpExecutionContext:\n    def __init__(self):\n        self.log = logging.getLogger(\"test_logger\")\n        logging.basicConfig(level=logging.INFO)\n\n",
+  "test_results": {
+    "ans1": "passed",
+    "ans2": "passed",
+    "ans3": "passed",
+    "ans4": "passed",
+    "ans5": "passed"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "input_header": "def get_source(self, source_id: int) -> Mapping[str, Any]:",
+  "input_docstring": "Gets details about a given source from the Census API.\n\nArgs:\n    source_id (int): The Census Source ID.\n\nReturns:\n    Dict[str, Any]: JSON data from the response to this request",
+  "output_code": "    def get_source(self, source_id: int) -> Mapping[str, Any]:\n        \n        return self.make_request(method=\"GET\", endpoint=f\"sources/{source_id}\")",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_24757_1",
+      "input_code": "def census_source(census: CensusResource):\n    census.get_source(source_id=1)\n"
+    },
+    {
+      "id": "dagster-io_dagster_24757_2",
+      "input_code": "    def trigger_sync_and_poll(\n        self,\n        sync_id: int,\n        force_full_sync: bool = False,\n        poll_interval: float = DEFAULT_POLL_INTERVAL,\n        poll_timeout: Optional[float] = None,\n    ) -> CensusOutput:\n        \n        sync_details = self.get_sync(sync_id=sync_id)\n        source_details = self.get_source(\n            source_id=sync_details[\"data\"][\"source_attributes\"][\"connection_id\"]\n        )[\"data\"]\n        destination_details = self.get_destination(\n            destination_id=sync_details[\"data\"][\"destination_attributes\"][\"connection_id\"]\n        )[\"data\"]\n\n        trigger_sync_resp = self.trigger_sync(sync_id=sync_id, force_full_sync=force_full_sync)\n        sync_run_details = self.poll_sync_run(\n            sync_run_id=trigger_sync_resp[\"data\"][\"sync_run_id\"],\n            poll_interval=poll_interval,\n            poll_timeout=poll_timeout,\n        )[\"data\"]\n        return CensusOutput(\n            sync_run=sync_run_details,\n            source=source_details,\n            destination=destination_details,\n        )\n"
+    },
+    {
+      "id": "dagster-io_dagster_24757_3",
+      "input_code": "def test_get_source():\n    census = CensusResource(api_key=\"foo\")\n    with responses.RequestsMock() as rsps:\n        rsps.add(\n            rsps.GET,\n            \"https://app.getcensus.com/api/v1/sources/15\",\n            json=get_source_data(),\n        )\n        assert census.get_source(source_id=\"15\")\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport requests\nfrom typing import Mapping, Any\n\n<testcase_1>\nsource_id = 1\n\n<testcase_2>\nsource_id = 15\n\n<testcase_3>\nsource_id = 23\n\n<testcase_4>\nsource_id = 42\n\n<testcase_5>\nsource_id = 100"
+  ],
+  "gpt_output": "<needimport>\nimport requests\nfrom typing import Mapping, Any\n\n<testcase_1>\nsource_id = 1\n\n<testcase_2>\nsource_id = 15\n\n<testcase_3>\nsource_id = 23\n\n<testcase_4>\nsource_id = 42\n\n<testcase_5>\nsource_id = 100",
+  "needimport": "import requests\nfrom typing import Mapping, Any\n\n",
+  "test_results": {
+    "ans1": {
+      "source_id": 1,
+      "data": "sample data for source 1"
+    },
+    "ans2": {
+      "source_id": 1,
+      "data": "sample data for source 1"
+    },
+    "ans3": {
+      "source_id": 23,
+      "data": "sample data for source 23"
+    },
+    "ans4": {
+      "source_id": 42,
+      "data": "sample data for source 42"
+    },
+    "ans5": {
+      "source_id": 1,
+      "data": "sample data for source 1"
+    }
+  }
+}

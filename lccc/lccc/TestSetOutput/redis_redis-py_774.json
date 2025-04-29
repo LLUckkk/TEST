@@ -1,0 +1,31 @@
+{
+  "input_header": "def client_pause(self, timeout: int, all: bool = True, **kwargs) -> ResponseT:",
+  "input_docstring": "Suspend all the Redis clients for the specified amount of time.\n\n\nFor more information see https://redis.io/commands/client-pause\n\nArgs:\n    timeout: milliseconds to pause clients\n    all: If true (default) all client commands are blocked.\n         otherwise, clients are only blocked if they attempt to execute\n         a write command.\n\nFor the WRITE mode, some commands have special behavior:\n\n* EVAL/EVALSHA: Will block client for all scripts.\n* PUBLISH: Will block client.\n* PFCOUNT: Will block client.\n* WAIT: Acknowledgments will be delayed, so this command will\n    appear blocked.",
+  "output_code": "    def client_pause(self, timeout: int, all: bool = True, **kwargs) -> ResponseT:\n        \n        args = [\"CLIENT PAUSE\", str(timeout)]\n        if not isinstance(timeout, int):\n            raise DataError(\"CLIENT PAUSE timeout must be an integer\")\n        if not all:\n            args.append(\"WRITE\")\n        return self.execute_command(*args, **kwargs)",
+  "input_contexts": [
+    {
+      "id": "redis_redis-py_774_2",
+      "input_code": "    def test_client_pause(self, r):\n        assert r.client_pause(1)\n        assert r.client_pause(timeout=1)\n        with pytest.raises(exceptions.RedisError):\n            r.client_pause(timeout=\"not an integer\")\n"
+    },
+    {
+      "id": "redis_redis-py_774_1",
+      "input_code": "    def test_client_pause(self, r):\n        node = r.get_primaries()[0]\n        assert r.client_pause(1, target_nodes=node)\n        assert r.client_pause(timeout=1, target_nodes=node)\n        with pytest.raises(RedisError):\n            r.client_pause(timeout=\"not an integer\", target_nodes=node)\n"
+    },
+    {
+      "id": "redis_redis-py_774_3",
+      "input_code": "    def test_client_pause_all(self, r, r2):\n        assert r.client_pause(1, all=False)\n        assert r2.set(\"foo\", \"bar\")\n        assert r2.get(\"foo\") == b\"bar\"\n        assert r.get(\"foo\") == b\"bar\"\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pytest\nfrom redis.exceptions import DataError, RedisError\n\n<testcase_1>\ntimeout = 500\nall = True\n\n<testcase_2>\ntimeout = 1000\nall = False\n\n<testcase_3>\ntimeout = 200\nall = True\ntarget_nodes = ['node1', 'node2']\n\n<testcase_4>\ntimeout = 300\nall = False\ntarget_nodes = ['node3']\n\n<testcase_5>\ntimeout = 1500\nall = True\nadditional_param = 'example_value'"
+  ],
+  "gpt_output": "<needimport>\nimport pytest\nfrom redis.exceptions import DataError, RedisError\n\n<testcase_1>\ntimeout = 500\nall = True\n\n<testcase_2>\ntimeout = 1000\nall = False\n\n<testcase_3>\ntimeout = 200\nall = True\ntarget_nodes = ['node1', 'node2']\n\n<testcase_4>\ntimeout = 300\nall = False\ntarget_nodes = ['node3']\n\n<testcase_5>\ntimeout = 1500\nall = True\nadditional_param = 'example_value'",
+  "needimport": "import pytest\nfrom redis.exceptions import DataError, RedisError\n\n",
+  "test_results": {
+    "ans1": "OK",
+    "ans2": "OK",
+    "ans3": "OK",
+    "ans4": "OK",
+    "ans5": "OK"
+  }
+}

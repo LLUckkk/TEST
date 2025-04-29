@@ -1,0 +1,73 @@
+{
+  "input_header": "def _mp_cfg():",
+  "input_docstring": null,
+  "output_code": "def _mp_cfg():\n    return {\n        \"execution\": {\n            \"config\": {\n                \"multiprocess\": {\n                    \"start_method\": {\"forkserver\": {}},\n                }\n            }\n        }\n    }",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_20269_1",
+      "input_code": "def _run_configs():\n    return [\n        _in_proc_cfg(),\n        _mp_cfg(),\n    ]\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport json\n\n<testcase_1>\n# No input variables needed as the function takes no parameters\n\n<testcase_2>\n# No input variables needed as the function takes no parameters\n\n<testcase_3>\n# No input variables needed as the function takes no parameters\n\n<testcase_4>\n# No input variables needed as the function takes no parameters\n\n<testcase_5>\n# No input variables needed as the function takes no parameters\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport json\n\n<testcase_1>\n# No input variables needed as the function takes no parameters\n\n<testcase_2>\n# No input variables needed as the function takes no parameters\n\n<testcase_3>\n# No input variables needed as the function takes no parameters\n\n<testcase_4>\n# No input variables needed as the function takes no parameters\n\n<testcase_5>\n# No input variables needed as the function takes no parameters\n```",
+  "needimport": "import json\n\n",
+  "test_results": {
+    "ans1": {
+      "execution": {
+        "config": {
+          "multiprocess": {
+            "start_method": {
+              "forkserver": {}
+            }
+          }
+        }
+      }
+    },
+    "ans2": {
+      "execution": {
+        "config": {
+          "multiprocess": {
+            "start_method": {
+              "forkserver": {}
+            }
+          }
+        }
+      }
+    },
+    "ans3": {
+      "execution": {
+        "config": {
+          "multiprocess": {
+            "start_method": {
+              "forkserver": {}
+            }
+          }
+        }
+      }
+    },
+    "ans4": {
+      "execution": {
+        "config": {
+          "multiprocess": {
+            "start_method": {
+              "forkserver": {}
+            }
+          }
+        }
+      }
+    },
+    "ans5": {
+      "execution": {
+        "config": {
+          "multiprocess": {
+            "start_method": {
+              "forkserver": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}

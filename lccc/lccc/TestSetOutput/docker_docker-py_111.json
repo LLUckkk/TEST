@@ -1,0 +1,53 @@
+{
+  "input_header": "def plugin_privileges(self, name):",
+  "input_docstring": "Retrieve list of privileges to be granted to a plugin.\n\nArgs:\n    name (string): Name of the remote plugin to examine. The\n        ``:latest`` tag is optional, and is the default if omitted.\n\nReturns:\n    A list of dictionaries representing the plugin's\n    permissions",
+  "output_code": "    def plugin_privileges(self, name):\n        \n        params = {\n            'remote': name,\n        }\n\n        headers = {}\n        registry, repo_name = auth.resolve_repository_name(name)\n        header = auth.get_config_header(self, registry)\n        if header:\n            headers['X-Registry-Auth'] = header\n\n        url = self._url('/plugins/privileges')\n        return self._result(\n            self._get(url, params=params, headers=headers), True\n        )",
+  "input_contexts": [
+    {
+      "id": "docker_docker-py_111_2",
+      "input_code": "    def install(self, remote_name, local_name=None):\n        \n        privileges = self.client.api.plugin_privileges(remote_name)\n        it = self.client.api.pull_plugin(remote_name, privileges, local_name)\n        for _data in it:\n            pass\n        return self.get(local_name or remote_name)\n"
+    },
+    {
+      "id": "docker_docker-py_111_5",
+      "input_code": "    def test_install_plugin(self):\n        try:\n            self.client.remove_plugin(SSHFS, force=True)\n        except docker.errors.APIError:\n            pass\n\n        prv = self.client.plugin_privileges(SSHFS)\n        logs = list(self.client.pull_plugin(SSHFS, prv))\n        assert filter(lambda x: x['status'] == 'Download complete', logs)\n        assert self.client.inspect_plugin(SSHFS)\n        assert self.client.enable_plugin(SSHFS)\n"
+    },
+    {
+      "id": "docker_docker-py_111_6",
+      "input_code": "    def test_upgrade_plugin(self):\n        pl_data = self.ensure_plugin_installed(SSHFS)\n        assert pl_data['Enabled'] is False\n        prv = self.client.plugin_privileges(SSHFS)\n        logs = list(self.client.upgrade_plugin(SSHFS, SSHFS, prv))\n        assert filter(lambda x: x['status'] == 'Download complete', logs)\n        assert self.client.inspect_plugin(SSHFS)\n        assert self.client.enable_plugin(SSHFS)\n"
+    },
+    {
+      "id": "docker_docker-py_111_3",
+      "input_code": "    def ensure_plugin_installed(self, plugin_name):\n        try:\n            return self.client.inspect_plugin(plugin_name)\n        except docker.errors.NotFound:\n            prv = self.client.plugin_privileges(plugin_name)\n            for _d in self.client.pull_plugin(plugin_name, prv):\n                pass\n        return self.client.inspect_plugin(plugin_name)\n"
+    },
+    {
+      "id": "docker_docker-py_111_4",
+      "input_code": "    def test_plugin_privileges(self):\n        prv = self.client.plugin_privileges(SSHFS)\n        assert isinstance(prv, list)\n        for item in prv:\n            assert 'Name' in item\n            assert 'Value' in item\n            assert 'Description' in item\n"
+    },
+    {
+      "id": "docker_docker-py_111_1",
+      "input_code": "    def upgrade(self, remote=None):\n        \n        if self.enabled:\n            raise errors.DockerError(\n                'Plugin must be disabled before upgrading.'\n            )\n\n        if remote is None:\n            remote = self.name\n        privileges = self.client.api.plugin_privileges(remote)\n        yield from self.client.api.upgrade_plugin(\n            self.name,\n            remote,\n            privileges,\n        )\n        self.reload()\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport docker\n\n<testcase_1>\nname = \"myplugin:latest\"\n\n<testcase_2>\nname = \"exampleplugin\"\n\n<testcase_3>\nname = \"customplugin:1.0\"\n\n<testcase_4>\nname = \"networkplugin:2.3\"\n\n<testcase_5>\nname = \"storageplugin\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport docker\n\n<testcase_1>\nname = \"myplugin:latest\"\n\n<testcase_2>\nname = \"exampleplugin\"\n\n<testcase_3>\nname = \"customplugin:1.0\"\n\n<testcase_4>\nname = \"networkplugin:2.3\"\n\n<testcase_5>\nname = \"storageplugin\"\n```",
+  "needimport": "import docker\n\n",
+  "test_results": {
+    "ans1": {
+      "status": "success"
+    },
+    "ans2": {
+      "status": "success"
+    },
+    "ans3": {
+      "status": "success"
+    },
+    "ans4": {
+      "status": "success"
+    },
+    "ans5": {
+      "status": "success"
+    }
+  }
+}

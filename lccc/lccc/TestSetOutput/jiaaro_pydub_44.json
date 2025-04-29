@@ -1,0 +1,78 @@
+{
+  "input_header": "def split_to_mono(self):",
+  "input_docstring": null,
+  "output_code": "    def split_to_mono(self):\n        if self.channels == 1:\n            return [self]\n\n        samples = self.get_array_of_samples()\n\n        mono_channels = []\n        for i in range(self.channels):\n            samples_for_current_channel = samples[i::self.channels]\n\n            try:\n                mono_data = samples_for_current_channel.tobytes()\n            except AttributeError:\n                mono_data = samples_for_current_channel.tostring()\n\n            mono_channels.append(\n                self._spawn(mono_data, overrides={\"channels\": 1, \"frame_width\": self.sample_width})\n            )\n\n        return mono_channels",
+  "input_contexts": [
+    {
+      "id": "jiaaro_pydub_44_7",
+      "input_code": "def ms_to_stereo(audio_segment):\n\t\n\tchannel = audio_segment.split_to_mono()\n\tchannel = [channel[0].overlay(channel[1]) - 3, channel[0].overlay(channel[1].invert_phase()) - 3]\n\treturn AudioSegment.from_mono_audiosegments(channel[0], channel[1])\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_11",
+      "input_code": "    def test_invert(self):\n        s_mono = Sine(100).to_audio_segment()\n        s = s_mono.set_channels(2)\n\n        try:\n            s_mono.invert_phase(channels=(1, 0))\n        except Exception:\n            pass\n        else:\n            raise Exception(\"AudioSegment.invert_phase() didn't catch a bad input (mono)\")\n\n        s_inv = s.invert_phase()\n        self.assertFalse(s == s_inv)\n        self.assertTrue(s.rms == s_inv.rms)\n        self.assertTrue(s == s_inv.invert_phase())\n\n        s_inv_right = s.invert_phase(channels=(0, 1))\n        left, right = s_inv_right.split_to_mono()\n\n        self.assertFalse(s_mono == s_inv_right)\n        self.assertFalse(s_inv == s_inv_right)\n        self.assertTrue(left == s_mono)\n        self.assertFalse(right == s_mono)\n\n        s_inv_left = s.invert_phase(channels=(1, 0))\n        left, right = s_inv_left.split_to_mono()\n\n        self.assertFalse(s_mono == s_inv_left)\n        self.assertFalse(s_inv == s_inv_left)\n        self.assertFalse(left == s_mono)\n        self.assertTrue(right == s_mono)\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_5",
+      "input_code": "def eq(seg, focus_freq, bandwidth=100, channel_mode=\"L+R\", filter_mode=\"peak\", gain_dB=0, order=2):\n    \n    channel_modes = [\"L+R\", \"M+S\", \"L\", \"R\", \"M\", \"S\"]\n    if channel_mode not in channel_modes:\n        raise ValueError(\"Incorrect Channel Mode Selection\")\n        \n    if seg.channels == 1:\n        return _eq(seg, focus_freq, bandwidth, filter_mode, gain_dB, order)\n        \n    if channel_mode == \"L+R\":\n        return _eq(seg, focus_freq, bandwidth, filter_mode, gain_dB, order)\n        \n    if channel_mode == \"L\":\n        seg = seg.split_to_mono()\n        seg = [_eq(seg[0], focus_freq, bandwidth, filter_mode, gain_dB, order), seg[1]]\n        return AudioSegment.from_mono_audio_segements(seg[0], seg[1])\n        \n    if channel_mode == \"R\":\n        seg = seg.split_to_mono()\n        seg = [seg[0], _eq(seg[1], focus_freq, bandwidth, filter_mode, gain_dB, order)]\n        return AudioSegment.from_mono_audio_segements(seg[0], seg[1])\n        \n    if channel_mode == \"M+S\":\n        seg = stereo_to_ms(seg)\n        seg = _eq(seg, focus_freq, bandwidth, filter_mode, gain_dB, order)\n        return ms_to_stereo(seg)\n        \n    if channel_mode == \"M\":\n        seg = stereo_to_ms(seg).split_to_mono()\n        seg = [_eq(seg[0], focus_freq, bandwidth, filter_mode, gain_dB, order), seg[1]]\n        seg = AudioSegment.from_mono_audio_segements(seg[0], seg[1])\n        return ms_to_stereo(seg)\n        \n    if channel_mode == \"S\":\n        seg = stereo_to_ms(seg).split_to_mono()\n        seg = [seg[0], _eq(seg[1], focus_freq, bandwidth, filter_mode, gain_dB, order)]\n        seg = AudioSegment.from_mono_audio_segements(seg[0], seg[1])\n        return ms_to_stereo(seg)\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_9",
+      "input_code": "    def test_apply_gain_stereo(self):\n        seg = self.seg1\n\n        orig_l, orig_r = seg.split_to_mono()\n        orig_dbfs_l = orig_l.dBFS\n        orig_dbfs_r = orig_r.dBFS\n\n        inf = float(\"inf\")\n\n        def assertAlmostEqual(v1, v2, **kwargs):\n            if v1 in (inf, -inf):\n                self.assertEqual(v1, v2)\n            else:\n                self.assertAlmostEqual(v1, v2, **kwargs)\n\n        def check_stereo_gain(left_dbfs_change, right_dbfs_change):\n            panned = seg.apply_gain_stereo(left_dbfs_change, right_dbfs_change)\n            self.assertEqual(panned.channels, 2)\n\n            l, r = panned.split_to_mono()\n            assertAlmostEqual(l.dBFS, orig_dbfs_l + left_dbfs_change, places=2)\n            assertAlmostEqual(r.dBFS, orig_dbfs_r + right_dbfs_change, places=2)\n\n        check_stereo_gain(0.0, -inf)\n        check_stereo_gain(0.0, -6.0)\n        check_stereo_gain(0.0, 0.0)\n        check_stereo_gain(-6.0, 0.0)\n        check_stereo_gain(-inf, 0.0)\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_2",
+      "input_code": "def apply_mono_filter_to_each_channel(seg, filter_fn):\n    n_channels = seg.channels\n\n    channel_segs = seg.split_to_mono()\n    channel_segs = [filter_fn(channel_seg) for channel_seg in channel_segs]\n\n    out_data = seg.get_array_of_samples()\n    for channel_i, channel_seg in enumerate(channel_segs):\n        for sample_i, sample in enumerate(channel_seg.get_array_of_samples()):\n            index = (sample_i * n_channels) + channel_i\n            out_data[index] = sample\n\n    return seg._spawn(out_data)\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_1",
+      "input_code": "    def set_channels(self, channels):\n        if channels == self.channels:\n            return self\n\n        if channels == 2 and self.channels == 1:\n            fn = audioop.tostereo\n            frame_width = self.frame_width * 2\n            fac = 1\n            converted = fn(self._data, self.sample_width, fac, fac)\n        elif channels == 1 and self.channels == 2:\n            fn = audioop.tomono\n            frame_width = self.frame_width // 2\n            fac = 0.5\n            converted = fn(self._data, self.sample_width, fac, fac)\n        elif channels == 1:\n            channels_data = [seg.get_array_of_samples() for seg in self.split_to_mono()]\n            frame_count = int(self.frame_count())\n            converted = array.array(\n                channels_data[0].typecode,\n                b'\\0' * (frame_count * self.sample_width)\n            )\n            for raw_channel_data in channels_data:\n                for i in range(frame_count):\n                    converted[i] += raw_channel_data[i] // self.channels\n            frame_width = self.frame_width // self.channels\n        elif self.channels == 1:\n            dup_channels = [self for iChannel in range(channels)]\n            return AudioSegment.from_mono_audiosegments(*dup_channels)\n        else:\n            raise ValueError(\n                \"AudioSegment.set_channels only supports mono-to-multi channel and multi-to-mono channel conversion\")\n\n        return self._spawn(data=converted,\n                           overrides={\n                               'channels': channels,\n                               'frame_width': frame_width})\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_10",
+      "input_code": "    def test_pan(self):\n        seg = self.seg1\n\n        orig_l, orig_r = seg.split_to_mono()\n        orig_dbfs_l = orig_l.dBFS\n        orig_dbfs_r = orig_r.dBFS\n\n        inf = float(\"inf\")\n\n        def assertAlmostEqual(v1, v2, **kwargs):\n            if v1 in (inf, -inf):\n                self.assertEqual(v1, v2)\n            else:\n                self.assertAlmostEqual(v1, v2, **kwargs)\n\n        def check_pan(pan, left_dbfs_change, right_dbfs_change):\n            panned = seg.pan(pan)\n\n            l, r = panned.split_to_mono()\n            assertAlmostEqual(l.dBFS, orig_dbfs_l + left_dbfs_change, places=1)\n            assertAlmostEqual(r.dBFS, orig_dbfs_r + right_dbfs_change, places=1)\n\n        check_pan(-1.0, 3.0, -inf)\n        check_pan(-0.5, 1.5, -4.65)\n        check_pan(0.0, 0.0, 0.0)\n        check_pan(0.5, -4.65, 1.5)\n        check_pan(1.0, -inf, 3.0)\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_4",
+      "input_code": "def apply_gain_stereo(seg, left_gain=0.0, right_gain=0.0):\n    \n    if seg.channels == 1:\n        left = right = seg\n    elif seg.channels == 2:\n        left, right = seg.split_to_mono()\n    \n    l_mult_factor = db_to_float(left_gain)\n    r_mult_factor = db_to_float(right_gain)\n    \n    left_data = audioop.mul(left._data, left.sample_width, l_mult_factor)\n    left_data = audioop.tostereo(left_data, left.sample_width, 1, 0)\n    \n    right_data = audioop.mul(right._data, right.sample_width, r_mult_factor)\n    right_data = audioop.tostereo(right_data, right.sample_width, 0, 1)\n    \n    output = audioop.add(left_data, right_data, seg.sample_width)\n    \n    return seg._spawn(data=output,\n                overrides={'channels': 2,\n                           'frame_width': 2 * seg.sample_width})\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_3",
+      "input_code": "def invert_phase(seg, channels=(1, 1)):\n    \n    if channels == (1, 1):\n        inverted = audioop.mul(seg._data, seg.sample_width, -1.0)  \n        return seg._spawn(data=inverted)\n    \n    else:\n        if seg.channels == 2:\n            left, right = seg.split_to_mono()\n        else:\n            raise Exception(\"Can't implicitly convert an AudioSegment with \" + str(seg.channels) + \" channels to stereo.\")\n            \n        if channels == (1, 0):    \n            left = left.invert_phase()\n        else:\n            right = right.invert_phase()\n        \n        return seg.from_mono_audiosegments(left, right)\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_6",
+      "input_code": "def stereo_to_ms(audio_segment):\n\t\n\tchannel = audio_segment.split_to_mono()\n\tchannel = [channel[0].overlay(channel[1]), channel[0].overlay(channel[1].invert_phase())]\n\treturn AudioSegment.from_mono_audiosegments(channel[0], channel[1])\n"
+    },
+    {
+      "id": "jiaaro_pydub_44_8",
+      "input_code": "    def test_split_to_mono(self):\n        seg = self.seg1\n        mono_segments = seg.split_to_mono()\n        seg_lchannel = mono_segments[0]\n        seg_rchannel = mono_segments[1]\n\n        self.assertEqual(len(seg_lchannel), len(seg))\n        self.assertEqual(len(seg_rchannel), len(seg))\n\n        self.assertEqual(seg_lchannel.frame_rate, seg.frame_rate)\n        self.assertEqual(seg_rchannel.frame_rate, seg.frame_rate)\n\n        self.assertEqual(seg_lchannel.frame_count(), seg.frame_count())\n        self.assertEqual(seg_rchannel.frame_count(), seg.frame_count())\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport pydub\nfrom pydub.generators import Sine\n\n<testcase_1>\naudio_segment_1 = Sine(440).to_audio_segment(duration=1000).set_channels(2)\n\n<testcase_2>\naudio_segment_2 = Sine(1000).to_audio_segment(duration=500).set_channels(2)\n\n<testcase_3>\naudio_segment_3 = Sine(250).to_audio_segment(duration=2000).set_channels(2)\n\n<testcase_4>\naudio_segment_4 = Sine(500).to_audio_segment(duration=1500).set_channels(2)\n\n<testcase_5>\naudio_segment_5 = Sine(750).to_audio_segment(duration=3000).set_channels(2)\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport pydub\nfrom pydub.generators import Sine\n\n<testcase_1>\naudio_segment_1 = Sine(440).to_audio_segment(duration=1000).set_channels(2)\n\n<testcase_2>\naudio_segment_2 = Sine(1000).to_audio_segment(duration=500).set_channels(2)\n\n<testcase_3>\naudio_segment_3 = Sine(250).to_audio_segment(duration=2000).set_channels(2)\n\n<testcase_4>\naudio_segment_4 = Sine(500).to_audio_segment(duration=1500).set_channels(2)\n\n<testcase_5>\naudio_segment_5 = Sine(750).to_audio_segment(duration=3000).set_channels(2)\n```",
+  "needimport": "import pydub\nfrom pydub.generators import Sine\n\n",
+  "test_results": {
+    "ans1": [
+      "<AudioSegment 0: duration=1.00s, channels=1>",
+      "<AudioSegment 1: duration=1.00s, channels=1>"
+    ],
+    "ans2": [
+      "<AudioSegment 0: duration=0.50s, channels=1>",
+      "<AudioSegment 1: duration=0.50s, channels=1>"
+    ],
+    "ans3": [
+      "<AudioSegment 0: duration=2.00s, channels=1>",
+      "<AudioSegment 1: duration=2.00s, channels=1>"
+    ],
+    "ans4": [
+      "<AudioSegment 0: duration=1.50s, channels=1>",
+      "<AudioSegment 1: duration=1.50s, channels=1>"
+    ],
+    "ans5": [
+      "<AudioSegment 0: duration=3.00s, channels=1>",
+      "<AudioSegment 1: duration=3.00s, channels=1>"
+    ]
+  }
+}

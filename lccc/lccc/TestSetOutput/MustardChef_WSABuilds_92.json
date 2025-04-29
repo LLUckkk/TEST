@@ -1,0 +1,23 @@
+{
+  "input_header": "def create_restore_point(name):",
+  "input_docstring": null,
+  "output_code": "def create_restore_point(name):\n    cmd = f'powershell.exe -Command \"Checkpoint-Computer -Description \\'{name}\\' -RestorePointType \\'MODIFY_SETTINGS\\'\"'\n\n    result = subprocess.run(cmd, shell=True)\n\n    if result.returncode != 0:\n        raise Exception(f'Failed to create restore point. Command returned {result.returncode}')",
+  "input_contexts": [
+    {
+      "id": "MustardChef_WSABuilds_92_1",
+      "input_code": "def main():\n    create_restore_point(\"WSABuilds Uninstallation Script Restore Point\")\n\n    uninstall_msix_package(package_full_name)\n\n    for dir_path in dirs_to_check:\n        delete_directory(dir_path)\n\n    delete_folders_and_files('C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WindowsApps')\n\n    delete_registry_folders()\n    \n    delete_shortcuts(target_string, start_menu_dir)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport subprocess\n\n<testcase_1>\nname = \"System Update Restore Point\"\n\n<testcase_2>\nname = \"Pre-Software Installation Restore Point\"\n\n<testcase_3>\nname = \"Registry Change Restore Point\"\n\n<testcase_4>\nname = \"Driver Update Restore Point\"\n\n<testcase_5>\nname = \"Pre-Uninstallation Restore Point\""
+  ],
+  "gpt_output": "<needimport>\nimport subprocess\n\n<testcase_1>\nname = \"System Update Restore Point\"\n\n<testcase_2>\nname = \"Pre-Software Installation Restore Point\"\n\n<testcase_3>\nname = \"Registry Change Restore Point\"\n\n<testcase_4>\nname = \"Driver Update Restore Point\"\n\n<testcase_5>\nname = \"Pre-Uninstallation Restore Point\"",
+  "needimport": "import subprocess\n\n",
+  "test_results": {
+    "ans1": null,
+    "ans2": null,
+    "ans3": null,
+    "ans4": null,
+    "ans5": null
+  }
+}

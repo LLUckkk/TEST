@@ -1,0 +1,27 @@
+{
+  "input_header": "def _get_release_files_dir(release_tag: str) -> str:",
+  "input_docstring": null,
+  "output_code": "def _get_release_files_dir(release_tag: str) -> str:\n    return f\"data/releases/{release_tag}/\"",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_483_2",
+      "input_code": "def release_files_metadata(context) -> DataFrame:\n    \n    file_metadata = []\n\n    release_files_dir = _get_release_files_dir(context.partition_key)\n    get_dagster_logger().info(f\"release_files_dir: {release_files_dir}\")\n\n    for path, dirs, files in os.walk(release_files_dir):\n        for f in files:\n            file_path = os.path.join(path, f)\n            file_metadata.append(\n                {\n                    \"release_tag\": context.partition_key,\n                    \"path\": os.path.relpath(file_path, release_files_dir),\n                    \"size_bytes\": os.path.getsize(file_path),\n                }\n            )\n\n    return DataFrame(file_metadata)\n"
+    },
+    {
+      "id": "dagster-io_dagster_483_1",
+      "input_code": "def release_files(context) -> None:\n    \n    release_files_dir = _get_release_files_dir(context.partition_key)\n    os.mkdir(release_files_dir)\n    with zipfile.ZipFile(_get_release_zip_path(context.partition_key), \"r\") as zip_ref:\n        zip_ref.extractall(release_files_dir)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport os\nimport zipfile\nfrom pandas import DataFrame\n\n<testcase_1>\nrelease_tag = \"v1.0.0\"\n\n<testcase_2>\nrelease_tag = \"release_2023_09_15\"\n\n<testcase_3>\nrelease_tag = \"beta-2.1\"\n\n<testcase_4>\nrelease_tag = \"alpha_0.9.5\"\n\n<testcase_5>\nrelease_tag = \"hotfix-2023-10-01\""
+  ],
+  "gpt_output": "<needimport>\nimport os\nimport zipfile\nfrom pandas import DataFrame\n\n<testcase_1>\nrelease_tag = \"v1.0.0\"\n\n<testcase_2>\nrelease_tag = \"release_2023_09_15\"\n\n<testcase_3>\nrelease_tag = \"beta-2.1\"\n\n<testcase_4>\nrelease_tag = \"alpha_0.9.5\"\n\n<testcase_5>\nrelease_tag = \"hotfix-2023-10-01\"",
+  "needimport": "import os\nimport zipfile\nfrom pandas import DataFrame\n\n",
+  "test_results": {
+    "ans1": "data/releases/v1.0.0/",
+    "ans2": "data/releases/release_2023_09_15/",
+    "ans3": "data/releases/beta-2.1/",
+    "ans4": "data/releases/alpha_0.9.5/",
+    "ans5": "data/releases/hotfix-2023-10-01/"
+  }
+}

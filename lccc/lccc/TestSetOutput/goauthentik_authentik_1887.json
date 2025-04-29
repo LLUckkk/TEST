@@ -1,0 +1,23 @@
+{
+  "input_header": "def to_access_token(self, provider: \"OAuth2Provider\") -> str:",
+  "input_docstring": "Encode id_token for use as access token, adding fields",
+  "output_code": "    def to_access_token(self, provider: \"OAuth2Provider\") -> str:\n        \n        final = self.to_dict()\n        final[\"azp\"] = provider.client_id\n        final[\"uid\"] = generate_id()\n        return provider.encode(final)",
+  "input_contexts": [
+    {
+      "id": "goauthentik_authentik_1887_1",
+      "input_code": "    def id_token(self, value: IDToken):\n        self.token = value.to_access_token(self.provider)\n        self._id_token = json.dumps(asdict(value))\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\nfrom dataclasses import asdict\nfrom typing import Dict\n\nclass OAuth2Provider:\n    def __init__(self, client_id: str):\n        self.client_id = client_id\n\n    def encode(self, data: Dict) -> str:\n        return json.dumps(data)\n\ndef generate_id() -> str:\n    return \"unique_id_12345\"\n\nclass IDToken:\n    def to_dict(self) -> Dict:\n        return {\"sub\": \"user123\", \"name\": \"John Doe\"}\n\n<testcase_1>\nprovider = OAuth2Provider(client_id=\"client_abc123\")\nid_token = IDToken()\n\n<testcase_2>\nprovider = OAuth2Provider(client_id=\"client_xyz789\")\nid_token = IDToken()\n\n<testcase_3>\nprovider = OAuth2Provider(client_id=\"client_456def\")\nid_token = IDToken()\n\n<testcase_4>\nprovider = OAuth2Provider(client_id=\"client_789ghi\")\nid_token = IDToken()\n\n<testcase_5>\nprovider = OAuth2Provider(client_id=\"client_012jkl\")\nid_token = IDToken()"
+  ],
+  "gpt_output": "<needimport>\nimport json\nfrom dataclasses import asdict\nfrom typing import Dict\n\nclass OAuth2Provider:\n    def __init__(self, client_id: str):\n        self.client_id = client_id\n\n    def encode(self, data: Dict) -> str:\n        return json.dumps(data)\n\ndef generate_id() -> str:\n    return \"unique_id_12345\"\n\nclass IDToken:\n    def to_dict(self) -> Dict:\n        return {\"sub\": \"user123\", \"name\": \"John Doe\"}\n\n<testcase_1>\nprovider = OAuth2Provider(client_id=\"client_abc123\")\nid_token = IDToken()\n\n<testcase_2>\nprovider = OAuth2Provider(client_id=\"client_xyz789\")\nid_token = IDToken()\n\n<testcase_3>\nprovider = OAuth2Provider(client_id=\"client_456def\")\nid_token = IDToken()\n\n<testcase_4>\nprovider = OAuth2Provider(client_id=\"client_789ghi\")\nid_token = IDToken()\n\n<testcase_5>\nprovider = OAuth2Provider(client_id=\"client_012jkl\")\nid_token = IDToken()",
+  "needimport": "import json\nfrom dataclasses import asdict\nfrom typing import Dict\n\nclass OAuth2Provider:\n    def __init__(self, client_id: str):\n        self.client_id = client_id\n\n    def encode(self, data: Dict) -> str:\n        return json.dumps(data)\n\ndef generate_id() -> str:\n    return \"unique_id_12345\"\n\nclass IDToken:\n    def to_dict(self) -> Dict:\n        return {\"sub\": \"user123\", \"name\": \"John Doe\"}\n\n",
+  "test_results": {
+    "ans1": "{\"sub\": \"user123\", \"name\": \"John Doe\", \"azp\": \"client_abc123\", \"uid\": \"unique_id_12345\"}",
+    "ans2": "{\"sub\": \"user123\", \"name\": \"John Doe\", \"azp\": \"client_xyz789\", \"uid\": \"unique_id_12345\"}",
+    "ans3": "{\"sub\": \"user123\", \"name\": \"John Doe\", \"azp\": \"client_456def\", \"uid\": \"unique_id_12345\"}",
+    "ans4": "{\"sub\": \"user123\", \"name\": \"John Doe\", \"azp\": \"client_789ghi\", \"uid\": \"unique_id_12345\"}",
+    "ans5": "{\"sub\": \"user123\", \"name\": \"John Doe\", \"azp\": \"client_012jkl\", \"uid\": \"unique_id_12345\"}"
+  }
+}

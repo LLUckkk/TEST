@@ -1,0 +1,39 @@
+{
+  "input_header": "def forward(self, x: Tensor, state: RNNState):",
+  "input_docstring": null,
+  "output_code": "    def forward(self, x: Tensor, state: RNNState):\n        batch, _, hidden_size = x.shape\n        state_x = state.get(self.layer_id, StateID.FFN_X, (batch, hidden_size), x.dtype)\n        state_x = token_shift(state_x, x)\n\n        state_x = state_x - x\n        xk = x + state_x * self.time_maa_k\n        xr = x + state_x * self.time_maa_r\n\n        last_x = last_token(x).reshape(batch, hidden_size)\n        state = state.set(self.layer_id, StateID.FFN_X, last_x)\n\n        r = op.sigmoid(self.receptance(xr))\n        xv = op.square(op.relu(self.key(xk)))\n        return r * self.value(xv), state",
+  "input_contexts": [
+    {
+      "id": "mlc-ai_mlc-llm_1134_5",
+      "input_code": "    def batch_verify(self, input_embeds: Tensor, state: RNNState):\n        \n        return self.forward(input_embeds, state)\n"
+    },
+    {
+      "id": "mlc-ai_mlc-llm_1134_3",
+      "input_code": "    def batch_prefill(self, input_embeds: Tensor, logit_positions: Tensor, state: RNNState):\n        \n        return self.forward(input_embeds, state, logit_positions=logit_positions)\n"
+    },
+    {
+      "id": "mlc-ai_mlc-llm_1134_1",
+      "input_code": "    def prefill(self, input_embed: Tensor, state: RNNState):\n        \n        return self.forward(input_embed, state)\n"
+    },
+    {
+      "id": "mlc-ai_mlc-llm_1134_4",
+      "input_code": "    def batch_decode(self, input_embeds: Tensor, state: RNNState):\n        \n        return self.forward(input_embeds, state)\n"
+    },
+    {
+      "id": "mlc-ai_mlc-llm_1134_2",
+      "input_code": "    def decode(self, input_embed: Tensor, state: RNNState):\n        \n        return self.forward(input_embed, state)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport torch\nfrom torch import Tensor\n\n<testcase_1>\nx = torch.randn(32, 10, 128)\nstate = RNNState()\nstate.set(0, StateID.FFN_X, torch.randn(32, 128))\n\n<testcase_2>\nx = torch.randn(64, 15, 256)\nstate = RNNState()\nstate.set(1, StateID.FFN_X, torch.randn(64, 256))\n\n<testcase_3>\nx = torch.randn(16, 20, 64)\nstate = RNNState()\nstate.set(2, StateID.FFN_X, torch.randn(16, 64))\n\n<testcase_4>\nx = torch.randn(128, 5, 512)\nstate = RNNState()\nstate.set(3, StateID.FFN_X, torch.randn(128, 512))\n\n<testcase_5>\nx = torch.randn(8, 25, 32)\nstate = RNNState()\nstate.set(4, StateID.FFN_X, torch.randn(8, 32))"
+  ],
+  "gpt_output": "<needimport>\nimport torch\nfrom torch import Tensor\n\n<testcase_1>\nx = torch.randn(32, 10, 128)\nstate = RNNState()\nstate.set(0, StateID.FFN_X, torch.randn(32, 128))\n\n<testcase_2>\nx = torch.randn(64, 15, 256)\nstate = RNNState()\nstate.set(1, StateID.FFN_X, torch.randn(64, 256))\n\n<testcase_3>\nx = torch.randn(16, 20, 64)\nstate = RNNState()\nstate.set(2, StateID.FFN_X, torch.randn(16, 64))\n\n<testcase_4>\nx = torch.randn(128, 5, 512)\nstate = RNNState()\nstate.set(3, StateID.FFN_X, torch.randn(128, 512))\n\n<testcase_5>\nx = torch.randn(8, 25, 32)\nstate = RNNState()\nstate.set(4, StateID.FFN_X, torch.randn(8, 32))",
+  "needimport": "import torch\nfrom torch import Tensor\n\n",
+  "test_results": {
+    "ans1": -0.0007369499653577805,
+    "ans2": 0.0008166811894625425,
+    "ans3": -0.019375504925847054,
+    "ans4": 0.0007181723485700786,
+    "ans5": 0.005361529998481274
+  }
+}

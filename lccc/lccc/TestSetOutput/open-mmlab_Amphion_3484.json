@@ -1,0 +1,56 @@
+{
+  "input_header": "def init_weights(self):",
+  "input_docstring": null,
+  "output_code": "    def init_weights(self):\n        dw_max = self.kernel_size**-0.5\n        pw_max = self.channel**-0.5\n        torch.nn.init.uniform_(self.dw_conv.weight, -dw_max, dw_max)\n        torch.nn.init.uniform_(self.dw_conv.bias, -dw_max, dw_max)\n        torch.nn.init.uniform_(self.pw_conv.weight, -pw_max, pw_max)\n        torch.nn.init.uniform_(self.pw_conv.bias, -pw_max, pw_max)",
+  "input_contexts": [
+    {
+      "id": "open-mmlab_Amphion_3484_3",
+      "input_code": "    def __init__(\n        self, channel: int, out_dim: int, kernel_size: int = 1, stride: int = 2\n    ):\n        super(TimeReductionLayerStream, self).__init__()\n\n        self.channel = channel\n        self.out_dim = out_dim\n        self.kernel_size = kernel_size\n        self.stride = stride\n\n        self.dw_conv = nn.Conv1d(\n            in_channels=channel,\n            out_channels=channel,\n            kernel_size=kernel_size,\n            stride=stride,\n            padding=0,\n            groups=channel,\n        )\n\n        self.pw_conv = nn.Conv1d(\n            in_channels=channel,\n            out_channels=out_dim,\n            kernel_size=1,\n            stride=1,\n            padding=0,\n            groups=1,\n        )\n\n        self.init_weights()\n"
+    },
+    {
+      "id": "open-mmlab_Amphion_3484_1",
+      "input_code": "    def __init__(\n        self, channel: int, out_dim: int, kernel_size: int = 5, stride: int = 2\n    ):\n        super(TimeReductionLayer1D, self).__init__()\n\n        self.channel = channel\n        self.out_dim = out_dim\n        self.kernel_size = kernel_size\n        self.stride = stride\n        self.padding = max(0, self.kernel_size - self.stride)\n\n        self.dw_conv = nn.Conv1d(\n            in_channels=channel,\n            out_channels=channel,\n            kernel_size=kernel_size,\n            stride=stride,\n            padding=self.padding,\n            groups=channel,\n        )\n\n        self.pw_conv = nn.Conv1d(\n            in_channels=channel,\n            out_channels=out_dim,\n            kernel_size=1,\n            stride=1,\n            padding=0,\n            groups=1,\n        )\n\n        self.init_weights()\n"
+    },
+    {
+      "id": "open-mmlab_Amphion_3484_2",
+      "input_code": "    def __init__(self, kernel_size: int = 5, stride: int = 2, encoder_dim: int = 256):\n        super(TimeReductionLayer2D, self).__init__()\n        self.encoder_dim = encoder_dim\n        self.kernel_size = kernel_size\n        self.dw_conv = Conv2dValid(\n            in_channels=encoder_dim,\n            out_channels=encoder_dim,\n            kernel_size=(kernel_size, 1),\n            stride=stride,\n            valid_trigy=True,\n        )\n        self.pw_conv = Conv2dValid(\n            in_channels=encoder_dim,\n            out_channels=encoder_dim,\n            kernel_size=1,\n            stride=1,\n            valid_trigx=False,\n            valid_trigy=False,\n        )\n\n        self.kernel_size = kernel_size\n        self.stride = stride\n        self.init_weights()\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport torch\nimport torch.nn as nn\n\n<testcase_1>\nchannel = 64\nout_dim = 128\nkernel_size = 3\nstride = 2\n\n<testcase_2>\nchannel = 32\nout_dim = 64\nkernel_size = 5\nstride = 1\n\n<testcase_3>\nchannel = 128\nout_dim = 256\nkernel_size = 7\nstride = 3\n\n<testcase_4>\nchannel = 16\nout_dim = 32\nkernel_size = 1\nstride = 1\n\n<testcase_5>\nchannel = 256\nout_dim = 512\nkernel_size = 9\nstride = 4"
+  ],
+  "gpt_output": "<needimport>\nimport torch\nimport torch.nn as nn\n\n<testcase_1>\nchannel = 64\nout_dim = 128\nkernel_size = 3\nstride = 2\n\n<testcase_2>\nchannel = 32\nout_dim = 64\nkernel_size = 5\nstride = 1\n\n<testcase_3>\nchannel = 128\nout_dim = 256\nkernel_size = 7\nstride = 3\n\n<testcase_4>\nchannel = 16\nout_dim = 32\nkernel_size = 1\nstride = 1\n\n<testcase_5>\nchannel = 256\nout_dim = 512\nkernel_size = 9\nstride = 4",
+  "needimport": "import torch\nimport torch.nn as nn\n\n",
+  "test_results": {
+    "ans1": {
+      "dw_mean": 0.012906051240861416,
+      "dw_std": 0.33666518330574036,
+      "pw_mean": 0.0004587147559504956,
+      "pw_std": 0.07215992361307144
+    },
+    "ans2": {
+      "dw_mean": 0.019754763692617416,
+      "dw_std": 0.25822150707244873,
+      "pw_mean": 0.0007417281158268452,
+      "pw_std": 0.10192261636257172
+    },
+    "ans3": {
+      "dw_mean": -0.0034847580827772617,
+      "dw_std": 0.21804071962833405,
+      "pw_mean": -6.196497270138934e-05,
+      "pw_std": 0.050826139748096466
+    },
+    "ans4": {
+      "dw_mean": -0.04869718849658966,
+      "dw_std": 0.5288217663764954,
+      "pw_mean": -0.0038709426298737526,
+      "pw_std": 0.1472739428281784
+    },
+    "ans5": {
+      "dw_mean": -0.0008935643127188087,
+      "dw_std": 0.1940334290266037,
+      "pw_mean": -0.00013507135736290365,
+      "pw_std": 0.03613400086760521
+    }
+  }
+}

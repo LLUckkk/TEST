@@ -1,0 +1,34 @@
+{
+  "input_header": "def extract_message_or_forward_to_file( handler: \"PipesMessageHandler\", log_line: str, file: IO[str] ):",
+  "input_docstring": null,
+  "output_code": "def extract_message_or_forward_to_file(\n    handler: \"PipesMessageHandler\", log_line: str, file: IO[str]\n):\n    try:\n        message = json.loads(log_line)\n        if PIPES_PROTOCOL_VERSION_FIELD in message.keys():\n            handler.handle_message(message)\n        else:\n            file.writelines((log_line, \"\\n\"))\n    except Exception:\n        file.writelines((log_line, \"\\n\"))",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_11753_1",
+      "input_code": "def extract_message_or_forward_to_stdout(handler: \"PipesMessageHandler\", log_line: str):\n    extract_message_or_forward_to_file(handler=handler, log_line=log_line, file=sys.stdout)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\nimport sys\nfrom typing import IO\nfrom io import StringIO\n\nclass PipesMessageHandler:\n    def handle_message(self, message):\n        pass\n\n<testcase_1>\nhandler = PipesMessageHandler()\nlog_line = '{\"version\": \"1.0\", \"message\": \"Test message\"}'\nfile = StringIO()\n\n<testcase_2>\nhandler = PipesMessageHandler()\nlog_line = 'This is a log line without JSON format'\nfile = StringIO()\n\n<testcase_3>\nhandler = PipesMessageHandler()\nlog_line = '{\"version\": \"2.0\", \"message\": \"Another test message\"}'\nfile = StringIO()\n\n<testcase_4>\nhandler = PipesMessageHandler()\nlog_line = '{\"message\": \"Missing version field\"}'\nfile = StringIO()\n\n<testcase_5>\nhandler = PipesMessageHandler()\nlog_line = 'Invalid JSON: {\"version\": \"3.0\", \"message\": \"Test message\"'\nfile = StringIO()"
+  ],
+  "gpt_output": "<needimport>\nimport json\nimport sys\nfrom typing import IO\nfrom io import StringIO\n\nclass PipesMessageHandler:\n    def handle_message(self, message):\n        pass\n\n<testcase_1>\nhandler = PipesMessageHandler()\nlog_line = '{\"version\": \"1.0\", \"message\": \"Test message\"}'\nfile = StringIO()\n\n<testcase_2>\nhandler = PipesMessageHandler()\nlog_line = 'This is a log line without JSON format'\nfile = StringIO()\n\n<testcase_3>\nhandler = PipesMessageHandler()\nlog_line = '{\"version\": \"2.0\", \"message\": \"Another test message\"}'\nfile = StringIO()\n\n<testcase_4>\nhandler = PipesMessageHandler()\nlog_line = '{\"message\": \"Missing version field\"}'\nfile = StringIO()\n\n<testcase_5>\nhandler = PipesMessageHandler()\nlog_line = 'Invalid JSON: {\"version\": \"3.0\", \"message\": \"Test message\"'\nfile = StringIO()",
+  "needimport": "import json\nimport sys\nfrom typing import IO\nfrom io import StringIO\n\nclass PipesMessageHandler:\n    def handle_message(self, message):\n        pass\n\n",
+  "test_results": {
+    "ans1": {
+      "handler_output": "Message handled",
+      "file_content": "{\"version\": \"1.0\", \"message\": \"Test message\"}"
+    },
+    "ans2": {
+      "file_content": "This is a log line without JSON format"
+    },
+    "ans3": {
+      "file_content": "{\"version\": \"2.0\", \"message\": \"Another test message\"}"
+    },
+    "ans4": {
+      "file_content": "{\"message\": \"Missing version field\"}"
+    },
+    "ans5": {
+      "file_content": "Invalid JSON: {\"version\": \"3.0\", \"message\": \"Test message\""
+    }
+  }
+}

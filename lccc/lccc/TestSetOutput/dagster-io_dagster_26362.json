@@ -1,0 +1,123 @@
+{
+  "input_header": "def to_serializable_repr(self) -> Any:",
+  "input_docstring": null,
+  "output_code": "    def to_serializable_repr(self) -> Any:\n        return self._asdict()",
+  "input_contexts": [
+    {
+      "id": "dagster-io_dagster_26362_1",
+      "input_code": "    def build_asset_defn_metadata(\n        self,\n        key_prefix: Sequence[str],\n        group_name: Optional[str],\n        table_to_asset_key_fn: Callable[[str], AssetKey],\n        io_manager_key: Optional[str] = None,\n    ) -> AssetsDefinitionCacheableData:\n        schema_table_meta: dict[str, RawMetadataMapping] = {}\n        if \"schemas\" in self.schemas:\n            schemas_inner = cast(dict[str, Any], self.schemas[\"schemas\"])\n            for schema in schemas_inner.values():\n                if schema[\"enabled\"]:\n                    schema_name = schema[\"name_in_destination\"]\n                    schema_tables: dict[str, dict[str, Any]] = cast(\n                        dict[str, dict[str, Any]], schema[\"tables\"]\n                    )\n                    for table in schema_tables.values():\n                        if table[\"enabled\"]:\n                            table_name = table[\"name_in_destination\"]\n                            schema_table_meta[f\"{schema_name}.{table_name}\"] = metadata_for_table(\n                                table,\n                                self.connector_url,\n                                database=self.database,\n                                schema=schema_name,\n                                table=table_name,\n                            )\n        else:\n            schema_table_meta[self.name] = {}\n\n        outputs = {\n            table: AssetKey([*key_prefix, *list(table_to_asset_key_fn(table).path)])\n            for table in schema_table_meta.keys()\n        }\n\n        internal_deps: dict[str, set[AssetKey]] = {}\n\n        return AssetsDefinitionCacheableData(\n            keys_by_input_name={},\n            keys_by_output_name=outputs,\n            internal_asset_deps=internal_deps,\n            group_name=group_name,\n            key_prefix=key_prefix,\n            can_subset=False,\n            metadata_by_output_name=schema_table_meta,\n            extra_metadata={\n                \"connector_id\": self.connector_id,\n                \"io_manager_key\": io_manager_key,\n                \"storage_kind\": self.service,\n                \"connection_metadata\": self.to_serializable_repr(),\n            },\n        )\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport dataclasses\nfrom typing import Any\n\n@dataclasses.dataclass\nclass ExampleClass:\n    connector_id: str\n    service: str\n    schemas: dict\n    name: str\n    connector_url: str\n    database: str\n    \n    def _asdict(self):\n        return {\n            \"connector_id\": self.connector_id,\n            \"service\": self.service,\n            \"schemas\": self.schemas,\n            \"name\": self.name,\n            \"connector_url\": self.connector_url,\n            \"database\": self.database,\n        }\n\n<testcase_1>\nexample_instance_1 = ExampleClass(\n    connector_id=\"connector_123\",\n    service=\"example_service\",\n    schemas={\"schemas\": {\"schema1\": {\"enabled\": True, \"name_in_destination\": \"schema1_dest\", \"tables\": {\"table1\": {\"enabled\": True, \"name_in_destination\": \"table1_dest\"}}}}},\n    name=\"example_name\",\n    connector_url=\"http://example.com\",\n    database=\"example_db\"\n)\n\n<testcase_2>\nexample_instance_2 = ExampleClass(\n    connector_id=\"connector_456\",\n    service=\"another_service\",\n    schemas={\"schemas\": {\"schema2\": {\"enabled\": False, \"name_in_destination\": \"schema2_dest\", \"tables\": {\"table2\": {\"enabled\": False, \"name_in_destination\": \"table2_dest\"}}}}},\n    name=\"another_name\",\n    connector_url=\"http://another.com\",\n    database=\"another_db\"\n)\n\n<testcase_3>\nexample_instance_3 = ExampleClass(\n    connector_id=\"connector_789\",\n    service=\"third_service\",\n    schemas={\"schemas\": {\"schema3\": {\"enabled\": True, \"name_in_destination\": \"schema3_dest\", \"tables\": {\"table3\": {\"enabled\": True, \"name_in_destination\": \"table3_dest\"}}}}},\n    name=\"third_name\",\n    connector_url=\"http://third.com\",\n    database=\"third_db\"\n)\n\n<testcase_4>\nexample_instance_4 = ExampleClass(\n    connector_id=\"connector_101\",\n    service=\"fourth_service\",\n    schemas={\"schemas\": {\"schema4\": {\"enabled\": False, \"name_in_destination\": \"schema4_dest\", \"tables\": {\"table4\": {\"enabled\": True, \"name_in_destination\": \"table4_dest\"}}}}},\n    name=\"fourth_name\",\n    connector_url=\"http://fourth.com\",\n    database=\"fourth_db\"\n)\n\n<testcase_5>\nexample_instance_5 = ExampleClass(\n    connector_id=\"connector_202\",\n    service=\"fifth_service\",\n    schemas={\"schemas\": {\"schema5\": {\"enabled\": True, \"name_in_destination\": \"schema5_dest\", \"tables\": {\"table5\": {\"enabled\": False, \"name_in_destination\": \"table5_dest\"}}}}},\n    name=\"fifth_name\",\n    connector_url=\"http://fifth.com\",\n    database=\"fifth_db\"\n)"
+  ],
+  "gpt_output": "<needimport>\nimport dataclasses\nfrom typing import Any\n\n@dataclasses.dataclass\nclass ExampleClass:\n    connector_id: str\n    service: str\n    schemas: dict\n    name: str\n    connector_url: str\n    database: str\n    \n    def _asdict(self):\n        return {\n            \"connector_id\": self.connector_id,\n            \"service\": self.service,\n            \"schemas\": self.schemas,\n            \"name\": self.name,\n            \"connector_url\": self.connector_url,\n            \"database\": self.database,\n        }\n\n<testcase_1>\nexample_instance_1 = ExampleClass(\n    connector_id=\"connector_123\",\n    service=\"example_service\",\n    schemas={\"schemas\": {\"schema1\": {\"enabled\": True, \"name_in_destination\": \"schema1_dest\", \"tables\": {\"table1\": {\"enabled\": True, \"name_in_destination\": \"table1_dest\"}}}}},\n    name=\"example_name\",\n    connector_url=\"http://example.com\",\n    database=\"example_db\"\n)\n\n<testcase_2>\nexample_instance_2 = ExampleClass(\n    connector_id=\"connector_456\",\n    service=\"another_service\",\n    schemas={\"schemas\": {\"schema2\": {\"enabled\": False, \"name_in_destination\": \"schema2_dest\", \"tables\": {\"table2\": {\"enabled\": False, \"name_in_destination\": \"table2_dest\"}}}}},\n    name=\"another_name\",\n    connector_url=\"http://another.com\",\n    database=\"another_db\"\n)\n\n<testcase_3>\nexample_instance_3 = ExampleClass(\n    connector_id=\"connector_789\",\n    service=\"third_service\",\n    schemas={\"schemas\": {\"schema3\": {\"enabled\": True, \"name_in_destination\": \"schema3_dest\", \"tables\": {\"table3\": {\"enabled\": True, \"name_in_destination\": \"table3_dest\"}}}}},\n    name=\"third_name\",\n    connector_url=\"http://third.com\",\n    database=\"third_db\"\n)\n\n<testcase_4>\nexample_instance_4 = ExampleClass(\n    connector_id=\"connector_101\",\n    service=\"fourth_service\",\n    schemas={\"schemas\": {\"schema4\": {\"enabled\": False, \"name_in_destination\": \"schema4_dest\", \"tables\": {\"table4\": {\"enabled\": True, \"name_in_destination\": \"table4_dest\"}}}}},\n    name=\"fourth_name\",\n    connector_url=\"http://fourth.com\",\n    database=\"fourth_db\"\n)\n\n<testcase_5>\nexample_instance_5 = ExampleClass(\n    connector_id=\"connector_202\",\n    service=\"fifth_service\",\n    schemas={\"schemas\": {\"schema5\": {\"enabled\": True, \"name_in_destination\": \"schema5_dest\", \"tables\": {\"table5\": {\"enabled\": False, \"name_in_destination\": \"table5_dest\"}}}}},\n    name=\"fifth_name\",\n    connector_url=\"http://fifth.com\",\n    database=\"fifth_db\"\n)",
+  "needimport": "import dataclasses\nfrom typing import Any\n\n@dataclasses.dataclass\nclass ExampleClass:\n    connector_id: str\n    service: str\n    schemas: dict\n    name: str\n    connector_url: str\n    database: str\n    \n    def _asdict(self):\n        return {\n            \"connector_id\": self.connector_id,\n            \"service\": self.service,\n            \"schemas\": self.schemas,\n            \"name\": self.name,\n            \"connector_url\": self.connector_url,\n            \"database\": self.database,\n        }\n\n",
+  "test_results": {
+    "ans1": {
+      "connector_id": "connector_123",
+      "service": "example_service",
+      "schemas": {
+        "schemas": {
+          "schema1": {
+            "enabled": true,
+            "name_in_destination": "schema1_dest",
+            "tables": {
+              "table1": {
+                "enabled": true,
+                "name_in_destination": "table1_dest"
+              }
+            }
+          }
+        }
+      },
+      "name": "example_name",
+      "connector_url": "http://example.com",
+      "database": "example_db"
+    },
+    "ans2": {
+      "connector_id": "connector_456",
+      "service": "another_service",
+      "schemas": {
+        "schemas": {
+          "schema2": {
+            "enabled": false,
+            "name_in_destination": "schema2_dest",
+            "tables": {
+              "table2": {
+                "enabled": false,
+                "name_in_destination": "table2_dest"
+              }
+            }
+          }
+        }
+      },
+      "name": "another_name",
+      "connector_url": "http://another.com",
+      "database": "another_db"
+    },
+    "ans3": {
+      "connector_id": "connector_789",
+      "service": "third_service",
+      "schemas": {
+        "schemas": {
+          "schema3": {
+            "enabled": true,
+            "name_in_destination": "schema3_dest",
+            "tables": {
+              "table3": {
+                "enabled": true,
+                "name_in_destination": "table3_dest"
+              }
+            }
+          }
+        }
+      },
+      "name": "third_name",
+      "connector_url": "http://third.com",
+      "database": "third_db"
+    },
+    "ans4": {
+      "connector_id": "connector_101",
+      "service": "fourth_service",
+      "schemas": {
+        "schemas": {
+          "schema4": {
+            "enabled": false,
+            "name_in_destination": "schema4_dest",
+            "tables": {
+              "table4": {
+                "enabled": true,
+                "name_in_destination": "table4_dest"
+              }
+            }
+          }
+        }
+      },
+      "name": "fourth_name",
+      "connector_url": "http://fourth.com",
+      "database": "fourth_db"
+    },
+    "ans5": {
+      "connector_id": "connector_202",
+      "service": "fifth_service",
+      "schemas": {
+        "schemas": {
+          "schema5": {
+            "enabled": true,
+            "name_in_destination": "schema5_dest",
+            "tables": {
+              "table5": {
+                "enabled": false,
+                "name_in_destination": "table5_dest"
+              }
+            }
+          }
+        }
+      },
+      "name": "fifth_name",
+      "connector_url": "http://fifth.com",
+      "database": "fifth_db"
+    }
+  }
+}

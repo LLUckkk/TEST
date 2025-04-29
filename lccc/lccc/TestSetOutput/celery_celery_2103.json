@@ -1,0 +1,93 @@
+{
+  "input_header": "def add(self, item, now=None):",
+  "input_docstring": "Add a new item, or reset the expiry time of an existing item.",
+  "output_code": "    def add(self, item, now=None):\n        \n        now = now or time.monotonic()\n        if item in self._data:\n            self.discard(item)\n        entry = (now, item)\n        self._data[item] = entry\n        heappush(self._heap, entry)\n        if self.maxlen and len(self._data) >= self.maxlen:\n            self.purge()",
+  "input_contexts": [
+    {
+      "id": "celery_celery_2103_15",
+      "input_code": "    def test_add_removes_duplicate_from_big_heap(self):\n        s = LimitedSet(maxlen=1000)\n        [s.add(i) for i in range(2000)]\n        assert len(s) == 1000\n        [s.add('foo') for i in range(1000)]\n        assert len(s._heap) < 1150\n        [s.add('foo') for i in range(1000)]\n        assert len(s._heap) < 1150\n"
+    },
+    {
+      "id": "celery_celery_2103_1",
+      "input_code": "    def update(self, other):\n        \n        if not other:\n            return\n        if isinstance(other, LimitedSet):\n            self._data.update(other._data)\n            self._refresh_heap()\n            self.purge()\n        elif isinstance(other, dict):\n            for key, inserted in other.items():\n                if isinstance(inserted, (tuple, list)):\n                    inserted = inserted[0]\n                if not isinstance(inserted, float):\n                    raise ValueError(\n                        'Expecting float timestamp, got type '\n                        f'{type(inserted)!r} with value: {inserted}')\n                self.add(key, inserted)\n        else:\n            for obj in other:\n                self.add(obj)\n"
+    },
+    {
+      "id": "celery_celery_2103_10",
+      "input_code": "    def test_update(self):\n        s1 = LimitedSet(maxlen=2)\n        s1.add('foo')\n        s1.add('bar')\n\n        s2 = LimitedSet(maxlen=2)\n        s2.update(s1)\n        assert sorted(list(s2)) == ['bar', 'foo']\n\n        s2.update(['bla'])\n        assert sorted(list(s2)) == ['bar', 'bla']\n\n        s2.update(['do', 're'])\n        assert sorted(list(s2)) == ['do', 're']\n        s1 = LimitedSet(maxlen=10, expires=None)\n        s2 = LimitedSet(maxlen=10, expires=None)\n        s3 = LimitedSet(maxlen=10, expires=None)\n        s4 = LimitedSet(maxlen=10, expires=None)\n        s5 = LimitedSet(maxlen=10, expires=None)\n        for i in range(12):\n            s1.add(i)\n            s2.add(i * i)\n        s3.update(s1)\n        s3.update(s2)\n        s4.update(s1.as_dict())\n        s4.update(s2.as_dict())\n        s5.update(s1._data)\n        s5.update(s2._data)\n        assert s3 == s4\n        assert s3 == s5\n        s2.update(s4)\n        s4.update(s2)\n        assert s2 == s4\n"
+    },
+    {
+      "id": "celery_celery_2103_12",
+      "input_code": "    def test_pop_and_ordering_again(self):\n        s = LimitedSet(maxlen=5)\n        for i in range(10):\n            s.add(i)\n        j = -1\n        for _ in range(5):\n            i = s.pop()\n            assert j < i\n        i = s.pop()\n        assert i is None\n"
+    },
+    {
+      "id": "celery_celery_2103_14",
+      "input_code": "    def test_add_removes_duplicate_from_small_heap(self):\n        s = LimitedSet(maxlen=2)\n        s.add('foo')\n        s.add('foo')\n        s.add('foo')\n        assert len(s) == 1\n        assert len(s._data) == 1\n        assert len(s._heap) == 1\n"
+    },
+    {
+      "id": "celery_celery_2103_4",
+      "input_code": "    def test_purge(self):\n        s = LimitedSet(maxlen=10)\n        [s.add(i) for i in range(10)]\n        s.maxlen = 2\n        s.purge()\n        assert len(s) == 2\n\n        s = LimitedSet(maxlen=10, expires=1)\n        [s.add(i) for i in range(10)]\n        s.maxlen = 2\n        s.purge(now=monotonic() + 100)\n        assert len(s) == 0\n\n        s = LimitedSet(maxlen=None, expires=1)\n        [s.add(i) for i in range(10)]\n        s.maxlen = 2\n        s.purge(now=lambda: monotonic() - 100)\n        assert len(s) == 2\n\n        s = LimitedSet(maxlen=10, minlen=10, expires=1)\n        [s.add(i) for i in range(20)]\n        s.minlen = 3\n        s.purge(now=monotonic() + 3)\n        assert s.minlen == len(s)\n        assert len(s._heap) <= s.maxlen * (\n            100. + s.max_heap_percent_overload) / 100\n"
+    },
+    {
+      "id": "celery_celery_2103_13",
+      "input_code": "    def test_as_dict(self):\n        s = LimitedSet(maxlen=2)\n        s.add('foo')\n        assert isinstance(s.as_dict(), Mapping)\n"
+    },
+    {
+      "id": "celery_celery_2103_8",
+      "input_code": "    def test_discard(self):\n        s = LimitedSet(maxlen=2)\n        s.add('foo')\n        s.discard('foo')\n        assert 'foo' not in s\n        assert len(s._data) == 0\n        s.discard('foo')\n"
+    },
+    {
+      "id": "celery_celery_2103_6",
+      "input_code": "    def test_iter(self):\n        s = LimitedSet(maxlen=3)\n        items = ['foo', 'bar', 'baz', 'xaz']\n        for item in items:\n            s.add(item)\n        l = list(iter(s))\n        for item in items[1:]:\n            assert item in l\n        assert 'foo' not in l\n        assert l == items[1:], 'order by insertion time'\n"
+    },
+    {
+      "id": "celery_celery_2103_2",
+      "input_code": "    def test_hello__with_revoked(self):\n        revoked = LimitedSet(100)\n        for i in range(100):\n            revoked.add(f'id{i}')\n        self.inspect.hello('george@vandelay.com', revoked=revoked._data)\n        self.assert_broadcast_called(\n            'hello', from_node='george@vandelay.com', revoked=revoked._data)\n"
+    },
+    {
+      "id": "celery_celery_2103_16",
+      "input_code": "    def test_start(self):\n        c = Mock()\n        c.app.connection_for_read = _amqp_connection()\n        mingle = Mingle(c)\n        assert mingle.enabled\n\n        Aig = LimitedSet()\n        Big = LimitedSet()\n        Aig.add('Aig-1')\n        Aig.add('Aig-2')\n        Big.add('Big-1')\n\n        I = c.app.control.inspect.return_value = Mock()\n        I.hello.return_value = {\n            'A@example.com': {\n                'clock': 312,\n                'revoked': Aig._data,\n            },\n            'B@example.com': {\n                'clock': 29,\n                'revoked': Big._data,\n            },\n            'C@example.com': {\n                'error': 'unknown method',\n            },\n        }\n\n        our_revoked = c.controller.state.revoked = LimitedSet()\n\n        mingle.start(c)\n        I.hello.assert_called_with(c.hostname, our_revoked._data)\n        c.app.clock.adjust.assert_has_calls([\n            call(312), call(29),\n        ], any_order=True)\n        assert 'Aig-1' in our_revoked\n        assert 'Aig-2' in our_revoked\n        assert 'Big-1' in our_revoked\n"
+    },
+    {
+      "id": "celery_celery_2103_11",
+      "input_code": "    def test_iterable_and_ordering(self):\n        s = LimitedSet(maxlen=35, expires=None)\n        clock = count(1)\n        for i in reversed(range(15)):\n            s.add(i, now=next(clock))\n        j = 40\n        for i in s:\n            assert i < j\n            j = i\n        assert i == 0\n"
+    },
+    {
+      "id": "celery_celery_2103_5",
+      "input_code": "    def test_pickleable(self):\n        s = LimitedSet(maxlen=2)\n        s.add('foo')\n        s.add('bar')\n        assert pickle.loads(pickle.dumps(s)) == s\n"
+    },
+    {
+      "id": "celery_celery_2103_9",
+      "input_code": "    def test_clear(self):\n        s = LimitedSet(maxlen=2)\n        s.add('foo')\n        s.add('bar')\n        assert len(s) == 2\n        s.clear()\n        assert not s\n"
+    },
+    {
+      "id": "celery_celery_2103_3",
+      "input_code": "    def test_add(self):\n        s = LimitedSet(maxlen=2)\n        s.add('foo')\n        s.add('bar')\n        for n in 'foo', 'bar':\n            assert n in s\n        s.add('baz')\n        for n in 'bar', 'baz':\n            assert n in s\n        assert 'foo' not in s\n\n        s = LimitedSet(maxlen=10)\n        for i in range(150):\n            s.add(i)\n        assert len(s) <= 10\n\n        assert len(s._heap) < len(s) * (\n            100. + s.max_heap_percent_overload) / 100\n"
+    },
+    {
+      "id": "celery_celery_2103_7",
+      "input_code": "    def test_repr(self):\n        s = LimitedSet(maxlen=2)\n        items = 'foo', 'bar'\n        for item in items:\n            s.add(item)\n        assert 'LimitedSet(' in repr(s)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport time\n\n<testcase_1>\nself = LimitedSet(maxlen=5)\nitem = 'apple'\nnow = time.monotonic()\n\n<testcase_2>\nself = LimitedSet(maxlen=10)\nitem = 'banana'\nnow = None\n\n<testcase_3>\nself = LimitedSet(maxlen=3)\nitem = 42\nnow = time.monotonic() + 100\n\n<testcase_4>\nself = LimitedSet(maxlen=7)\nitem = 'grape'\nnow = None\n\n<testcase_5>\nself = LimitedSet(maxlen=15)\nitem = 'orange'\nnow = time.monotonic() - 50\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport time\n\n<testcase_1>\nself = LimitedSet(maxlen=5)\nitem = 'apple'\nnow = time.monotonic()\n\n<testcase_2>\nself = LimitedSet(maxlen=10)\nitem = 'banana'\nnow = None\n\n<testcase_3>\nself = LimitedSet(maxlen=3)\nitem = 42\nnow = time.monotonic() + 100\n\n<testcase_4>\nself = LimitedSet(maxlen=7)\nitem = 'grape'\nnow = None\n\n<testcase_5>\nself = LimitedSet(maxlen=15)\nitem = 'orange'\nnow = time.monotonic() - 50\n```",
+  "needimport": "import time\n\n",
+  "test_results": {
+    "ans1": [
+      "apple"
+    ],
+    "ans2": [
+      "banana"
+    ],
+    "ans3": [
+      42
+    ],
+    "ans4": [
+      "grape"
+    ],
+    "ans5": [
+      "orange"
+    ]
+  }
+}

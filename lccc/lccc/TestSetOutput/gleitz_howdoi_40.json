@@ -1,0 +1,105 @@
+{
+  "input_header": "def howdoi(raw_query):",
+  "input_docstring": null,
+  "output_code": "def howdoi(raw_query):\n    if isinstance(raw_query, str):\n        parser = get_parser()\n        args = vars(parser.parse_args(raw_query.split(' ')))\n    else:\n        args = raw_query\n\n    search_engine = args['search_engine'] or os.getenv('HOWDOI_SEARCH_ENGINE') or 'google'\n    os.environ['HOWDOI_SEARCH_ENGINE'] = search_engine\n    if search_engine not in SUPPORTED_SEARCH_ENGINES:\n        supported_search_engines = ', '.join(SUPPORTED_SEARCH_ENGINES)\n        message = f'Unsupported engine {search_engine}. The supported engines are: {supported_search_engines}'\n        res = {'error': message}\n        return _parse_cmd(args, res)\n\n    args['query'] = ' '.join(args['query']).replace('?', '')\n    cache_key = _get_cache_key(args)\n\n    if _is_help_query(args['query']):\n        return _get_help_instructions() + '\\n'\n\n    res = _get_from_cache(cache_key)\n\n    if res:\n        logging.info('Using cached response (add -C to clear the cache)')\n        return _parse_cmd(args, res)\n\n    logging.info('Fetching answers for query: %s', args[\"query\"])\n\n    try:\n        res = _get_answers(args)\n        if not res:\n            message = NO_RESULTS_MESSAGE\n            if not args['explain']:\n                message = f'{message} (use --explain to learn why)'\n            res = {'error': message}\n        cache.set(cache_key, res)\n    except (RequestsConnectionError, SSLError):\n        res = {'error': f'Unable to reach {search_engine}. Do you need to use a proxy?\\n'}\n    except BlockError:\n        BLOCKED_ENGINES.append(search_engine)\n        next_engine = next((engine for engine in SUPPORTED_SEARCH_ENGINES if engine not in BLOCKED_ENGINES), None)\n        if next_engine is None:\n            res = {'error': 'Unable to get a response from any search engine\\n'}\n        else:\n            args['search_engine'] = next_engine\n            args['query'] = args['query'].split()\n            logging.info('%sRetrying search with %s%s', GREEN, next_engine, END_FORMAT)\n            return howdoi(args)\n    return _parse_cmd(args, res)",
+  "input_contexts": [
+    {
+      "id": "gleitz_howdoi_40_15",
+      "input_code": "    def test_multiple_answers(self):\n        query = self.queries[0]\n        first_answer = howdoi.howdoi(query)\n        second_answer = howdoi.howdoi(query + ' -n3')\n        self.assertNotEqual(first_answer, second_answer)\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_3",
+      "input_code": "    def _negative_number_query(self):\n        query = self.queries[0]\n        howdoi.howdoi(query + ' -n -1')\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_4",
+      "input_code": "    def _high_positive_number_query(self):\n        query = self.queries[0]\n        howdoi.howdoi(query + ' -n 21')\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_14",
+      "input_code": "    def test_json_output(self):\n        query = self.queries[0]\n        txt_answer = howdoi.howdoi(query)\n        json_answer = howdoi.howdoi(query + ' -j')\n        link_answer = howdoi.howdoi(query + ' -l')\n        json_answer = json.loads(json_answer)[0]\n        self.assertEqual(json_answer[\"answer\"], txt_answer)\n        self.assertEqual(json_answer[\"link\"], link_answer)\n        self.assertEqual(json_answer[\"position\"], 1)\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_10",
+      "input_code": "    def test_answer_links_using_l_option(self):\n        for query in self.queries:\n            response = howdoi.howdoi(query + ' -l')\n            self.assertNotEqual(re.match(r'http.?://.*questions/\\d.*', response, re.DOTALL), None)\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_19",
+      "input_code": "    def test_missing_pre_or_code_query(self):\n        output = howdoi.howdoi(self.query_without_code_or_pre_block)\n        self.assertTrue(output)\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_6",
+      "input_code": "    def _high_positive_position_query(self):\n        query = self.queries[0]\n        howdoi.howdoi(query + ' -p 40')\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_18",
+      "input_code": "    def test_help_queries(self):\n        help_queries = self.help_queries\n\n        for query in help_queries:\n            output = howdoi.howdoi(query)\n            self.assertTrue(output)\n            self.assertIn('few popular howdoi commands', output)\n            self.assertIn('retrieve n number of answers', output)\n            self.assertIn(\n                'Specify the search engine you want to use e.g google,bing',\n                output\n            )\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_12",
+      "input_code": "    def test_position(self):\n        query = self.queries[0]\n        first_answer = howdoi.howdoi(query)\n        not_first_answer = howdoi.howdoi(query + ' -p5')\n        self.assertNotEqual(first_answer, not_first_answer)\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_1",
+      "input_code": "def _sanity_check(engine, test_query=None):\n    parser = get_parser()\n    if not test_query:\n        test_query = 'format date bash'\n\n    args = vars(parser.parse_args(test_query.split()))\n    args['search_engine'] = engine\n\n    try:\n        result = howdoi(args)\n        assert \"Sorry\" not in result and \"Unable to\" not in result\n    except AssertionError as exc:\n        if engine == 'google':\n            raise GoogleValidationError from exc\n        if engine == 'bing':\n            raise BingValidationError from exc\n        raise DDGValidationError from exc\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_17",
+      "input_code": "    def test_colorize(self):\n        query = self.queries[0]\n        normal = howdoi.howdoi(query)\n        colorized = howdoi.howdoi('-c ' + query)\n\n        if \"GITHUB_ACTION\" not in os.environ:\n            self.assertTrue(normal.find('[38;') == -1)\n            self.assertTrue(colorized.find('[38;') != -1)\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_8",
+      "input_code": "    def test_answers(self):\n        for query in self.queries:\n            self.assertValidResponse(howdoi.howdoi(query))\n        for query in self.bad_queries:\n            self.assertValidResponse(howdoi.howdoi(query))\n\n        os.environ['HOWDOI_URL'] = 'pt.stackoverflow.com'\n        for query in self.pt_queries:\n            self.assertValidResponse(howdoi.howdoi(query))\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_9",
+      "input_code": "    def test_answers_bing(self):\n        os.environ['HOWDOI_SEARCH_ENGINE'] = 'bing'\n        for query in self.queries:\n            self.assertValidResponse(howdoi.howdoi(query))\n        for query in self.bad_queries:\n            self.assertValidResponse(howdoi.howdoi(query))\n\n        os.environ['HOWDOI_URL'] = 'pt.stackoverflow.com'\n        for query in self.pt_queries:\n            self.assertValidResponse(howdoi.howdoi(query))\n\n        os.environ['HOWDOI_SEARCH_ENGINE'] = ''\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_13",
+      "input_code": "    def test_all_text(self):\n        query = self.queries[0]\n        first_answer = howdoi.howdoi(query)\n        second_answer = howdoi.howdoi(query + ' -a')\n        self.assertNotEqual(first_answer, second_answer)\n        self.assertNotEqual(re.match('.*Answer from http.?://.*', second_answer, re.DOTALL), None)\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_5",
+      "input_code": "    def _negative_position_query(self):\n        query = self.queries[0]\n        howdoi.howdoi(query + ' -p -2')\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_7",
+      "input_code": "    def test_blockerror(self, mock_get_links):\n        mock_get_links.side_effect = requests.HTTPError\n        query = self.queries[0]\n        response = howdoi.howdoi(query)\n        self.assertEqual(response, \"ERROR: \\x1b[91mUnable to get a response from any search engine\\n\\x1b[0m\")\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_2",
+      "input_code": "def command_line_runner():\n    parser = get_parser()\n    args = vars(parser.parse_args())\n\n    if args['version']:\n        print(__version__)\n        return\n\n    if args['explain']:\n        logging.getLogger().setLevel(logging.INFO)\n        logging.info('Version: %s', __version__)\n\n    if args['sanity_check']:\n        sys.exit(\n            perform_sanity_check()\n        )\n\n    if args['clear_cache']:\n        if _clear_cache():\n            print(f'{GREEN}Cache cleared successfully{END_FORMAT}')\n        else:\n            logging.error('%sClearing cache failed%s', RED, END_FORMAT)\n\n    if args[STASH_VIEW]:\n        print_stash()\n        return\n\n    if args[STASH_EMPTY]:\n        os.system('keep init')\n        return\n\n    if args[STASH_REMOVE] and len(args['query']) == 0:\n        commands = keep_utils.read_commands()\n        if commands is None or len(commands.items()) == 0:\n            logging.error('%sNo commands found in stash. '\n                          'Add a command with \"howdoi --%s <query>\".%s', RED, STASH_SAVE, END_FORMAT)\n            return\n        stash_list = [{'command': cmd, 'fields': field} for cmd, field in commands.items()]\n        prompt_stash_remove(args, stash_list)\n        return\n\n    if not args['query']:\n        parser.print_help()\n        return\n\n    if os.getenv('HOWDOI_COLORIZE'):\n        args['color'] = True\n\n    howdoi_result = howdoi(args)\n\n    if os.name == 'nt':\n        print(howdoi_result)\n    else:\n        utf8_result = howdoi_result.encode('utf-8', 'ignore')\n        sys.stdout.buffer.write(utf8_result)\n\n    howdoi_session.close()\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_11",
+      "input_code": "    def test_answer_links_using_all_option(self):\n        for query in self.queries:\n            response = howdoi.howdoi(query + ' -a')\n            self.assertNotEqual(re.match(r'.*http.?://.*questions/\\d.*', response, re.DOTALL), None)\n"
+    },
+    {
+      "id": "gleitz_howdoi_40_16",
+      "input_code": "    def test_unicode_answer(self):\n        assert howdoi.howdoi('make a log scale d3')\n        assert howdoi.howdoi('python unittest -n3')\n        assert howdoi.howdoi('parse html regex -a')\n        assert howdoi.howdoi('delete remote git branch -a')\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\n\n<testcase_1>\nraw_query = \"how to format date in bash\"\n\n<testcase_2>\nraw_query = \"python unittest -n3\"\n\n<testcase_3>\nraw_query = \"parse html regex -a\"\n\n<testcase_4>\nraw_query = \"delete remote git branch -a\"\n\n<testcase_5>\nraw_query = \"make a log scale d3\""
+  ],
+  "gpt_output": "<needimport>\nimport json\n\n<testcase_1>\nraw_query = \"how to format date in bash\"\n\n<testcase_2>\nraw_query = \"python unittest -n3\"\n\n<testcase_3>\nraw_query = \"parse html regex -a\"\n\n<testcase_4>\nraw_query = \"delete remote git branch -a\"\n\n<testcase_5>\nraw_query = \"make a log scale d3\"",
+  "needimport": "import json\n\n",
+  "test_results": {
+    "ans1": {
+      "answer": "Fake answer to 'h o w   t o   f o r m a t   d a t e   i n   b a s h'"
+    },
+    "ans2": {
+      "answer": "Fake answer to 'p y t h o n   u n i t t e s t'"
+    },
+    "ans3": {
+      "answer": "Fake answer to 'p a r s e   h t m l   r e g e x'"
+    },
+    "ans4": {
+      "answer": "Fake answer to 'd e l e t e   r e m o t e   g i t   b r a n c h'"
+    },
+    "ans5": {
+      "answer": "Fake answer to 'm a k e   a   l o g   s c a l e   d 3'"
+    }
+  }
+}
