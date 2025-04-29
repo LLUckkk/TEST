@@ -1,0 +1,37 @@
+{
+  "input_header": "def list_scheduling_policies(self) -> List[str]:",
+  "input_docstring": "Pagination is not yet implemented",
+  "output_code": "    def list_scheduling_policies(self) -> List[str]:\n        \n        return list(self._scheduling_policies.keys())",
+  "input_contexts": [
+    {
+      "id": "getmoto_moto_1642_1",
+      "input_code": "    def listschedulingpolicies(self) -> str:\n        arns = self.batch_backend.list_scheduling_policies()\n        return json.dumps({\"schedulingPolicies\": [{\"arn\": arn} for arn in arns]})\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\nfrom typing import List\n\n<testcase_1>\nself._scheduling_policies = {\n    \"arn:aws:batch:us-east-1:123456789012:scheduling-policy/test-policy-1\": {},\n    \"arn:aws:batch:us-east-1:123456789012:scheduling-policy/test-policy-2\": {}\n}\n\n<testcase_2>\nself._scheduling_policies = {\n    \"arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-3\": {},\n    \"arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-4\": {},\n    \"arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-5\": {}\n}\n\n<testcase_3>\nself._scheduling_policies = {\n    \"arn:aws:batch:eu-central-1:123456789012:scheduling-policy/test-policy-6\": {}\n}\n\n<testcase_4>\nself._scheduling_policies = {\n    \"arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-7\": {},\n    \"arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-8\": {},\n    \"arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-9\": {},\n    \"arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-10\": {}\n}\n\n<testcase_5>\nself._scheduling_policies = {}"
+  ],
+  "gpt_output": "<needimport>\nimport json\nfrom typing import List\n\n<testcase_1>\nself._scheduling_policies = {\n    \"arn:aws:batch:us-east-1:123456789012:scheduling-policy/test-policy-1\": {},\n    \"arn:aws:batch:us-east-1:123456789012:scheduling-policy/test-policy-2\": {}\n}\n\n<testcase_2>\nself._scheduling_policies = {\n    \"arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-3\": {},\n    \"arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-4\": {},\n    \"arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-5\": {}\n}\n\n<testcase_3>\nself._scheduling_policies = {\n    \"arn:aws:batch:eu-central-1:123456789012:scheduling-policy/test-policy-6\": {}\n}\n\n<testcase_4>\nself._scheduling_policies = {\n    \"arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-7\": {},\n    \"arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-8\": {},\n    \"arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-9\": {},\n    \"arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-10\": {}\n}\n\n<testcase_5>\nself._scheduling_policies = {}",
+  "needimport": "import json\nfrom typing import List\n\n",
+  "test_results": {
+    "ans1": [
+      "arn:aws:batch:us-east-1:123456789012:scheduling-policy/test-policy-1",
+      "arn:aws:batch:us-east-1:123456789012:scheduling-policy/test-policy-2"
+    ],
+    "ans2": [
+      "arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-3",
+      "arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-4",
+      "arn:aws:batch:us-west-2:123456789012:scheduling-policy/test-policy-5"
+    ],
+    "ans3": [
+      "arn:aws:batch:eu-central-1:123456789012:scheduling-policy/test-policy-6"
+    ],
+    "ans4": [
+      "arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-7",
+      "arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-8",
+      "arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-9",
+      "arn:aws:batch:ap-northeast-1:123456789012:scheduling-policy/test-policy-10"
+    ],
+    "ans5": []
+  }
+}

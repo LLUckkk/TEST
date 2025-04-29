@@ -1,0 +1,69 @@
+{
+  "input_header": "def DateTime( year: int, month: int, day: int, hour: int = 0, minute: int = 0, second: int = 0, milliseconds: int = 0, *, utc: bool | None = None, ) -> alt.DateTime:",
+  "input_docstring": "Factory for positionally aligning `datetime.datetime`/ `alt.DateTime`.",
+  "output_code": "def DateTime(\n    year: int,\n    month: int,\n    day: int,\n    hour: int = 0,\n    minute: int = 0,\n    second: int = 0,\n    milliseconds: int = 0,\n    *,\n    utc: bool | None = None,\n) -> alt.DateTime:\n    \n    kwds: dict[str, Any] = {}\n    if utc is True:\n        kwds.update(utc=utc)\n    if (hour, minute, second, milliseconds) != (0, 0, 0, 0):\n        kwds.update(\n            hours=hour, minutes=minute, seconds=second, milliseconds=milliseconds\n        )\n    return alt.DateTime(year=year, month=month, date=day, **kwds)",
+  "input_contexts": [
+    {
+      "id": "vega_altair_922_2",
+      "input_code": "def test_channels_typing() -> None:\n    \n    nums: list[int] = [1, 2, 3, 4, 5]\n    range_nums: range = range(5)\n    day: dt.date = dt.date(2024, 10, 27)\n    dates: tuple[dt.date, ...] = tuple(day.replace(day.year + n) for n in range_nums)\n    dates_mixed: Sequence[Temporal | DateTime] = (\n        DateTime(year=2000),\n        *dates,\n        dt.datetime(2001, 1, 1),\n    )\n\n    angle = alt.Angle(\"field:Q\")\n    assert angle.to_dict()\n\n    assert angle.sort(\"ascending\").to_dict()\n    assert angle.sort(\"-fillOpacity\").to_dict()\n    assert angle.sort(None)\n    assert angle.sort(nums).to_dict()\n    assert angle.sort(range_nums).to_dict()\n    assert angle.sort(deque(nums)).to_dict()\n    assert angle.sort(dates).to_dict()\n    assert angle.sort(dates_mixed).to_dict()\n\n    invariant_sequence = angle.sort([*nums, *dates])\n    with pytest.raises(SchemaValidationError):\n        invariant_sequence.to_dict()\n\n    positional_as_keyword = angle.sort(_=\"ascending\")\n    with pytest.raises(\n        SchemaValidationError,\n        match=r\"'{'_': 'ascending'}' is an invalid value for `sort`\",\n    ):\n        positional_as_keyword.to_dict()\n\n    keyword_as_positional = angle.sort(\"field:Q\", \"min\", \"descending\")\n    with pytest.raises(SchemaValidationError):\n        keyword_as_positional.to_dict()\n    angle.sort(field=\"field:Q\", op=\"min\", order=\"descending\")\n\n    bad = angle.sort(\"x\", \"ascending\").to_dict()\n    good = angle.sort(encoding=\"x\", order=\"ascending\").to_dict()\n    assert isinstance(bad, dict)\n    assert isinstance(good, dict)\n    with pytest.raises(\n        AssertionError, match=r\"'x' == {'encoding': 'x', 'order': 'ascending'}\"\n    ):\n        assert bad[\"sort\"] == good[\"sort\"]\n"
+    },
+    {
+      "id": "vega_altair_922_3",
+      "input_code": "def test_selection_interval_value_typing() -> None:\n    \n    import datetime as dt\n\n    w_date = dt.date(2005, 1, 1), dt.date(2009, 1, 1)\n    w_float = (0, 999)\n    w_date_datetime = dt.date(2005, 1, 1), alt.DateTime(year=2009)\n    w_str = [\"0\", \"500\"]\n\n    a = alt.selection_interval(encodings=[\"x\"], value={\"x\": w_date}).to_dict()\n    b = alt.selection_interval(encodings=[\"y\"], value={\"y\": w_float}).to_dict()\n    c = alt.selection_interval(encodings=[\"x\"], value={\"x\": w_date_datetime}).to_dict()\n    d = alt.selection_interval(encodings=[\"text\"], value={\"text\": w_str}).to_dict()\n\n    a_b = alt.selection_interval(\n        encodings=[\"x\", \"y\"], value={\"x\": w_date, \"y\": w_float}\n    ).to_dict()\n    a_c = alt.selection_interval(\n        encodings=[\"x\", \"y\"], value={\"x\": w_date, \"y\": w_date_datetime}\n    ).to_dict()\n    b_c_d = alt.selection_interval(\n        encodings=[\"x\", \"y\", \"text\"],\n        value={\"x\": w_date_datetime, \"y\": w_float, \"text\": w_str},\n    ).to_dict()\n\n    assert a\n    assert b\n    assert c\n    assert d\n    assert a_b\n    assert a_c\n    assert b_c_d\n"
+    },
+    {
+      "id": "vega_altair_922_1",
+      "input_code": "def test_to_dict_datetime(\n    stocks, window: tuple[dt.date, dt.date], expected: tuple[alt.DateTime, alt.DateTime]\n) -> None:\n    \n    expected_dicts = [e.to_dict() for e in expected]\n    brush = alt.selection_interval(encodings=[\"x\"], value={\"x\": window})\n    base = stocks\n\n    upper = base.encode(alt.X(\"date:T\").scale(domain=brush))\n    lower = base.add_params(brush)\n    chart = upper & lower\n    mapping = chart.to_dict()\n    params_value = mapping[\"params\"][0][\"value\"][\"x\"]\n\n    assert isinstance(params_value, list)\n    assert params_value == expected_dicts\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport altair as alt\n\n<testcase_1>\nyear_1 = 2023\nmonth_1 = 5\nday_1 = 15\nhour_1 = 14\nminute_1 = 30\nsecond_1 = 45\nmilliseconds_1 = 500\nutc_1 = True\n\n<testcase_2>\nyear_2 = 1999\nmonth_2 = 12\nday_2 = 31\nhour_2 = 23\nminute_2 = 59\nsecond_2 = 59\nmilliseconds_2 = 999\nutc_2 = False\n\n<testcase_3>\nyear_3 = 2000\nmonth_3 = 1\nday_3 = 1\nhour_3 = 0\nminute_3 = 0\nsecond_3 = 0\nmilliseconds_3 = 0\nutc_3 = None\n\n<testcase_4>\nyear_4 = 2024\nmonth_4 = 2\nday_4 = 29\nhour_4 = 6\nminute_4 = 15\nsecond_4 = 30\nmilliseconds_4 = 250\nutc_4 = True\n\n<testcase_5>\nyear_5 = 1980\nmonth_5 = 7\nday_5 = 4\nhour_5 = 12\nminute_5 = 0\nsecond_5 = 0\nmilliseconds_5 = 0\nutc_5 = False\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport altair as alt\n\n<testcase_1>\nyear_1 = 2023\nmonth_1 = 5\nday_1 = 15\nhour_1 = 14\nminute_1 = 30\nsecond_1 = 45\nmilliseconds_1 = 500\nutc_1 = True\n\n<testcase_2>\nyear_2 = 1999\nmonth_2 = 12\nday_2 = 31\nhour_2 = 23\nminute_2 = 59\nsecond_2 = 59\nmilliseconds_2 = 999\nutc_2 = False\n\n<testcase_3>\nyear_3 = 2000\nmonth_3 = 1\nday_3 = 1\nhour_3 = 0\nminute_3 = 0\nsecond_3 = 0\nmilliseconds_3 = 0\nutc_3 = None\n\n<testcase_4>\nyear_4 = 2024\nmonth_4 = 2\nday_4 = 29\nhour_4 = 6\nminute_4 = 15\nsecond_4 = 30\nmilliseconds_4 = 250\nutc_4 = True\n\n<testcase_5>\nyear_5 = 1980\nmonth_5 = 7\nday_5 = 4\nhour_5 = 12\nminute_5 = 0\nsecond_5 = 0\nmilliseconds_5 = 0\nutc_5 = False\n```",
+  "needimport": "import altair as alt\n\n",
+  "test_results": {
+    "ans1": {
+      "date": 15,
+      "hours": 14,
+      "milliseconds": 500,
+      "minutes": 30,
+      "month": 5,
+      "seconds": 45,
+      "utc": true,
+      "year": 2023
+    },
+    "ans2": {
+      "date": 31,
+      "hours": 23,
+      "milliseconds": 999,
+      "minutes": 59,
+      "month": 12,
+      "seconds": 59,
+      "year": 1999
+    },
+    "ans3": {
+      "date": 1,
+      "month": 1,
+      "year": 2000
+    },
+    "ans4": {
+      "date": 29,
+      "hours": 6,
+      "milliseconds": 250,
+      "minutes": 15,
+      "month": 2,
+      "seconds": 30,
+      "utc": true,
+      "year": 2024
+    },
+    "ans5": {
+      "date": 4,
+      "hours": 12,
+      "milliseconds": 0,
+      "minutes": 0,
+      "month": 7,
+      "seconds": 0,
+      "year": 1980
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "input_header": "def _get_region_from_arn(arn: str) -> str:",
+  "input_docstring": null,
+  "output_code": "def _get_region_from_arn(arn: str) -> str:\n    return arn.split(\":\")[3]",
+  "input_contexts": [
+    {
+      "id": "getmoto_moto_10610_2",
+      "input_code": "def send_test_event(account_id: str, bucket: Any) -> None:\n    arns = [n.arn for n in bucket.notification_configuration.queue]\n    for arn in set(arns):\n        region_name = _get_region_from_arn(arn)\n        queue_name = arn.split(\":\")[-1]\n        message_body = _get_test_event(bucket.name)\n        _send_sqs_message(account_id, message_body, queue_name, region_name)\n\n    arns = [n.arn for n in bucket.notification_configuration.topic]\n    for arn in set(arns):\n        region_name = _get_region_from_arn(arn)\n        message_body = _get_test_event(bucket.name)\n        _send_sns_message(account_id, message_body, arn, region_name)\n"
+    },
+    {
+      "id": "getmoto_moto_10610_1",
+      "input_code": "def send_event(\n    account_id: str, event_name: S3NotificationEvent, bucket: Any, key: Any\n) -> None:\n    if bucket.notification_configuration is None:\n        return\n\n    for notification in bucket.notification_configuration.cloud_function:\n        if notification.matches(event_name, key.name):\n            event_body = _get_s3_event(event_name, bucket, key, notification.id)\n            region_name = _get_region_from_arn(notification.arn)\n\n            _invoke_awslambda(account_id, event_body, notification.arn, region_name)\n\n    for notification in bucket.notification_configuration.queue:\n        if notification.matches(event_name, key.name):\n            event_body = _get_s3_event(event_name, bucket, key, notification.id)\n            region_name = _get_region_from_arn(notification.arn)\n            queue_name = notification.arn.split(\":\")[-1]\n\n            _send_sqs_message(account_id, event_body, queue_name, region_name)\n\n    for notification in bucket.notification_configuration.topic:\n        if notification.matches(event_name, key.name):\n            event_body = _get_s3_event(event_name, bucket, key, notification.id)\n            region_name = _get_region_from_arn(notification.arn)\n            topic_arn = notification.arn\n\n            _send_sns_message(account_id, event_body, topic_arn, region_name)\n\n    if bucket.notification_configuration.event_bridge is not None:\n        _send_event_bridge_message(account_id, bucket, event_name, key)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\n# No imports are needed for this function\n\n<testcase_1>\narn = \"arn:aws:s3:us-west-2:123456789012:bucket_name\"\n\n<testcase_2>\narn = \"arn:aws:lambda:eu-central-1:123456789012:function:function_name\"\n\n<testcase_3>\narn = \"arn:aws:sqs:ap-southeast-1:123456789012:queue_name\"\n\n<testcase_4>\narn = \"arn:aws:sns:us-east-1:123456789012:topic_name\"\n\n<testcase_5>\narn = \"arn:aws:dynamodb:eu-west-1:123456789012:table/table_name\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\n# No imports are needed for this function\n\n<testcase_1>\narn = \"arn:aws:s3:us-west-2:123456789012:bucket_name\"\n\n<testcase_2>\narn = \"arn:aws:lambda:eu-central-1:123456789012:function:function_name\"\n\n<testcase_3>\narn = \"arn:aws:sqs:ap-southeast-1:123456789012:queue_name\"\n\n<testcase_4>\narn = \"arn:aws:sns:us-east-1:123456789012:topic_name\"\n\n<testcase_5>\narn = \"arn:aws:dynamodb:eu-west-1:123456789012:table/table_name\"\n```",
+  "needimport": "# No imports are needed for this function\n\n",
+  "test_results": {
+    "ans1": "us-west-2",
+    "ans2": "eu-central-1",
+    "ans3": "ap-southeast-1",
+    "ans4": "us-east-1",
+    "ans5": "eu-west-1"
+  }
+}

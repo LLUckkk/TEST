@@ -1,0 +1,54 @@
+{
+  "input_header": "def get_call_stack(allocation):",
+  "input_docstring": null,
+  "output_code": "def get_call_stack(allocation):\n    return [f[0] for f in allocation.stack_trace()]",
+  "input_contexts": [
+    {
+      "id": "bloomberg_memray_929_1",
+      "input_code": "def test_basic_attach(tmp_path, method):\n    if not debugger_available(method):\n        pytest.skip(f\"a supported {method} debugger isn't installed\")\n\n    output = tmp_path / \"test.bin\"\n    attach_cmd = generate_attach_command(method, output)\n\n    run_process(attach_cmd)\n\n    reader = FileReader(output)\n    (valloc,) = get_relevant_vallocs(reader.get_allocation_records())\n    assert get_call_stack(valloc) == [\"valloc\", \"baz\", \"bar\", \"foo\", \"<module>\"]\n"
+    },
+    {
+      "id": "bloomberg_memray_929_2",
+      "input_code": "def test_aggregated_attach(tmp_path, method):\n    if not debugger_available(method):\n        pytest.skip(f\"a supported {method} debugger isn't installed\")\n\n    output = tmp_path / \"test.bin\"\n    attach_cmd = generate_attach_command(method, output, \"--aggregate\")\n\n    run_process(attach_cmd)\n\n    reader = FileReader(output)\n    with pytest.raises(\n        NotImplementedError,\n        match=\"Can't get all allocations from a pre-aggregated capture file.\",\n    ):\n        list(reader.get_allocation_records())\n\n    (valloc,) = get_relevant_vallocs(reader.get_high_watermark_allocation_records())\n    assert get_call_stack(valloc) == [\"valloc\", \"baz\", \"bar\", \"foo\", \"<module>\"]\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport collections\n\n<testcase_1>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"valloc\",), (\"baz\",), (\"bar\",), (\"foo\",), (\"<module>\",)])\n\n<testcase_2>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"malloc\",), (\"qux\",), (\"baz\",), (\"bar\",), (\"<module>\",)])\n\n<testcase_3>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"calloc\",), (\"init\",), (\"main\",), (\"<module>\",)])\n\n<testcase_4>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"realloc\",), (\"process\",), (\"execute\",), (\"<module>\",)])\n\n<testcase_5>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"free\",), (\"cleanup\",), (\"finalize\",), (\"<module>\",)])\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport collections\n\n<testcase_1>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"valloc\",), (\"baz\",), (\"bar\",), (\"foo\",), (\"<module>\",)])\n\n<testcase_2>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"malloc\",), (\"qux\",), (\"baz\",), (\"bar\",), (\"<module>\",)])\n\n<testcase_3>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"calloc\",), (\"init\",), (\"main\",), (\"<module>\",)])\n\n<testcase_4>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"realloc\",), (\"process\",), (\"execute\",), (\"<module>\",)])\n\n<testcase_5>\nAllocation = collections.namedtuple('Allocation', 'stack_trace')\nallocation = Allocation(stack_trace=lambda: [(\"free\",), (\"cleanup\",), (\"finalize\",), (\"<module>\",)])\n```",
+  "needimport": "import collections\n\n",
+  "test_results": {
+    "ans1": [
+      "valloc",
+      "baz",
+      "bar",
+      "foo",
+      "<module>"
+    ],
+    "ans2": [
+      "malloc",
+      "qux",
+      "baz",
+      "bar",
+      "<module>"
+    ],
+    "ans3": [
+      "calloc",
+      "init",
+      "main",
+      "<module>"
+    ],
+    "ans4": [
+      "realloc",
+      "process",
+      "execute",
+      "<module>"
+    ],
+    "ans5": [
+      "free",
+      "cleanup",
+      "finalize",
+      "<module>"
+    ]
+  }
+}

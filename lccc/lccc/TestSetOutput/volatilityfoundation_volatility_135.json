@@ -1,0 +1,27 @@
+{
+  "input_header": "def get_pgd(self, vaddr):",
+  "input_docstring": null,
+  "output_code": "    def get_pgd(self, vaddr):\n        pgd_entry = self.dtb + self.pgd_index(vaddr) * pointer_size\n        return self.read_long_phys(pgd_entry)",
+  "input_contexts": [
+    {
+      "id": "volatilityfoundation_volatility_135_1",
+      "input_code": "    def vtop(self, vaddr):\n        retVal = None\n        pgd = self.get_pgd(vaddr)\n        if self.entry_present(pgd):\n            if self.page_size_flag(pgd):\n                retVal = self.get_four_meg_paddr(vaddr, pgd)\n            else:\n                pte = self.get_pte(vaddr, pgd)\n                if not pte:\n                    return None\n                if self.entry_present(pte):\n                    retVal = self.get_paddr(vaddr, pte)\n        return retVal\n"
+    },
+    {
+      "id": "volatilityfoundation_volatility_135_2",
+      "input_code": "    def vtop(self, vaddr):\n        retVal = None\n        pdpe = self.get_pdpi(vaddr)\n\n        if not self.entry_present(pdpe):\n            return retVal\n\n        pgd = self.get_pgd(vaddr, pdpe)\n        if self.entry_present(pgd):\n            if self.page_size_flag(pgd):\n                retVal = self.get_large_paddr(vaddr, pgd)\n            else:\n                pte = self.get_pte(vaddr, pgd)\n                if self.entry_present(pte):\n                    retVal = self.get_paddr(vaddr, pte)\n\n        return retVal\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport random\n\n<testcase_1>\nself = type('Dummy', (object,), {'dtb': 0x1000, 'pgd_index': lambda self, vaddr: vaddr >> 22, 'read_long_phys': lambda self, addr: addr + 0x2000, 'pointer_size': 8})()\nvaddr = 0x12345678\n\n<testcase_2>\nself = type('Dummy', (object,), {'dtb': 0x2000, 'pgd_index': lambda self, vaddr: (vaddr >> 22) & 0x3FF, 'read_long_phys': lambda self, addr: addr + 0x3000, 'pointer_size': 8})()\nvaddr = 0x87654321\n\n<testcase_3>\nself = type('Dummy', (object,), {'dtb': 0x3000, 'pgd_index': lambda self, vaddr: (vaddr >> 20) & 0xFFF, 'read_long_phys': lambda self, addr: addr + 0x4000, 'pointer_size': 8})()\nvaddr = 0xABCDEF01\n\n<testcase_4>\nself = type('Dummy', (object,), {'dtb': 0x4000, 'pgd_index': lambda self, vaddr: (vaddr >> 24) & 0xFF, 'read_long_phys': lambda self, addr: addr + 0x5000, 'pointer_size': 8})()\nvaddr = 0x0FEDCBA9\n\n<testcase_5>\nself = type('Dummy', (object,), {'dtb': 0x5000, 'pgd_index': lambda self, vaddr: (vaddr >> 21) & 0x7FF, 'read_long_phys': lambda self, addr: addr + 0x6000, 'pointer_size': 8})()\nvaddr = 0x13579BDF"
+  ],
+  "gpt_output": "<needimport>\nimport random\n\n<testcase_1>\nself = type('Dummy', (object,), {'dtb': 0x1000, 'pgd_index': lambda self, vaddr: vaddr >> 22, 'read_long_phys': lambda self, addr: addr + 0x2000, 'pointer_size': 8})()\nvaddr = 0x12345678\n\n<testcase_2>\nself = type('Dummy', (object,), {'dtb': 0x2000, 'pgd_index': lambda self, vaddr: (vaddr >> 22) & 0x3FF, 'read_long_phys': lambda self, addr: addr + 0x3000, 'pointer_size': 8})()\nvaddr = 0x87654321\n\n<testcase_3>\nself = type('Dummy', (object,), {'dtb': 0x3000, 'pgd_index': lambda self, vaddr: (vaddr >> 20) & 0xFFF, 'read_long_phys': lambda self, addr: addr + 0x4000, 'pointer_size': 8})()\nvaddr = 0xABCDEF01\n\n<testcase_4>\nself = type('Dummy', (object,), {'dtb': 0x4000, 'pgd_index': lambda self, vaddr: (vaddr >> 24) & 0xFF, 'read_long_phys': lambda self, addr: addr + 0x5000, 'pointer_size': 8})()\nvaddr = 0x0FEDCBA9\n\n<testcase_5>\nself = type('Dummy', (object,), {'dtb': 0x5000, 'pgd_index': lambda self, vaddr: (vaddr >> 21) & 0x7FF, 'read_long_phys': lambda self, addr: addr + 0x6000, 'pointer_size': 8})()\nvaddr = 0x13579BDF",
+  "needimport": "import random\n\n",
+  "test_results": {
+    "ans1": 12864,
+    "ans2": 24808,
+    "ans3": 50656,
+    "ans4": 36984,
+    "ans5": 46288
+  }
+}

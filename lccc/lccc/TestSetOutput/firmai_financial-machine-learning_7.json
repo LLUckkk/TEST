@@ -1,0 +1,150 @@
+{
+  "input_header": "def get_repo_list():",
+  "input_docstring": null,
+  "output_code": "def get_repo_list():\n    repo_df = pd.read_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'))\n    if 'repo_path' not in repo_df.columns:\n        repo_df['repo_path'] = repo_df['url'].apply(get_repo_path)\n    return repo_df",
+  "input_contexts": [
+    {
+      "id": "firmai_financial-machine-learning_7_3",
+      "input_code": "def get_repo_status():\n    g = get_github_client()\n    repo_df = get_repo_list()\n    for idx, row in repo_df.iterrows():\n        repo_path = row['repo_path']\n        if not pd.isna(repo_path):\n            try:\n                print('processing [{}]'.format(repo_path))\n                repo = g.get_repo(repo_path)\n\n                repo_attr_dict = get_repo_attributes_dict(repo)\n            except Exception as ex:\n                print(ex)\n                repo_attr_dict = {}\n\n            for k, v in iter(repo_attr_dict.items()):\n                repo_df.loc[idx, k] = v\n    repo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n"
+    },
+    {
+      "id": "firmai_financial-machine-learning_7_1",
+      "input_code": "def search_new_repo_and_append(min_stars_number: int = 100, filter_list=None):\n    \n    repo_df = get_repo_list()\n    category_list = repo_df['category'].unique().tolist()\n    if filter_list is not None:\n        category_list = [x for x in category_list if x in filter_list]\n\n    new_repo_list = []\n    for category in category_list:\n        combined_df = search_new_repo_by_category(category, min_stars_number, repo_df)\n        if combined_df is not None:\n            new_repo_list.append(combined_df)\n    new_repo_df = pd.concat(new_repo_list).reset_index(drop=True)\n    new_repo_df = new_repo_df.drop_duplicates(subset='repo_path')\n\n    final_df = pd.concat([repo_df, new_repo_df]).reset_index(drop=True)\n\n    final_df = final_df.sort_values(by='category')\n    final_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n"
+    },
+    {
+      "id": "firmai_financial-machine-learning_7_2",
+      "input_code": "def search_new_repo_by_category_per_day(min_stars_number: int = 100):\n    repo_df = get_repo_list()\n    category_list = repo_df['category'].unique().tolist()\n    current_date = datetime.datetime.today()\n    n_category = len(category_list)\n    days_in_week = 7\n    if n_category % days_in_week == 0:\n        n_repo_to_process_per_day = int(n_category / days_in_week)\n    else:\n        n_repo_to_process_per_day = int(n_category / days_in_week) + 1\n    today_selection = current_date.weekday()\n    repo_to_process = category_list[\n                      today_selection * n_repo_to_process_per_day:(today_selection + 1) * n_repo_to_process_per_day]\n\n    search_new_repo_and_append(min_stars_number=min_stars_number, filter_list=repo_to_process)\n"
+    },
+    {
+      "id": "firmai_financial-machine-learning_7_4",
+      "input_code": "def generate_wiki_per_category(output_path, update_readme: bool = True):\n    \n    repo_df = get_repo_list()\n    for category in repo_df['category'].unique():\n        category_df = repo_df[repo_df['category'] == category].copy()\n        url_md_list = []\n        for idx, irow in category_df[['name', 'url']].iterrows():\n            url_md_list.append('<sub>[{}]({})</sub>'.format(irow['name'], irow['url']))\n\n        formatted_df = pd.DataFrame({\n            'repo': url_md_list,\n            'comment': category_df['comment'].apply(lambda x: '<sub>{}</sub>'.format(x)),\n            'created_at': category_df['created_at'].apply(lambda x: '<sub>{}</sub>'.format(x)),\n            'last_commit': category_df['last_commit'].apply(lambda x: '<sub>{}</sub>'.format(x)),\n            'star_count': category_df['star_count'].apply(lambda x: '<sub>{}</sub>'.format(x)),\n            'repo_status': category_df['repo_status'],\n            'rating': category_df['rating']\n        })\n        formatted_df = formatted_df.sort_values(by=['rating', 'star_count'], ascending=False).reset_index(drop=True)\n        formatted_df['repo_status'] = formatted_df['repo_status'].apply(lambda x: get_wiki_status_color(x))\n        formatted_df['rating'] = formatted_df['rating'].apply(lambda x: get_wiki_rating(x))\n        formatted_df.columns = ['<sub>{}</sub>'.format(x) for x in formatted_df.columns]\n\n        clean_category_name = category.lower().replace(' ', '_')\n        output_path_full = os.path.join(output_path, '{}.md'.format(clean_category_name))\n        with open(output_path_full, 'w') as f:\n            f.write(formatted_df.to_markdown(index=False))\n        print('wiki generated in [{}]'.format(output_path_full))\n\n        if update_readme:\n            check_str = '[PLACEHOLDER_START:{}]'.format(clean_category_name)\n            with open(os.path.join(PROJECT_ROOT_DIR, 'README.md')) as f:\n                all_read_me = f.read()\n                if check_str not in all_read_me:\n                    print(f'section {check_str} not found')\n                    continue\n\n            with open(os.path.join(PROJECT_ROOT_DIR, 'README.md'), 'w') as f:\n\n                table_str = formatted_df.iloc[:15].to_markdown(index=False)\n                new_str = f\"<!-- [PLACEHOLDER_START:{clean_category_name}] --> \\n\"\n                new_str += table_str\n                new_str += f\"<!-- [PLACEHOLDER_END:{clean_category_name}] -->\"\n\n                search_start = re.escape('<!-- [PLACEHOLDER_START:{}] -->'.format(clean_category_name))\n                search_end = re.escape('<!-- [PLACEHOLDER_END:{}] -->'.format(clean_category_name))\n                pattern_s = re.compile(r'{}.*?{}'.format(search_start, search_end), re.DOTALL)\n                write_str = re.sub(pattern_s, new_str, all_read_me)\n                f.write(write_str)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nimport os\n\n<testcase_1>\nPROJECT_ROOT_DIR = '/path/to/project'\ndata = {\n    'category': ['Machine Learning', 'Data Science'],\n    'url': ['https://github.com/user/repo1', 'https://github.com/user/repo2'],\n    'comment': ['Great repo', 'Useful repo'],\n    'created_at': ['2021-01-01', '2021-06-01'],\n    'last_commit': ['2023-01-01', '2023-06-01'],\n    'star_count': [150, 200],\n    'repo_status': ['active', 'inactive'],\n    'rating': [4.5, 4.0]\n}\nrepo_df = pd.DataFrame(data)\nrepo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n\n<testcase_2>\nPROJECT_ROOT_DIR = '/another/path/to/project'\ndata = {\n    'category': ['Web Development', 'Mobile Development'],\n    'url': ['https://github.com/user/repo3', 'https://github.com/user/repo4'],\n    'comment': ['Popular repo', 'Trending repo'],\n    'created_at': ['2020-05-01', '2020-08-01'],\n    'last_commit': ['2023-02-01', '2023-07-01'],\n    'star_count': [300, 400],\n    'repo_status': ['active', 'active'],\n    'rating': [4.8, 4.9]\n}\nrepo_df = pd.DataFrame(data)\nrepo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n\n<testcase_3>\nPROJECT_ROOT_DIR = '/yet/another/path/to/project'\ndata = {\n    'category': ['DevOps', 'Cloud Computing'],\n    'url': ['https://github.com/user/repo5', 'https://github.com/user/repo6'],\n    'comment': ['Essential repo', 'Cloud repo'],\n    'created_at': ['2019-03-01', '2019-09-01'],\n    'last_commit': ['2023-03-01', '2023-08-01'],\n    'star_count': [500, 600],\n    'repo_status': ['inactive', 'active'],\n    'rating': [4.7, 4.6]\n}\nrepo_df = pd.DataFrame(data)\nrepo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n\n<testcase_4>\nPROJECT_ROOT_DIR = '/some/other/path/to/project'\ndata = {\n    'category': ['Artificial Intelligence', 'Big Data'],\n    'url': ['https://github.com/user/repo7', 'https://github.com/user/repo8'],\n    'comment': ['AI repo', 'Big Data repo'],\n    'created_at': ['2018-11-01', '2018-12-01'],\n    'last_commit': ['2023-04-01', '2023-09-01'],\n    'star_count': [700, 800],\n    'repo_status': ['active', 'inactive'],\n    'rating': [4.9, 4.2]\n}\nrepo_df = pd.DataFrame(data)\nrepo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n\n<testcase_5>\nPROJECT_ROOT_DIR = '/final/path/to/project'\ndata = {\n    'category': ['Cybersecurity', 'Blockchain'],\n    'url': ['https://github.com/user/repo9', 'https://github.com/user/repo10'],\n    'comment': ['Security repo', 'Blockchain repo'],\n    'created_at': ['"
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nimport os\n\n<testcase_1>\nPROJECT_ROOT_DIR = '/path/to/project'\ndata = {\n    'category': ['Machine Learning', 'Data Science'],\n    'url': ['https://github.com/user/repo1', 'https://github.com/user/repo2'],\n    'comment': ['Great repo', 'Useful repo'],\n    'created_at': ['2021-01-01', '2021-06-01'],\n    'last_commit': ['2023-01-01', '2023-06-01'],\n    'star_count': [150, 200],\n    'repo_status': ['active', 'inactive'],\n    'rating': [4.5, 4.0]\n}\nrepo_df = pd.DataFrame(data)\nrepo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n\n<testcase_2>\nPROJECT_ROOT_DIR = '/another/path/to/project'\ndata = {\n    'category': ['Web Development', 'Mobile Development'],\n    'url': ['https://github.com/user/repo3', 'https://github.com/user/repo4'],\n    'comment': ['Popular repo', 'Trending repo'],\n    'created_at': ['2020-05-01', '2020-08-01'],\n    'last_commit': ['2023-02-01', '2023-07-01'],\n    'star_count': [300, 400],\n    'repo_status': ['active', 'active'],\n    'rating': [4.8, 4.9]\n}\nrepo_df = pd.DataFrame(data)\nrepo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n\n<testcase_3>\nPROJECT_ROOT_DIR = '/yet/another/path/to/project'\ndata = {\n    'category': ['DevOps', 'Cloud Computing'],\n    'url': ['https://github.com/user/repo5', 'https://github.com/user/repo6'],\n    'comment': ['Essential repo', 'Cloud repo'],\n    'created_at': ['2019-03-01', '2019-09-01'],\n    'last_commit': ['2023-03-01', '2023-08-01'],\n    'star_count': [500, 600],\n    'repo_status': ['inactive', 'active'],\n    'rating': [4.7, 4.6]\n}\nrepo_df = pd.DataFrame(data)\nrepo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n\n<testcase_4>\nPROJECT_ROOT_DIR = '/some/other/path/to/project'\ndata = {\n    'category': ['Artificial Intelligence', 'Big Data'],\n    'url': ['https://github.com/user/repo7', 'https://github.com/user/repo8'],\n    'comment': ['AI repo', 'Big Data repo'],\n    'created_at': ['2018-11-01', '2018-12-01'],\n    'last_commit': ['2023-04-01', '2023-09-01'],\n    'star_count': [700, 800],\n    'repo_status': ['active', 'inactive'],\n    'rating': [4.9, 4.2]\n}\nrepo_df = pd.DataFrame(data)\nrepo_df.to_csv(os.path.join(PROJECT_ROOT_DIR, 'raw_data', 'url_list.csv'), index=False)\n\n<testcase_5>\nPROJECT_ROOT_DIR = '/final/path/to/project'\ndata = {\n    'category': ['Cybersecurity', 'Blockchain'],\n    'url': ['https://github.com/user/repo9', 'https://github.com/user/repo10'],\n    'comment': ['Security repo', 'Blockchain repo'],\n    'created_at': ['",
+  "needimport": "import pandas as pd\nimport os\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "category": "Machine Learning",
+        "url": "https://github.com/user/repo1",
+        "comment": "Great repo",
+        "created_at": "2021-01-01",
+        "last_commit": "2023-01-01",
+        "star_count": 150,
+        "repo_status": "active",
+        "rating": 4.5,
+        "repo_path": "user/repo1"
+      },
+      {
+        "category": "Data Science",
+        "url": "https://github.com/user/repo2",
+        "comment": "Useful repo",
+        "created_at": "2021-06-01",
+        "last_commit": "2023-06-01",
+        "star_count": 200,
+        "repo_status": "inactive",
+        "rating": 4.0,
+        "repo_path": "user/repo2"
+      }
+    ],
+    "ans2": [
+      {
+        "category": "Web Development",
+        "url": "https://github.com/user/repo3",
+        "comment": "Popular repo",
+        "created_at": "2020-05-01",
+        "last_commit": "2023-02-01",
+        "star_count": 300,
+        "repo_status": "active",
+        "rating": 4.8,
+        "repo_path": "user/repo3"
+      },
+      {
+        "category": "Mobile Development",
+        "url": "https://github.com/user/repo4",
+        "comment": "Trending repo",
+        "created_at": "2020-08-01",
+        "last_commit": "2023-07-01",
+        "star_count": 400,
+        "repo_status": "active",
+        "rating": 4.9,
+        "repo_path": "user/repo4"
+      }
+    ],
+    "ans3": [
+      {
+        "category": "DevOps",
+        "url": "https://github.com/user/repo5",
+        "comment": "Essential repo",
+        "created_at": "2019-03-01",
+        "last_commit": "2023-03-01",
+        "star_count": 500,
+        "repo_status": "inactive",
+        "rating": 4.7,
+        "repo_path": "user/repo5"
+      },
+      {
+        "category": "Cloud Computing",
+        "url": "https://github.com/user/repo6",
+        "comment": "Cloud repo",
+        "created_at": "2019-09-01",
+        "last_commit": "2023-08-01",
+        "star_count": 600,
+        "repo_status": "active",
+        "rating": 4.6,
+        "repo_path": "user/repo6"
+      }
+    ],
+    "ans4": [
+      {
+        "category": "Artificial Intelligence",
+        "url": "https://github.com/user/repo7",
+        "comment": "AI repo",
+        "created_at": "2018-11-01",
+        "last_commit": "2023-04-01",
+        "star_count": 700,
+        "repo_status": "active",
+        "rating": 4.9,
+        "repo_path": "user/repo7"
+      },
+      {
+        "category": "Big Data",
+        "url": "https://github.com/user/repo8",
+        "comment": "Big Data repo",
+        "created_at": "2018-12-01",
+        "last_commit": "2023-09-01",
+        "star_count": 800,
+        "repo_status": "inactive",
+        "rating": 4.2,
+        "repo_path": "user/repo8"
+      }
+    ],
+    "ans5": [
+      {
+        "category": "Cybersecurity",
+        "url": "https://github.com/user/repo9",
+        "comment": "Security repo",
+        "created_at": "2021-08-01",
+        "last_commit": "2023-01-01",
+        "star_count": 1000,
+        "repo_status": "active",
+        "rating": 4.6,
+        "repo_path": "user/repo9"
+      },
+      {
+        "category": "Blockchain",
+        "url": "https://github.com/user/repo10",
+        "comment": "Blockchain repo",
+        "created_at": "2021-09-01",
+        "last_commit": "2023-02-01",
+        "star_count": 1200,
+        "repo_status": "active",
+        "rating": 4.9,
+        "repo_path": "user/repo10"
+      }
+    ]
+  }
+}

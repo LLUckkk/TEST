@@ -1,0 +1,23 @@
+{
+  "input_header": "def get_pointer_type(self, addr):",
+  "input_docstring": "Determine the pointer type for a specific address.\n@param addr: An address.\n@return: String pointer type",
+  "output_code": "    def get_pointer_type(self, addr):\n        \n        for k, v in self.is_pointer_dict.iteritems():\n            if v(addr):\n                return k\n        return None",
+  "input_contexts": [
+    {
+      "id": "volatilityfoundation_volatility_790_1",
+      "input_code": "    def annotate_addr_list(self, l, offset=None, skip_zero=True):\n        \n        if offset == None:\n            offset = self.vm_stack_low\n        for value in l:\n            if value != 0:\n                skip_zero = False\n            pointer_type = self.get_pointer_type(value)\n            annotation = \"\"\n            if pointer_type != None:\n                annotation = pointer_type + \" pointer\"\n            if offset == self.reg.esp:\n                annotation += \" && register esp\"\n            elif offset == self.reg.ebp:\n                annotation += \" && register ebp\"\n            if not skip_zero:\n                yield (offset, value, annotation)\n            offset += 4\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\n# No imports are needed for this function\n\n<testcase_1>\naddr = 0x00400000\n\n<testcase_2>\naddr = 0x7fff0000\n\n<testcase_3>\naddr = 0x00000000\n\n<testcase_4>\naddr = 0xFFFFFFFF\n\n<testcase_5>\naddr = 0x12345678\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\n# No imports are needed for this function\n\n<testcase_1>\naddr = 0x00400000\n\n<testcase_2>\naddr = 0x7fff0000\n\n<testcase_3>\naddr = 0x00000000\n\n<testcase_4>\naddr = 0xFFFFFFFF\n\n<testcase_5>\naddr = 0x12345678\n```",
+  "needimport": "# No imports are needed for this function\n\n",
+  "test_results": {
+    "ans1": "type1",
+    "ans2": null,
+    "ans3": "type1",
+    "ans4": null,
+    "ans5": "type2"
+  }
+}

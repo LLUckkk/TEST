@@ -1,0 +1,79 @@
+{
+  "input_header": "def checksum_disabled(cls, *args, **kwargs):",
+  "input_docstring": null,
+  "output_code": "    def checksum_disabled(cls, *args, **kwargs):\n        return os.getenv(\"MODEL_CHECKSUM_DISABLED\", None) is not None",
+  "input_contexts": [
+    {
+      "id": "danielgatis_rembg_40_13",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net_cloth_seg.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:2434d1f3cb744e0e49386c906e5a08bb\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_8",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/bria-rmbg-2.0.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"sha256:5b486f08200f513f460da46dd701db5fbb47d79b4be4b708a19444bcd4e79958\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_12",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:60024c5c889badc19c04ad937298a77b\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_5",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/BiRefNet-HRSOD_DHU-epoch_115.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:c017ade5de8a50ff0fd74d790d268dda\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_1",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/BiRefNet-COD-epoch_125.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:f6d0d21ca89d287f17e7afe9f5fd3b45\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_3",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/BiRefNet-general-epoch_244.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:7a35a0141cbbc80de11d9c9a28f52697\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_7",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/BiRefNet-portrait-epoch_150.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:c3a64a6abf20250d090cd055f12a3b67\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_14",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net_human_seg.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:c09ddc2e0104f800e3e1bb4652583d1f\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_10",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/isnet-general-use.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:fc16ebd8b0c10d971d3513d564d01e29\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_2",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/BiRefNet-DIS-epoch_590.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:2d4d44102b446f33a4ebb2e56c051f2b\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_11",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name()}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/silueta.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:55e59e0d8062d2f5d013f4725ee84782\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_6",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/BiRefNet-massive-TR_DIS5K_TR_TEs-epoch_420.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:33e726a2136a3d59eb0fdf613e31e3e9\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_15",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:8e83ca70e441ab06c318d82300c84806\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_9",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/isnet-anime.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:6f184e756bb3bd901c8849220a83e38e\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    },
+    {
+      "id": "danielgatis_rembg_40_4",
+      "input_code": "    def download_models(cls, *args, **kwargs):\n        \n        fname = f\"{cls.name(*args, **kwargs)}.onnx\"\n        pooch.retrieve(\n            \"https://github.com/danielgatis/rembg/releases/download/v0.0.0/BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx\",\n            (\n                None\n                if cls.checksum_disabled(*args, **kwargs)\n                else \"md5:4fab47adc4ff364be1713e97b7e66334\"\n            ),\n            fname=fname,\n            path=cls.u2net_home(*args, **kwargs),\n            progressbar=True,\n        )\n\n        return os.path.join(cls.u2net_home(*args, **kwargs), fname)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport os\n\n<testcase_1>\nos.environ[\"MODEL_CHECKSUM_DISABLED\"] = \"1\"\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'test_model', 'u2net_home': lambda *args, **kwargs: '/models'})\n\n<testcase_2>\nos.environ[\"MODEL_CHECKSUM_DISABLED\"] = \"\"\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'another_model', 'u2net_home': lambda *args, **kwargs: '/models'})\n\n<testcase_3>\nos.environ[\"MODEL_CHECKSUM_DISABLED\"] = \"true\"\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'model_v3', 'u2net_home': lambda *args, **kwargs: '/models'})\n\n<testcase_4>\nos.environ.pop(\"MODEL_CHECKSUM_DISABLED\", None)\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'model_v4', 'u2net_home': lambda *args, **kwargs: '/models'})\n\n<testcase_5>\nos.environ[\"MODEL_CHECKSUM_DISABLED\"] = \"0\"\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'final_model', 'u2net_home': lambda *args, **kwargs: '/models'})"
+  ],
+  "gpt_output": "<needimport>\nimport os\n\n<testcase_1>\nos.environ[\"MODEL_CHECKSUM_DISABLED\"] = \"1\"\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'test_model', 'u2net_home': lambda *args, **kwargs: '/models'})\n\n<testcase_2>\nos.environ[\"MODEL_CHECKSUM_DISABLED\"] = \"\"\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'another_model', 'u2net_home': lambda *args, **kwargs: '/models'})\n\n<testcase_3>\nos.environ[\"MODEL_CHECKSUM_DISABLED\"] = \"true\"\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'model_v3', 'u2net_home': lambda *args, **kwargs: '/models'})\n\n<testcase_4>\nos.environ.pop(\"MODEL_CHECKSUM_DISABLED\", None)\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'model_v4', 'u2net_home': lambda *args, **kwargs: '/models'})\n\n<testcase_5>\nos.environ[\"MODEL_CHECKSUM_DISABLED\"] = \"0\"\ncls = type('TestClass', (), {'name': lambda *args, **kwargs: 'final_model', 'u2net_home': lambda *args, **kwargs: '/models'})",
+  "needimport": "import os\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": true,
+    "ans4": false,
+    "ans5": true
+  }
+}

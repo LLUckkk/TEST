@@ -1,0 +1,130 @@
+{
+  "input_header": "def create_mock_script_run_ctx() -> ScriptRunContext:",
+  "input_docstring": "Create a ScriptRunContext for use in tests.",
+  "output_code": "def create_mock_script_run_ctx() -> ScriptRunContext:\n    \n    return ScriptRunContext(\n        session_id=\"mock_session_id\",\n        _enqueue=lambda msg: None,\n        query_string=\"mock_query_string\",\n        session_state=SafeSessionState(SessionState(), lambda: None),\n        uploaded_file_mgr=MemoryUploadedFileManager(\"/mock/upload\"),\n        main_script_path=\"\",\n        user_info={\"email\": \"mock@example.com\"},\n        fragment_storage=MemoryFragmentStorage(),\n        pages_manager=PagesManager(\"\"),\n    )",
+  "input_contexts": [
+    {
+      "id": "streamlit_streamlit_6145_1",
+      "input_code": "    def setUp(self) -> None:\n        config = RuntimeConfig(\n            script_path=\"mock/script/path.py\",\n            command_line=None,\n            component_registry=LocalComponentRegistry(),\n            media_file_storage=MemoryMediaFileStorage(\"/mock/media\"),\n            uploaded_file_manager=MemoryUploadedFileManager(\"/mock/upload\"),\n        )\n        self.runtime = Runtime(config)\n\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_18",
+      "input_code": "    def setUp(self) -> None:\n        super().setUp()\n\n        self._prev_environ = dict(os.environ)\n\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_14",
+      "input_code": "    def setUp(self) -> None:\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_16",
+      "input_code": "    def setUp(self) -> None:\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        mock_runtime = MagicMock(spec=Runtime)\n        mock_runtime.cache_storage_manager = MemoryCacheStorageManager()\n        Runtime._instance = mock_runtime\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_6",
+      "input_code": "    def test_does_not_reset_cache_when_ttl_changes(self):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n\n        mock_sql_return = MagicMock()\n        mock_sql_return.to_pandas = MagicMock(return_value=\"i am a dataframe\")\n        conn = SnowparkConnection(\"my_snowpark_connection\")\n        conn._instance.sql.return_value = mock_sql_return\n\n        conn.query(\"SELECT 1;\", ttl=10)\n        conn.query(\"SELECT 2;\", ttl=20)\n        conn.query(\"SELECT 1;\", ttl=10)\n        conn.query(\"SELECT 2;\", ttl=20)\n\n        assert conn._instance.sql.call_count == 2\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_4",
+      "input_code": "    def test_scopes_caches_by_connection_name(self):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        mock_cursor = MagicMock()\n        mock_cursor.fetch_pandas_all = MagicMock(return_value=\"i am a dataframe\")\n\n        conn1 = SnowflakeConnection(\"my_snowflake_connection1\")\n        conn1._instance.cursor.return_value = mock_cursor\n        conn2 = SnowflakeConnection(\"my_snowflake_connection2\")\n        conn2._instance.cursor.return_value = mock_cursor\n\n        conn1.query(\"SELECT 1;\")\n        conn1.query(\"SELECT 1;\")\n        conn2.query(\"SELECT 1;\")\n        conn2.query(\"SELECT 1;\")\n\n        assert conn1._instance.cursor is conn2._instance.cursor\n        assert conn1._instance.cursor.call_count == 2\n        assert mock_cursor.execute.call_count == 2\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_7",
+      "input_code": "    def test_scopes_caches_by_connection_name(self):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        mock_sql_return = MagicMock()\n        mock_sql_return.to_pandas = MagicMock(return_value=\"i am a dataframe\")\n\n        conn1 = SnowparkConnection(\"my_snowpark_connection1\")\n        conn1._instance.sql.return_value = mock_sql_return\n        conn2 = SnowparkConnection(\"my_snowpark_connection2\")\n        conn2._instance.sql.return_value = mock_sql_return\n\n        conn1.query(\"SELECT 1;\")\n        conn1.query(\"SELECT 1;\")\n        conn2.query(\"SELECT 1;\")\n        conn2.query(\"SELECT 1;\")\n\n        assert conn1._instance.sql is conn2._instance.sql\n        assert conn1._instance.sql.call_count == 2\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_10",
+      "input_code": "    def test_scopes_caches_by_connection_name(self, patched_read_sql):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        patched_read_sql.return_value = \"i am a dataframe\"\n\n        conn1 = SQLConnection(\"my_sql_connection1\")\n        conn2 = SQLConnection(\"my_sql_connection2\")\n\n        conn1.query(\"SELECT 1;\")\n        conn1.query(\"SELECT 1;\")\n        conn2.query(\"SELECT 1;\")\n        conn2.query(\"SELECT 1;\")\n\n        assert patched_read_sql.call_count == 2\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_11",
+      "input_code": "    def setUp(self) -> None:\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        mock_runtime = MagicMock(spec=Runtime)\n        mock_runtime.cache_storage_manager = MemoryCacheStorageManager()\n        Runtime._instance = mock_runtime\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_15",
+      "input_code": "    def setUp(self):\n        st.cache_resource.clear()\n\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_17",
+      "input_code": "    def setUp(self) -> None:\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        mock_runtime = MagicMock(spec=Runtime)\n        mock_runtime.cache_storage_manager = MemoryCacheStorageManager()\n        Runtime._instance = mock_runtime\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_5",
+      "input_code": "    def test_query_caches_value(self):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n\n        mock_sql_return = MagicMock()\n        mock_sql_return.to_pandas = MagicMock(return_value=\"i am a dataframe\")\n\n        conn = SnowparkConnection(\"my_snowpark_connection\")\n        conn._instance.sql.return_value = mock_sql_return\n\n        assert conn.query(\"SELECT 1;\") == \"i am a dataframe\"\n        assert conn.query(\"SELECT 1;\") == \"i am a dataframe\"\n        conn._instance.sql.assert_called_once()\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_19",
+      "input_code": "    def setUp(self) -> None:\n        config = RuntimeConfig(\n            script_path=\"mock/script/path.py\",\n            command_line=None,\n            component_registry=LocalComponentRegistry(),\n            media_file_storage=MemoryMediaFileStorage(\"/mock/media\"),\n            uploaded_file_manager=MemoryUploadedFileManager(\"/mock/upload\"),\n        )\n        self.runtime = Runtime(config)\n        super().setUp()\n\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_12",
+      "input_code": "    def setUp(self):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        mock_runtime = MagicMock(spec=Runtime)\n        mock_runtime.cache_storage_manager = MemoryCacheStorageManager()\n        Runtime._instance = mock_runtime\n\n        st.cache_data.clear()\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_2",
+      "input_code": "    def test_query_caches_value(self):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n\n        mock_cursor = MagicMock()\n        mock_cursor.fetch_pandas_all = MagicMock(return_value=\"i am a dataframe\")\n        conn = SnowflakeConnection(\"my_snowflake_connection\")\n        conn._instance.cursor.return_value = mock_cursor\n\n        assert conn.query(\"SELECT 1;\") == \"i am a dataframe\"\n        assert conn.query(\"SELECT 1;\") == \"i am a dataframe\"\n\n        conn._instance.cursor.assert_called_once()\n        mock_cursor.execute.assert_called_once_with(\"SELECT 1;\", params=None)\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_13",
+      "input_code": "    def setUp(self) -> None:\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_3",
+      "input_code": "    def test_does_not_reset_cache_when_ttl_changes(self):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n\n        mock_cursor = MagicMock()\n        mock_cursor.fetch_pandas_all = MagicMock(return_value=\"i am a dataframe\")\n        conn = SnowflakeConnection(\"my_snowflake_connection\")\n        conn._instance.cursor.return_value = mock_cursor\n\n        conn.query(\"SELECT 1;\", ttl=10)\n        conn.query(\"SELECT 2;\", ttl=20)\n        conn.query(\"SELECT 1;\", ttl=10)\n        conn.query(\"SELECT 2;\", ttl=20)\n\n        assert conn._instance.cursor.call_count == 2\n        assert mock_cursor.execute.call_count == 2\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_9",
+      "input_code": "    def test_does_not_reset_cache_when_ttl_changes(self, patched_read_sql):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        patched_read_sql.return_value = \"i am a dataframe\"\n\n        conn = SQLConnection(\"my_sql_connection\")\n\n        conn.query(\"SELECT 1;\", ttl=10)\n        conn.query(\"SELECT 2;\", ttl=20)\n        conn.query(\"SELECT 1;\", ttl=10)\n        conn.query(\"SELECT 2;\", ttl=20)\n\n        assert patched_read_sql.call_count == 2\n"
+    },
+    {
+      "id": "streamlit_streamlit_6145_8",
+      "input_code": "    def test_query_caches_value(self, patched_read_sql):\n        add_script_run_ctx(threading.current_thread(), create_mock_script_run_ctx())\n        patched_read_sql.return_value = \"i am a dataframe\"\n\n        conn = SQLConnection(\"my_sql_connection\")\n\n        assert conn.query(\"SELECT 1;\") == \"i am a dataframe\"\n        assert conn.query(\"SELECT 1;\") == \"i am a dataframe\"\n        patched_read_sql.assert_called_once()\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport threading\nfrom unittest.mock import MagicMock\nfrom streamlit.runtime.scriptrunner import ScriptRunContext\nfrom streamlit.runtime.uploaded_file_manager import MemoryUploadedFileManager\nfrom streamlit.runtime.session_state import SafeSessionState, SessionState\nfrom streamlit.runtime.fragment_storage import MemoryFragmentStorage\nfrom streamlit.runtime.pages import PagesManager\n\n<testcase_1>\nsession_id = \"test_session_1\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT * FROM test_table\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/test/upload\")\nmain_script_path = \"/test/script.py\"\nuser_info = {\"email\": \"test1@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/test/pages\")\n\n<testcase_2>\nsession_id = \"test_session_2\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT * FROM another_table\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/another/upload\")\nmain_script_path = \"/another/script.py\"\nuser_info = {\"email\": \"test2@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/another/pages\")\n\n<testcase_3>\nsession_id = \"mock_session_3\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT id, name FROM users\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/mock/upload\")\nmain_script_path = \"/mock/script.py\"\nuser_info = {\"email\": \"mock3@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/mock/pages\")\n\n<testcase_4>\nsession_id = \"mock_session_4\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT * FROM orders\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/orders/upload\")\nmain_script_path = \"/orders/script.py\"\nuser_info = {\"email\": \"mock4@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/orders/pages\")\n\n<testcase_5>\nsession_id = \"mock_session_5\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT * FROM products\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/products/upload\")\nmain_script_path = \"/products/script.py\"\nuser_info = {\"email\": \"mock5@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/products/pages\")\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport threading\nfrom unittest.mock import MagicMock\nfrom streamlit.runtime.scriptrunner import ScriptRunContext\nfrom streamlit.runtime.uploaded_file_manager import MemoryUploadedFileManager\nfrom streamlit.runtime.session_state import SafeSessionState, SessionState\nfrom streamlit.runtime.fragment_storage import MemoryFragmentStorage\nfrom streamlit.runtime.pages import PagesManager\n\n<testcase_1>\nsession_id = \"test_session_1\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT * FROM test_table\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/test/upload\")\nmain_script_path = \"/test/script.py\"\nuser_info = {\"email\": \"test1@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/test/pages\")\n\n<testcase_2>\nsession_id = \"test_session_2\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT * FROM another_table\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/another/upload\")\nmain_script_path = \"/another/script.py\"\nuser_info = {\"email\": \"test2@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/another/pages\")\n\n<testcase_3>\nsession_id = \"mock_session_3\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT id, name FROM users\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/mock/upload\")\nmain_script_path = \"/mock/script.py\"\nuser_info = {\"email\": \"mock3@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/mock/pages\")\n\n<testcase_4>\nsession_id = \"mock_session_4\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT * FROM orders\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/orders/upload\")\nmain_script_path = \"/orders/script.py\"\nuser_info = {\"email\": \"mock4@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/orders/pages\")\n\n<testcase_5>\nsession_id = \"mock_session_5\"\n_enqueue = lambda msg: print(f\"Enqueue message: {msg}\")\nquery_string = \"SELECT * FROM products\"\nsession_state = SafeSessionState(SessionState(), lambda: print(\"Session state callback\"))\nuploaded_file_mgr = MemoryUploadedFileManager(\"/products/upload\")\nmain_script_path = \"/products/script.py\"\nuser_info = {\"email\": \"mock5@example.com\"}\nfragment_storage = MemoryFragmentStorage()\npages_manager = PagesManager(\"/products/pages\")\n```",
+  "needimport": "import threading\nfrom unittest.mock import MagicMock\nfrom streamlit.runtime.scriptrunner import ScriptRunContext\nfrom streamlit.runtime.uploaded_file_manager import MemoryUploadedFileManager\nfrom streamlit.runtime.session_state import SafeSessionState, SessionState\nfrom streamlit.runtime.fragment_storage import MemoryFragmentStorage\nfrom streamlit.runtime.pages import PagesManager\n\n",
+  "test_results": {
+    "ans1": {
+      "session_id": "mock_session_id",
+      "query_string": "mock_query_string",
+      "user_info": {
+        "email": "mock@example.com"
+      },
+      "main_script_path": ""
+    },
+    "ans2": {
+      "session_id": "mock_session_id",
+      "query_string": "mock_query_string",
+      "user_info": {
+        "email": "mock@example.com"
+      },
+      "main_script_path": ""
+    },
+    "ans3": {
+      "session_id": "mock_session_id",
+      "query_string": "mock_query_string",
+      "user_info": {
+        "email": "mock@example.com"
+      },
+      "main_script_path": ""
+    },
+    "ans4": {
+      "session_id": "mock_session_id",
+      "query_string": "mock_query_string",
+      "user_info": {
+        "email": "mock@example.com"
+      },
+      "main_script_path": ""
+    },
+    "ans5": {
+      "session_id": "mock_session_id",
+      "query_string": "mock_query_string",
+      "user_info": {
+        "email": "mock@example.com"
+      },
+      "main_script_path": ""
+    }
+  }
+}

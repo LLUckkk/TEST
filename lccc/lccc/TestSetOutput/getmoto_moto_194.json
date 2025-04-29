@@ -1,0 +1,73 @@
+{
+  "input_header": "def create_integration_response( self, status_code: str, selection_pattern: str, response_templates: Dict[str, str], response_parameters: Dict[str, str], content_handling: str, ) -> IntegrationResponse:",
+  "input_docstring": null,
+  "output_code": "    def create_integration_response(\n        self,\n        status_code: str,\n        selection_pattern: str,\n        response_templates: Dict[str, str],\n        response_parameters: Dict[str, str],\n        content_handling: str,\n    ) -> IntegrationResponse:\n        integration_response = IntegrationResponse(\n            status_code,\n            selection_pattern,\n            response_templates or None,\n            response_parameters,\n            content_handling,\n        )\n        if self.integration_responses is None:\n            self.integration_responses = {}\n        self.integration_responses[status_code] = integration_response\n        return integration_response",
+  "input_contexts": [
+    {
+      "id": "getmoto_moto_194_1",
+      "input_code": "    def put_integration_response(\n        self,\n        function_id: str,\n        resource_id: str,\n        method_type: str,\n        status_code: str,\n        selection_pattern: str,\n        response_templates: Dict[str, str],\n        response_parameters: Dict[str, str],\n        content_handling: str,\n    ) -> IntegrationResponse:\n        integration = self.get_integration(function_id, resource_id, method_type)\n        if integration:\n            return integration.create_integration_response(\n                status_code,\n                selection_pattern,\n                response_templates,\n                response_parameters,\n                content_handling,\n            )\n        raise NoIntegrationResponseDefined()\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nfrom typing import Dict\n\n<testcase_1>\nstatus_code = \"200\"\nselection_pattern = \"\"\nresponse_templates = {\"application/json\": '{\"message\": \"Success\"}'}\nresponse_parameters = {\"method.response.header.Content-Type\": \"'application/json'\"}\ncontent_handling = \"CONVERT_TO_BINARY\"\n\n<testcase_2>\nstatus_code = \"404\"\nselection_pattern = \".*NotFound.*\"\nresponse_templates = {\"application/json\": '{\"error\": \"Resource not found\"}'}\nresponse_parameters = {\"method.response.header.Content-Type\": \"'application/json'\"}\ncontent_handling = \"CONVERT_TO_TEXT\"\n\n<testcase_3>\nstatus_code = \"500\"\nselection_pattern = \".*InternalServerError.*\"\nresponse_templates = {\"application/json\": '{\"error\": \"Internal server error\"}'}\nresponse_parameters = {\"method.response.header.Content-Type\": \"'application/json'\"}\ncontent_handling = \"CONVERT_TO_BINARY\"\n\n<testcase_4>\nstatus_code = \"403\"\nselection_pattern = \".*Forbidden.*\"\nresponse_templates = {\"application/json\": '{\"error\": \"Access denied\"}'}\nresponse_parameters = {\"method.response.header.Content-Type\": \"'application/json'\"}\ncontent_handling = \"CONVERT_TO_TEXT\"\n\n<testcase_5>\nstatus_code = \"301\"\nselection_pattern = \".*MovedPermanently.*\"\nresponse_templates = {\"application/json\": '{\"message\": \"Resource moved permanently\"}'}\nresponse_parameters = {\"method.response.header.Location\": \"'https://newlocation.com'\"}\ncontent_handling = \"CONVERT_TO_BINARY\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nfrom typing import Dict\n\n<testcase_1>\nstatus_code = \"200\"\nselection_pattern = \"\"\nresponse_templates = {\"application/json\": '{\"message\": \"Success\"}'}\nresponse_parameters = {\"method.response.header.Content-Type\": \"'application/json'\"}\ncontent_handling = \"CONVERT_TO_BINARY\"\n\n<testcase_2>\nstatus_code = \"404\"\nselection_pattern = \".*NotFound.*\"\nresponse_templates = {\"application/json\": '{\"error\": \"Resource not found\"}'}\nresponse_parameters = {\"method.response.header.Content-Type\": \"'application/json'\"}\ncontent_handling = \"CONVERT_TO_TEXT\"\n\n<testcase_3>\nstatus_code = \"500\"\nselection_pattern = \".*InternalServerError.*\"\nresponse_templates = {\"application/json\": '{\"error\": \"Internal server error\"}'}\nresponse_parameters = {\"method.response.header.Content-Type\": \"'application/json'\"}\ncontent_handling = \"CONVERT_TO_BINARY\"\n\n<testcase_4>\nstatus_code = \"403\"\nselection_pattern = \".*Forbidden.*\"\nresponse_templates = {\"application/json\": '{\"error\": \"Access denied\"}'}\nresponse_parameters = {\"method.response.header.Content-Type\": \"'application/json'\"}\ncontent_handling = \"CONVERT_TO_TEXT\"\n\n<testcase_5>\nstatus_code = \"301\"\nselection_pattern = \".*MovedPermanently.*\"\nresponse_templates = {\"application/json\": '{\"message\": \"Resource moved permanently\"}'}\nresponse_parameters = {\"method.response.header.Location\": \"'https://newlocation.com'\"}\ncontent_handling = \"CONVERT_TO_BINARY\"\n```",
+  "needimport": "from typing import Dict\n\n",
+  "test_results": {
+    "ans1": {
+      "status_code": "200",
+      "selection_pattern": "",
+      "response_templates": {
+        "application/json": "{\"message\": \"Success\"}"
+      },
+      "response_parameters": {
+        "method.response.header.Content-Type": "'application/json'"
+      },
+      "content_handling": "CONVERT_TO_BINARY"
+    },
+    "ans2": {
+      "status_code": "404",
+      "selection_pattern": ".*NotFound.*",
+      "response_templates": {
+        "application/json": "{\"error\": \"Resource not found\"}"
+      },
+      "response_parameters": {
+        "method.response.header.Content-Type": "'application/json'"
+      },
+      "content_handling": "CONVERT_TO_TEXT"
+    },
+    "ans3": {
+      "status_code": "500",
+      "selection_pattern": ".*InternalServerError.*",
+      "response_templates": {
+        "application/json": "{\"error\": \"Internal server error\"}"
+      },
+      "response_parameters": {
+        "method.response.header.Content-Type": "'application/json'"
+      },
+      "content_handling": "CONVERT_TO_BINARY"
+    },
+    "ans4": {
+      "status_code": "403",
+      "selection_pattern": ".*Forbidden.*",
+      "response_templates": {
+        "application/json": "{\"error\": \"Access denied\"}"
+      },
+      "response_parameters": {
+        "method.response.header.Content-Type": "'application/json'"
+      },
+      "content_handling": "CONVERT_TO_TEXT"
+    },
+    "ans5": {
+      "status_code": "301",
+      "selection_pattern": ".*MovedPermanently.*",
+      "response_templates": {
+        "application/json": "{\"message\": \"Resource moved permanently\"}"
+      },
+      "response_parameters": {
+        "method.response.header.Location": "'https://newlocation.com'"
+      },
+      "content_handling": "CONVERT_TO_BINARY"
+    }
+  }
+}

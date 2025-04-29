@@ -1,0 +1,33 @@
+{
+  "input_header": "def display_traceback(in_ipython: bool = True):",
+  "input_docstring": null,
+  "output_code": "def display_traceback(in_ipython: bool = True):\n    exc_info = sys.exc_info()\n\n    if in_ipython:\n        from IPython.core.getipython import get_ipython\n\n        ip = get_ipython()\n    else:\n        ip = None\n\n    if ip is not None:\n        ip.showtraceback(exc_info)\n    else:\n        traceback.print_exception(*exc_info)",
+  "input_contexts": [
+    {
+      "id": "vega_altair_467_1",
+      "input_code": "    def _repr_mimebundle_(self, *args, **kwds) -> MimeBundleType | None:\n        \n        try:\n            dct = self.to_dict(context={\"pre_transform\": False})\n        except Exception:\n            utils.display_traceback(in_ipython=True)\n            return {}\n        else:\n            if renderer := renderers.get():\n                return renderer(dct)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport sys\nimport traceback\nfrom IPython.core.getipython import get_ipython\n\n<testcase_1>\nin_ipython = True\n\n<testcase_2>\nin_ipython = False\n\n<testcase_3>\nin_ipython = True\n\n<testcase_4>\nin_ipython = False\n\n<testcase_5>\nin_ipython = True"
+  ],
+  "gpt_output": "<needimport>\nimport sys\nimport traceback\nfrom IPython.core.getipython import get_ipython\n\n<testcase_1>\nin_ipython = True\n\n<testcase_2>\nin_ipython = False\n\n<testcase_3>\nin_ipython = True\n\n<testcase_4>\nin_ipython = False\n\n<testcase_5>\nin_ipython = True",
+  "needimport": "import sys\nimport traceback\nfrom IPython.core.getipython import get_ipython\n\n",
+  "test_results": {
+    "ans1": [
+      "NoneType: None\n"
+    ],
+    "ans2": [
+      "NoneType: None\n"
+    ],
+    "ans3": [
+      "NoneType: None\n"
+    ],
+    "ans4": [
+      "NoneType: None\n"
+    ],
+    "ans5": [
+      "NoneType: None\n"
+    ]
+  }
+}
