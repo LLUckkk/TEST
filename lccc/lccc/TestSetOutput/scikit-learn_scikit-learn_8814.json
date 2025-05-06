@@ -1,0 +1,106 @@
+{
+  "input_header": "def _despine(ax):",
+  "input_docstring": "Remove the top and right spines of the plot.\n\nParameters\n----------\nax : matplotlib.axes.Axes\n    The axes of the plot to despine.",
+  "output_code": "def _despine(ax):\n    \n    for s in [\"top\", \"right\"]:\n        ax.spines[s].set_visible(False)\n    for s in [\"bottom\", \"left\"]:\n        ax.spines[s].set_bounds(0, 1)",
+  "input_contexts": [
+    {
+      "id": "scikit-learn_scikit-learn_8814_3",
+      "input_code": "def test_despine(pyplot):\n    ax = pyplot.gca()\n    _despine(ax)\n    assert ax.spines[\"top\"].get_visible() is False\n    assert ax.spines[\"right\"].get_visible() is False\n    assert ax.spines[\"bottom\"].get_bounds() == (0, 1)\n    assert ax.spines[\"left\"].get_bounds() == (0, 1)\n"
+    },
+    {
+      "id": "scikit-learn_scikit-learn_8814_2",
+      "input_code": "    def plot(\n        self,\n        ax=None,\n        *,\n        name=None,\n        plot_chance_level=False,\n        chance_level_kw=None,\n        despine=False,\n        **kwargs,\n    ):\n        \n        self.ax_, self.figure_, name = self._validate_plot_params(ax=ax, name=name)\n\n        default_line_kwargs = {}\n        if self.roc_auc is not None and name is not None:\n            default_line_kwargs[\"label\"] = f\"{name} (AUC = {self.roc_auc:0.2f})\"\n        elif self.roc_auc is not None:\n            default_line_kwargs[\"label\"] = f\"AUC = {self.roc_auc:0.2f}\"\n        elif name is not None:\n            default_line_kwargs[\"label\"] = name\n\n        line_kwargs = _validate_style_kwargs(default_line_kwargs, kwargs)\n\n        default_chance_level_line_kw = {\n            \"label\": \"Chance level (AUC = 0.5)\",\n            \"color\": \"k\",\n            \"linestyle\": \"--\",\n        }\n\n        if chance_level_kw is None:\n            chance_level_kw = {}\n\n        chance_level_kw = _validate_style_kwargs(\n            default_chance_level_line_kw, chance_level_kw\n        )\n\n        (self.line_,) = self.ax_.plot(self.fpr, self.tpr, **line_kwargs)\n        info_pos_label = (\n            f\" (Positive label: {self.pos_label})\" if self.pos_label is not None else \"\"\n        )\n\n        xlabel = \"False Positive Rate\" + info_pos_label\n        ylabel = \"True Positive Rate\" + info_pos_label\n        self.ax_.set(\n            xlabel=xlabel,\n            xlim=(-0.01, 1.01),\n            ylabel=ylabel,\n            ylim=(-0.01, 1.01),\n            aspect=\"equal\",\n        )\n\n        if plot_chance_level:\n            (self.chance_level_,) = self.ax_.plot((0, 1), (0, 1), **chance_level_kw)\n        else:\n            self.chance_level_ = None\n\n        if despine:\n            _despine(self.ax_)\n\n        if (\n            line_kwargs.get(\"label\") is not None\n            or chance_level_kw.get(\"label\") is not None\n        ):\n            self.ax_.legend(loc=\"lower right\")\n\n        return self\n"
+    },
+    {
+      "id": "scikit-learn_scikit-learn_8814_1",
+      "input_code": "    def plot(\n        self,\n        ax=None,\n        *,\n        name=None,\n        plot_chance_level=False,\n        chance_level_kw=None,\n        despine=False,\n        **kwargs,\n    ):\n        \n        self.ax_, self.figure_, name = self._validate_plot_params(ax=ax, name=name)\n\n        default_line_kwargs = {\"drawstyle\": \"steps-post\"}\n        if self.average_precision is not None and name is not None:\n            default_line_kwargs[\"label\"] = (\n                f\"{name} (AP = {self.average_precision:0.2f})\"\n            )\n        elif self.average_precision is not None:\n            default_line_kwargs[\"label\"] = f\"AP = {self.average_precision:0.2f}\"\n        elif name is not None:\n            default_line_kwargs[\"label\"] = name\n\n        line_kwargs = _validate_style_kwargs(default_line_kwargs, kwargs)\n\n        (self.line_,) = self.ax_.plot(self.recall, self.precision, **line_kwargs)\n\n        info_pos_label = (\n            f\" (Positive label: {self.pos_label})\" if self.pos_label is not None else \"\"\n        )\n\n        xlabel = \"Recall\" + info_pos_label\n        ylabel = \"Precision\" + info_pos_label\n        self.ax_.set(\n            xlabel=xlabel,\n            xlim=(-0.01, 1.01),\n            ylabel=ylabel,\n            ylim=(-0.01, 1.01),\n            aspect=\"equal\",\n        )\n\n        if plot_chance_level:\n            if self.prevalence_pos_label is None:\n                raise ValueError(\n                    \"You must provide prevalence_pos_label when constructing the \"\n                    \"PrecisionRecallDisplay object in order to plot the chance \"\n                    \"level line. Alternatively, you may use \"\n                    \"PrecisionRecallDisplay.from_estimator or \"\n                    \"PrecisionRecallDisplay.from_predictions \"\n                    \"to automatically set prevalence_pos_label\"\n                )\n\n            default_chance_level_line_kw = {\n                \"label\": f\"Chance level (AP = {self.prevalence_pos_label:0.2f})\",\n                \"color\": \"k\",\n                \"linestyle\": \"--\",\n            }\n\n            if chance_level_kw is None:\n                chance_level_kw = {}\n\n            chance_level_line_kw = _validate_style_kwargs(\n                default_chance_level_line_kw, chance_level_kw\n            )\n\n            (self.chance_level_,) = self.ax_.plot(\n                (0, 1),\n                (self.prevalence_pos_label, self.prevalence_pos_label),\n                **chance_level_line_kw,\n            )\n        else:\n            self.chance_level_ = None\n\n        if despine:\n            _despine(self.ax_)\n\n        if \"label\" in line_kwargs or plot_chance_level:\n            self.ax_.legend(loc=\"lower left\")\n\n        return self\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport matplotlib.pyplot as plt\n\n<testcase_1>\nax = plt.figure().add_subplot()\n\n<testcase_2>\nfig, ax = plt.subplots()\n\n<testcase_3>\nfig = plt.figure()\nax = fig.add_subplot(111)\n\n<testcase_4>\nfig = plt.figure(figsize=(8, 6))\nax = fig.add_subplot(111)\n\n<testcase_5>\nfig, ax = plt.subplots(1, 1, figsize=(10, 8))"
+  ],
+  "gpt_output": "<needimport>\nimport matplotlib.pyplot as plt\n\n<testcase_1>\nax = plt.figure().add_subplot()\n\n<testcase_2>\nfig, ax = plt.subplots()\n\n<testcase_3>\nfig = plt.figure()\nax = fig.add_subplot(111)\n\n<testcase_4>\nfig = plt.figure(figsize=(8, 6))\nax = fig.add_subplot(111)\n\n<testcase_5>\nfig, ax = plt.subplots(1, 1, figsize=(10, 8))",
+  "needimport": "import matplotlib.pyplot as plt\n\n",
+  "test_results": {
+    "ans1": {
+      "visible": {
+        "top": false,
+        "right": false
+      },
+      "bounds": {
+        "bottom": [
+          0,
+          1
+        ],
+        "left": [
+          0,
+          1
+        ]
+      }
+    },
+    "ans2": {
+      "visible": {
+        "top": false,
+        "right": false
+      },
+      "bounds": {
+        "bottom": [
+          0,
+          1
+        ],
+        "left": [
+          0,
+          1
+        ]
+      }
+    },
+    "ans3": {
+      "visible": {
+        "top": false,
+        "right": false
+      },
+      "bounds": {
+        "bottom": [
+          0,
+          1
+        ],
+        "left": [
+          0,
+          1
+        ]
+      }
+    },
+    "ans4": {
+      "visible": {
+        "top": false,
+        "right": false
+      },
+      "bounds": {
+        "bottom": [
+          0,
+          1
+        ],
+        "left": [
+          0,
+          1
+        ]
+      }
+    },
+    "ans5": {
+      "visible": {
+        "top": false,
+        "right": false
+      },
+      "bounds": {
+        "bottom": [
+          0,
+          1
+        ],
+        "left": [
+          0,
+          1
+        ]
+      }
+    }
+  }
+}

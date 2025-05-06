@@ -203,7 +203,7 @@ def fill_template(template_path, replacements):
 
 def solve(dataset: Dict[str, Dict]) -> Dict[str, List[Dict]]:
     cnt = 1
-    index = 200
+    index = 252
 
     for item_key in dataset:
         if cnt < index:

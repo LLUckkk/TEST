@@ -1,0 +1,23 @@
+{
+  "input_header": "def legal_person_nit_with_check_digit(self) -> str:",
+  "input_docstring": ":example: '967807269-7'",
+  "output_code": "    def legal_person_nit_with_check_digit(self) -> str:\n        \n        nit = self.legal_person_nit()\n        check_digit = nit_check_digit(nit)\n        return f\"{nit}-{check_digit}\"",
+  "input_contexts": [
+    {
+      "id": "joke2k_faker_1250_1",
+      "input_code": "    def test_legal_person_nit_with_check_digit(self):\n        for _ in range(100):\n            legal_person_nit, check_digit = self.fake.legal_person_nit_with_check_digit().split(\"-\")\n            assert self._LEGAL_PERSON_NIT_REGEX.fullmatch(legal_person_nit)\n            assert self._CHECK_DIGIT_REGEX.fullmatch(check_digit)\n            assert nit_check_digit(legal_person_nit) == check_digit\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport re\n\n<testcase_1>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')\n\n<testcase_2>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')\n\n<testcase_3>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')\n\n<testcase_4>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')\n\n<testcase_5>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')"
+  ],
+  "gpt_output": "<needimport>\nimport re\n\n<testcase_1>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')\n\n<testcase_2>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')\n\n<testcase_3>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')\n\n<testcase_4>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')\n\n<testcase_5>\nself.fake = Faker()\nself._LEGAL_PERSON_NIT_REGEX = re.compile(r'^\\d{9}$')\nself._CHECK_DIGIT_REGEX = re.compile(r'^\\d$')",
+  "needimport": "import re\n\n",
+  "test_results": {
+    "ans1": "365637118-0",
+    "ans2": "556309115-5",
+    "ans3": "041094213-4",
+    "ans4": "184058930-8",
+    "ans5": "453583735-3"
+  }
+}

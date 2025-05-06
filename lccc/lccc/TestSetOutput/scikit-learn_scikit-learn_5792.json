@@ -1,0 +1,38 @@
+{
+  "input_header": "def _estimate_gaussian_covariances_spherical(resp, X, nk, means, reg_covar):",
+  "input_docstring": "Estimate the spherical variance values.\n\nParameters\n----------\nresponsibilities : array-like of shape (n_samples, n_components)\n\nX : array-like of shape (n_samples, n_features)\n\nnk : array-like of shape (n_components,)\n\nmeans : array-like of shape (n_components, n_features)\n\nreg_covar : float\n\nReturns\n-------\nvariances : array, shape (n_components,)\n    The variance values of each components.",
+  "output_code": "def _estimate_gaussian_covariances_spherical(resp, X, nk, means, reg_covar):\n    \n    return _estimate_gaussian_covariances_diag(resp, X, nk, means, reg_covar).mean(1)",
+  "input_contexts": [
+    {
+      "id": "scikit-learn_scikit-learn_5792_1",
+      "input_code": "def test_gaussian_suffstat_sk_spherical(global_dtype):\n    rng = np.random.RandomState(0)\n    n_samples, n_features = 500, 2\n\n    X = rng.rand(n_samples, n_features).astype(global_dtype)\n    X = X - X.mean()\n    resp = np.ones((n_samples, 1), dtype=global_dtype)\n    nk = np.array([n_samples], dtype=global_dtype)\n    xk = X.mean()\n    covars_pred_spherical = _estimate_gaussian_covariances_spherical(resp, X, nk, xk, 0)\n    covars_pred_spherical2 = np.dot(X.flatten().T, X.flatten()) / (\n        n_features * n_samples\n    )\n    assert_almost_equal(covars_pred_spherical, covars_pred_spherical2)\n    assert covars_pred_spherical.dtype == global_dtype\n\n    precs_chol_pred = _compute_precision_cholesky(covars_pred_spherical, \"spherical\")\n    assert_almost_equal(covars_pred_spherical, 1.0 / precs_chol_pred**2)\n    assert precs_chol_pred.dtype == global_dtype\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\n\n<testcase_1>\nresp = np.array([[0.5, 0.5], [0.2, 0.8], [0.9, 0.1]])\nX = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\nnk = np.array([1.6, 1.4])\nmeans = np.array([[2.0, 3.0], [4.0, 5.0]])\nreg_covar = 0.01\n\n<testcase_2>\nresp = np.array([[0.3, 0.7], [0.4, 0.6], [0.5, 0.5], [0.6, 0.4]])\nX = np.array([[2.0, 3.0], [4.0, 5.0], [6.0, 7.0], [8.0, 9.0]])\nnk = np.array([2.2, 1.8])\nmeans = np.array([[3.0, 4.0], [5.0, 6.0]])\nreg_covar = 0.05\n\n<testcase_3>\nresp = np.array([[0.1, 0.9], [0.3, 0.7], [0.6, 0.4], [0.8, 0.2], [0.5, 0.5]])\nX = np.array([[1.5, 2.5], [3.5, 4.5], [5.5, 6.5], [7.5, 8.5], [9.5, 10.5]])\nnk = np.array([2.5, 2.5])\nmeans = np.array([[2.5, 3.5], [4.5, 5.5]])\nreg_covar = 0.02\n\n<testcase_4>\nresp = np.array([[0.25, 0.75], [0.35, 0.65], [0.45, 0.55], [0.55, 0.45], [0.65, 0.35], [0.75, 0.25]])\nX = np.array([[1.0, 1.5], [2.0, 2.5], [3.0, 3.5], [4.0, 4.5], [5.0, 5.5], [6.0, 6.5]])\nnk = np.array([3.0, 3.0])\nmeans = np.array([[1.5, 2.0], [3.5, 4.0]])\nreg_covar = 0.03\n\n<testcase_5>\nresp = np.array([[0.2, 0.8], [0.4, 0.6], [0.6, 0.4], [0.8, 0.2], [0.7, 0.3], [0.5, 0.5], [0.3, 0.7]])\nX = np.array([[1.0, 2.0], [2.0, 3.0], [3.0, 4.0], [4.0, 5.0], [5.0, 6.0], [6.0, 7.0], [7.0, 8.0]])\nnk = np.array([3.5, 3.5])\nmeans = np.array([[2.0, 3.0], [4.0,"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\n\n<testcase_1>\nresp = np.array([[0.5, 0.5], [0.2, 0.8], [0.9, 0.1]])\nX = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\nnk = np.array([1.6, 1.4])\nmeans = np.array([[2.0, 3.0], [4.0, 5.0]])\nreg_covar = 0.01\n\n<testcase_2>\nresp = np.array([[0.3, 0.7], [0.4, 0.6], [0.5, 0.5], [0.6, 0.4]])\nX = np.array([[2.0, 3.0], [4.0, 5.0], [6.0, 7.0], [8.0, 9.0]])\nnk = np.array([2.2, 1.8])\nmeans = np.array([[3.0, 4.0], [5.0, 6.0]])\nreg_covar = 0.05\n\n<testcase_3>\nresp = np.array([[0.1, 0.9], [0.3, 0.7], [0.6, 0.4], [0.8, 0.2], [0.5, 0.5]])\nX = np.array([[1.5, 2.5], [3.5, 4.5], [5.5, 6.5], [7.5, 8.5], [9.5, 10.5]])\nnk = np.array([2.5, 2.5])\nmeans = np.array([[2.5, 3.5], [4.5, 5.5]])\nreg_covar = 0.02\n\n<testcase_4>\nresp = np.array([[0.25, 0.75], [0.35, 0.65], [0.45, 0.55], [0.55, 0.45], [0.65, 0.35], [0.75, 0.25]])\nX = np.array([[1.0, 1.5], [2.0, 2.5], [3.0, 3.5], [4.0, 4.5], [5.0, 5.5], [6.0, 6.5]])\nnk = np.array([3.0, 3.0])\nmeans = np.array([[1.5, 2.0], [3.5, 4.0]])\nreg_covar = 0.03\n\n<testcase_5>\nresp = np.array([[0.2, 0.8], [0.4, 0.6], [0.6, 0.4], [0.8, 0.2], [0.7, 0.3], [0.5, 0.5], [0.3, 0.7]])\nX = np.array([[1.0, 2.0], [2.0, 3.0], [3.0, 4.0], [4.0, 5.0], [5.0, 6.0], [6.0, 7.0], [7.0, 8.0]])\nnk = np.array([3.5, 3.5])\nmeans = np.array([[2.0, 3.0], [4.0,",
+  "needimport": "import numpy as np\n\n",
+  "test_results": {
+    "ans1": [
+      5.51,
+      3.867142857142859
+    ],
+    "ans2": [
+      11.504545454545454,
+      -0.6166666666666589
+    ],
+    "ans3": [
+      20.879999999999995,
+      7.400000000000002
+    ],
+    "ans4": [
+      9.28,
+      2.9466666666666668
+    ],
+    "ans5": [
+      7.41142857142857,
+      5.354285714285713
+    ]
+  }
+}

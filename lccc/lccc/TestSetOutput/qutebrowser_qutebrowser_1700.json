@@ -1,0 +1,83 @@
+{
+  "input_header": "def _save(self) -> None:",
+  "input_docstring": "Save the state file to the configured location.",
+  "output_code": "    def _save(self) -> None:\n        \n        with open(self._filename, 'w', encoding='utf-8') as f:\n            self.write(f)",
+  "input_contexts": [
+    {
+      "id": "qutebrowser_qutebrowser_1700_7",
+      "input_code": "    def test_renamed_key(self, monkeypatch, yaml, autoconfig):\n        \n        autoconfig.write({'old': {'global': 'value'}})\n\n        monkeypatch.setattr(configdata.MIGRATIONS, 'renamed',\n                            {'old': 'tabs.show'})\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert data == {'tabs.show': {'global': 'value'}}\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_11",
+      "input_code": "    def test_ssl_strict(self, yaml, autoconfig, ssl_strict, certificate_errors):\n        autoconfig.write({'content.ssl_strict': {'global': ssl_strict}})\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert 'content.ssl_strict' not in data\n        assert data['content.tls.certificate_errors']['global'] == certificate_errors\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_14",
+      "input_code": "    def test_fonts_tabs(self, yaml, autoconfig):\n        val = '10pt default_family'\n        autoconfig.write({'fonts.tabs': {'global': val}})\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert data['fonts.tabs.unselected']['global'] == val\n        assert data['fonts.tabs.selected']['global'] == val\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_13",
+      "input_code": "    def test_font_default_family(self, yaml, autoconfig, old, new):\n        autoconfig.write({'fonts.monospace': {'global': old}})\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert data['fonts.default_family']['global'] == new\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_8",
+      "input_code": "    def test_merge_persist(self, yaml, autoconfig, persist, expected):\n        \n        autoconfig.write({'tabs.persist_mode_on_change': {'global': persist}})\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert 'tabs.persist_mode_on_change' not in data\n        assert data['tabs.mode_on_change']['global'] == expected\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_10",
+      "input_code": "    def test_webrtc(self, yaml, autoconfig, public_only, expected):\n        autoconfig.write({'content.webrtc_public_interfaces_only':\n                          {'global': public_only}})\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert data['content.webrtc_ip_handling_policy']['global'] == expected\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_15",
+      "input_code": "    def test_content_media_capture(self, yaml, autoconfig):\n        val = 'ask'\n        autoconfig.write({'content.media_capture': {'global': val}})\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        for setting in ['content.media.audio_capture',\n                        'content.media.audio_video_capture',\n                        'content.media.video_capture']:\n            assert data[setting]['global'] == val\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_5",
+      "input_code": "    def migration_test(self, yaml, autoconfig):\n        def run(setting, old, new):\n            autoconfig.write({setting: {'global': old}})\n\n            yaml.load()\n            yaml._save()\n\n            data = autoconfig.read()\n            assert data[setting]['global'] == new\n\n        return run\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_4",
+      "input_code": "    def test_legacy_migration(self, yaml, autoconfig, qtbot):\n        autoconfig.write_toplevel({\n            'config_version': 1,\n            'global': {'content.javascript.enabled': True},\n        })\n        with qtbot.wait_signal(yaml.changed):\n            yaml.load()\n\n        yaml._save()\n\n        data = autoconfig.read_toplevel()\n        assert data == {\n            'config_version': 2,\n            'settings': {\n                'content.javascript.enabled': {\n                    'global': True,\n                }\n            }\n        }\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_1",
+      "input_code": "def test_state_config(\n    fake_save_manager, data_tmpdir, monkeypatch, qtwe_version_patcher,\n    old_data, insert, new_data\n):\n    monkeypatch.setattr(configfiles.qutebrowser, '__version__', '1.2.3')\n    monkeypatch.setattr(configfiles, 'qVersion', lambda: '5.6.7')\n    qtwe_version_patcher('7.8.9', chromium_version='123.4.5.6')\n\n    statefile = data_tmpdir / 'state'\n    if old_data is not None:\n        statefile.write_text(old_data, 'utf-8')\n\n    state = configfiles.StateConfig()\n    state.init_save_manager(fake_save_manager)\n\n    if insert:\n        state['general']['newval'] = '23'\n    if 'foobar' in (old_data or ''):\n        assert state['general']['foobar'] == '42'\n\n    state._save()\n\n    assert statefile.read_text('utf-8') == new_data\n    fake_save_manager.add_saveable('state-config', unittest.mock.ANY)\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_9",
+      "input_code": "    def test_bindings_default(self, yaml, autoconfig):\n        \n        autoconfig.write({'bindings.default': {'global': '{}'}})\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert 'bindings.default' not in data\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_6",
+      "input_code": "    def test_deleted_key(self, monkeypatch, yaml, autoconfig):\n        \n        autoconfig.write({'hello': {'global': 'world'}})\n\n        monkeypatch.setattr(configdata.MIGRATIONS, 'deleted', ['hello'])\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert not data\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_16",
+      "input_code": "    def test_empty_pattern(self, yaml, autoconfig):\n        valid_pattern = 'https://example.com/*'\n        invalid_pattern = '*://*./*'\n        setting = 'content.javascript.enabled'\n\n        autoconfig.write({\n            setting: {\n                'global': False,\n                invalid_pattern: True,\n                valid_pattern: True,\n            }\n        })\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert not data[setting]['global']\n        assert invalid_pattern not in data[setting]\n        assert data[setting][valid_pattern]\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_3",
+      "input_code": "    def test_unchanged(self, yaml, autoconfig, old_config):\n        mtime = None\n        if old_config is not None:\n            autoconfig.write(old_config)\n            mtime = autoconfig.fobj.stat().mtime\n\n        yaml.load()\n        yaml._save()\n\n        if old_config is None:\n            assert not autoconfig.fobj.exists()\n        else:\n            assert autoconfig.fobj.stat().mtime == mtime\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_2",
+      "input_code": "    def test_changed(self, yaml, qtbot, autoconfig,\n                     old_config, key, value):\n        if old_config is not None:\n            autoconfig.write(old_config)\n\n        yaml.load()\n\n        with qtbot.wait_signal(yaml.changed):\n            yaml.set_obj(key, value)\n\n        assert yaml._values[key].get_for_url(fallback=False) == value\n\n        yaml._save()\n\n        yaml = configfiles.YamlConfig()\n        yaml.load()\n\n        assert yaml._values[key].get_for_url(fallback=False) == value\n"
+    },
+    {
+      "id": "qutebrowser_qutebrowser_1700_12",
+      "input_code": "    def test_preferred_color_scheme(self, autoconfig, yaml, setting, old, new):\n        autoconfig.write({setting: {'global': old}})\n\n        yaml.load()\n        yaml._save()\n\n        data = autoconfig.read()\n        assert setting not in data\n        assert data['colors.webpage.preferred_color_scheme']['global'] == new\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport tempfile\nimport os\n\n<testcase_1>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('key: value\\n')\n})()\n\n<testcase_2>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('content:\\n  ssl_strict: false\\n')\n})()\n\n<testcase_3>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('fonts:\\n  tabs: 12pt\\n')\n})()\n\n<testcase_4>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('content:\\n  javascript:\\n    enabled: true\\n')\n})()\n\n<testcase_5>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('colors:\\n  webpage:\\n    preferred_color_scheme: dark\\n')\n})()\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport tempfile\nimport os\n\n<testcase_1>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('key: value\\n')\n})()\n\n<testcase_2>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('content:\\n  ssl_strict: false\\n')\n})()\n\n<testcase_3>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('fonts:\\n  tabs: 12pt\\n')\n})()\n\n<testcase_4>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('content:\\n  javascript:\\n    enabled: true\\n')\n})()\n\n<testcase_5>\nself = type('MockYaml', (object,), {\n    '_filename': tempfile.mktemp(suffix='.yaml'),\n    'write': lambda self, f: f.write('colors:\\n  webpage:\\n    preferred_color_scheme: dark\\n')\n})()\n```",
+  "needimport": "import tempfile\nimport os\n\n",
+  "test_results": {
+    "ans1": "key: value\n",
+    "ans2": "content:\n  ssl_strict: false\n",
+    "ans3": "fonts:\n  tabs: 12pt\n",
+    "ans4": "content:\n  javascript:\n    enabled: true\n",
+    "ans5": "colors:\n  webpage:\n    preferred_color_scheme: dark\n"
+  }
+}

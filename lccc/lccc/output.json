@@ -1,7 +1,56 @@
 {
-  "ans1": "[bright yellow] This is a warning message.",
-  "ans2": "[bright yellow] Another warning message with save disabled.",
-  "ans3": "[bright yellow] Warning: Task is about to complete.",
-  "ans4": "[bright yellow] Warning: An error occurred while processing.",
-  "ans5": "[bright yellow] Warning: Pausing threads due to user interruption."
+  "ans1": [
+    {
+      "kind": "prim::Return",
+      "inputs": [
+        "6"
+      ],
+      "outputs": [],
+      "scope": ""
+    }
+  ],
+  "ans2": [
+    {
+      "kind": "prim::Return",
+      "inputs": [
+        "5"
+      ],
+      "outputs": [],
+      "scope": ""
+    }
+  ],
+  "ans3": [
+    {
+      "kind": "prim::Return",
+      "inputs": [
+        "6"
+      ],
+      "outputs": [],
+      "scope": ""
+    }
+  ],
+  "ans4": [
+    {
+      "kind": "aten::add",
+      "inputs": [
+        "x.1",
+        "3",
+        "4"
+      ],
+      "outputs": [
+        "5"
+      ],
+      "scope": ""
+    }
+  ],
+  "ans5": [
+    {
+      "kind": "prim::Return",
+      "inputs": [
+        "3"
+      ],
+      "outputs": [],
+      "scope": ""
+    }
+  ]
 }

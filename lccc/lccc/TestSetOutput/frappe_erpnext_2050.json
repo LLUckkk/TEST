@@ -1,0 +1,71 @@
+{
+  "input_header": "def create_sales_order(self):",
+  "input_docstring": null,
+  "output_code": "\tdef create_sales_order(self):\n\t\tso = make_sales_order(\n\t\t\tcompany=self.company,\n\t\t\tcustomer=self.customer,\n\t\t\titem=self.item,\n\t\t\trate=100,\n\t\t\ttransaction_date=today(),\n\t\t)\n\t\treturn so",
+  "input_contexts": [
+    {
+      "id": "frappe_erpnext_2050_2",
+      "input_code": "\tdef test_06_unreconcile_advance_from_payment_entry(self):\n\t\tself.enable_advance_as_liability()\n\t\tso1 = self.create_sales_order()\n\t\tso2 = self.create_sales_order()\n\n\t\tpe = self.create_payment_entry()\n\t\tpe.paid_amount = 260\n\t\tpe.append(\n\t\t\t\"references\",\n\t\t\t{\"reference_doctype\": so1.doctype, \"reference_name\": so1.name, \"allocated_amount\": 150},\n\t\t)\n\t\tpe.append(\n\t\t\t\"references\",\n\t\t\t{\"reference_doctype\": so2.doctype, \"reference_name\": so2.name, \"allocated_amount\": 110},\n\t\t)\n\t\tpe.save().submit()\n\n\t\tso1.reload()\n\t\tself.assertEqual(so1.advance_paid, 150)\n\t\tso2.reload()\n\t\tself.assertEqual(so2.advance_paid, 110)\n\n\t\tunreconcile = frappe.get_doc(\n\t\t\t{\n\t\t\t\t\"doctype\": \"Unreconcile Payment\",\n\t\t\t\t\"company\": self.company,\n\t\t\t\t\"voucher_type\": pe.doctype,\n\t\t\t\t\"voucher_no\": pe.name,\n\t\t\t}\n\t\t)\n\t\tunreconcile.add_references()\n\t\tself.assertEqual(len(unreconcile.allocations), 2)\n\t\tallocations = [(x.reference_name, x.allocated_amount) for x in unreconcile.allocations]\n\t\tself.assertListEqual(allocations, [(so1.name, 150), (so2.name, 110)])\n\t\tunreconcile.remove(unreconcile.allocations[0])\n\t\tunreconcile.save().submit()\n\n\t\tso1.reload()\n\t\tso2.reload()\n\t\tpe.reload()\n\t\tself.assertEqual(so1.advance_paid, 150)\n\t\tself.assertEqual(so2.advance_paid, 110)\n\t\tself.assertEqual(len(pe.references), 1)\n\t\tself.assertEqual(pe.unallocated_amount, 110)\n\n\t\tself.disable_advance_as_liability()\n"
+    },
+    {
+      "id": "frappe_erpnext_2050_1",
+      "input_code": "\tdef test_05_unreconcile_order(self):\n\t\tso = self.create_sales_order()\n\n\t\tpe = self.create_payment_entry()\n\t\tpe.paid_amount = 100\n\t\tpe.append(\n\t\t\t\"references\",\n\t\t\t{\"reference_doctype\": so.doctype, \"reference_name\": so.name, \"allocated_amount\": 100},\n\t\t)\n\t\tpe.save().submit()\n\n\t\tso.reload()\n\t\tself.assertEqual(so.advance_paid, 100)\n\n\t\tunreconcile = frappe.get_doc(\n\t\t\t{\n\t\t\t\t\"doctype\": \"Unreconcile Payment\",\n\t\t\t\t\"company\": self.company,\n\t\t\t\t\"voucher_type\": pe.doctype,\n\t\t\t\t\"voucher_no\": pe.name,\n\t\t\t}\n\t\t)\n\t\tunreconcile.add_references()\n\t\tself.assertEqual(len(unreconcile.allocations), 1)\n\t\tallocations = [x.reference_name for x in unreconcile.allocations]\n\t\tself.assertEqual([so.name], allocations)\n\t\tunreconcile.save().submit()\n\n\t\tso.reload()\n\t\tpe.reload()\n\t\tself.assertEqual(so.advance_paid, 100)\n\t\tself.assertEqual(len(pe.references), 0)\n\t\tself.assertEqual(pe.unallocated_amount, 100)\n\n\t\tpe.cancel()\n\t\tso.reload()\n\t\tself.assertEqual(so.advance_paid, 100)\n"
+    },
+    {
+      "id": "frappe_erpnext_2050_3",
+      "input_code": "\tdef test_07_adv_from_so_to_invoice(self):\n\t\tself.enable_advance_as_liability()\n\t\tso = self.create_sales_order()\n\t\tpe = self.create_payment_entry()\n\t\tpe.paid_amount = 1000\n\t\tpe.append(\n\t\t\t\"references\",\n\t\t\t{\"reference_doctype\": so.doctype, \"reference_name\": so.name, \"allocated_amount\": 1000},\n\t\t)\n\t\tpe.save().submit()\n\n\t\tso.reload()\n\t\tself.assertEqual(so.advance_paid, 1000)\n\n\t\tsi = make_sales_invoice(so.name)\n\t\tsi.insert().submit()\n\n\t\tpr = frappe.get_doc(\n\t\t\t{\n\t\t\t\t\"doctype\": \"Payment Reconciliation\",\n\t\t\t\t\"company\": self.company,\n\t\t\t\t\"party_type\": \"Customer\",\n\t\t\t\t\"party\": so.customer,\n\t\t\t}\n\t\t)\n\t\taccounts = get_party_account(\"Customer\", so.customer, so.company, True)\n\t\tpr.receivable_payable_account = accounts[0]\n\t\tpr.default_advance_account = accounts[1]\n\t\tpr.get_unreconciled_entries()\n\t\tself.assertEqual(len(pr.get(\"invoices\")), 1)\n\t\tself.assertEqual(len(pr.get(\"payments\")), 1)\n\t\tinvoices = [x.as_dict() for x in pr.get(\"invoices\")]\n\t\tpayments = [x.as_dict() for x in pr.get(\"payments\")]\n\t\tpr.allocate_entries(frappe._dict({\"invoices\": invoices, \"payments\": payments}))\n\t\tpr.reconcile()\n\n\t\tself.assertEqual(len(pr.get(\"invoices\")), 0)\n\t\tself.assertEqual(len(pr.get(\"payments\")), 0)\n\n\t\tso.reload()\n\t\tself.assertEqual(so.advance_paid, 1000)\n\n\t\tself.disable_advance_as_liability()\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport datetime\n\n<testcase_1>\nself.company = \"ABC Corporation\"\nself.customer = \"John Doe\"\nself.item = \"Product A\"\nself.rate = 100\nself.transaction_date = datetime.date.today()\n\n<testcase_2>\nself.company = \"XYZ Enterprises\"\nself.customer = \"Jane Smith\"\nself.item = \"Service B\"\nself.rate = 150\nself.transaction_date = datetime.date.today()\n\n<testcase_3>\nself.company = \"Tech Solutions\"\nself.customer = \"Acme Inc.\"\nself.item = \"Gadget C\"\nself.rate = 200\nself.transaction_date = datetime.date.today()\n\n<testcase_4>\nself.company = \"Global Industries\"\nself.customer = \"MegaCorp\"\nself.item = \"Component D\"\nself.rate = 250\nself.transaction_date = datetime.date.today()\n\n<testcase_5>\nself.company = \"Innovative Products\"\nself.customer = \"Startup Co.\"\nself.item = \"Tool E\"\nself.rate = 300\nself.transaction_date = datetime.date.today()\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport datetime\n\n<testcase_1>\nself.company = \"ABC Corporation\"\nself.customer = \"John Doe\"\nself.item = \"Product A\"\nself.rate = 100\nself.transaction_date = datetime.date.today()\n\n<testcase_2>\nself.company = \"XYZ Enterprises\"\nself.customer = \"Jane Smith\"\nself.item = \"Service B\"\nself.rate = 150\nself.transaction_date = datetime.date.today()\n\n<testcase_3>\nself.company = \"Tech Solutions\"\nself.customer = \"Acme Inc.\"\nself.item = \"Gadget C\"\nself.rate = 200\nself.transaction_date = datetime.date.today()\n\n<testcase_4>\nself.company = \"Global Industries\"\nself.customer = \"MegaCorp\"\nself.item = \"Component D\"\nself.rate = 250\nself.transaction_date = datetime.date.today()\n\n<testcase_5>\nself.company = \"Innovative Products\"\nself.customer = \"Startup Co.\"\nself.item = \"Tool E\"\nself.rate = 300\nself.transaction_date = datetime.date.today()\n```",
+  "needimport": "import datetime\n\n",
+  "test_results": {
+    "ans1": {
+      "company": "ABC Corporation",
+      "customer": "John Doe",
+      "item": "Product A",
+      "rate": 100,
+      "transaction_date": "2025-05-06T00:00:00",
+      "status": "Created",
+      "order_id": "SO-1746530836020"
+    },
+    "ans2": {
+      "company": "XYZ Enterprises",
+      "customer": "Jane Smith",
+      "item": "Service B",
+      "rate": 100,
+      "transaction_date": "2025-05-06T00:00:00",
+      "status": "Created",
+      "order_id": "SO-1746530836021"
+    },
+    "ans3": {
+      "company": "Tech Solutions",
+      "customer": "Acme Inc.",
+      "item": "Gadget C",
+      "rate": 100,
+      "transaction_date": "2025-05-06T00:00:00",
+      "status": "Created",
+      "order_id": "SO-1746530836021"
+    },
+    "ans4": {
+      "company": "Global Industries",
+      "customer": "MegaCorp",
+      "item": "Component D",
+      "rate": 100,
+      "transaction_date": "2025-05-06T00:00:00",
+      "status": "Created",
+      "order_id": "SO-1746530836022"
+    },
+    "ans5": {
+      "company": "Innovative Products",
+      "customer": "Startup Co.",
+      "item": "Tool E",
+      "rate": 100,
+      "transaction_date": "2025-05-06T00:00:00",
+      "status": "Created",
+      "order_id": "SO-1746530836022"
+    }
+  }
+}

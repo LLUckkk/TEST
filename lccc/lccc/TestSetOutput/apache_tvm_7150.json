@@ -1,0 +1,76 @@
+{
+  "input_header": "def _get_users(node):",
+  "input_docstring": null,
+  "output_code": "def _get_users(node):\n    return [use.user for use in _get_uses(node)]",
+  "input_contexts": [
+    {
+      "id": "apache_tvm_7150_2",
+      "input_code": "def convert_params(graph, state_dict, source_map, use_parser_friendly_name=False):\n    \n    getattr_nodes = graph.findAllNodes(\"prim::GetAttr\", recurse=True)\n    params = {}\n    param_tensors = {}\n    packed_param_map = {}\n    param_debug_name_map = {}\n    vars_by_name = {}\n    seen = set()\n    attr_name_sep = \"_\" if use_parser_friendly_name else \".\"\n\n    for node in getattr_nodes:\n        if _get_output_name(node) in seen:\n            continue\n\n        for getattrs in get_attr_chains(node):\n            seen.update(map(_get_output_name, getattrs))\n\n            full_attr = _getattr_full_name(getattrs, attr_name_sep)\n            full_attr_node_name = _get_output_name(getattrs[-1])\n\n            if re.search(attr_name_sep + r\"\\d+$\", full_attr):\n                attr_name = full_attr.split(attr_name_sep)[-2:]\n            else:\n                attr_name = [full_attr.split(attr_name_sep)[-1]]\n\n            var_name = attr_name_sep.join([source_map[_get_users(getattrs[-1])[0]]] + attr_name)\n\n            if full_attr.endswith(\"_packed_params\"):\n                packed_param_map[full_attr_node_name] = full_attr\n            elif full_attr in state_dict:\n                if var_name in vars_by_name:\n                    var = vars_by_name[var_name]\n                else:\n                    torch_tensor = state_dict[full_attr]\n                    tensor, var = _get_tensor_and_var(torch_tensor, var_name)\n                    param_tensors[var_name] = tensor\n                    param_debug_name_map[full_attr_node_name] = var_name\n                    vars_by_name[var_name] = var\n                params[full_attr_node_name] = var\n\n    return params, param_tensors, packed_param_map, param_debug_name_map\n"
+    },
+    {
+      "id": "apache_tvm_7150_1",
+      "input_code": "def get_use_chains(root_node, terminate=lambda _: False):\n    \n\n    def concat_lists(lists):\n        return itertools.chain.from_iterable(lists)\n\n    def inner(current, accum):\n        users = _get_users(current)\n\n        if not users or terminate(users):\n            return [accum]\n\n        return concat_lists([inner(nxt, accum + [nxt]) for nxt in users])\n\n    return inner(root_node, [root_node])\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport torch\nimport re\nimport itertools\n\n<testcase_1>\nnode = torch.jit.ScriptModule()._c\n\n<testcase_2>\nnode = torch.jit.ScriptModule()._c.findNode(\"prim::GetAttr\")\n\n<testcase_3>\nnode = torch.jit.ScriptModule()._c.findNode(\"aten::add\")\n\n<testcase_4>\nnode = torch.jit.ScriptModule()._c.findNode(\"prim::Constant\")\n\n<testcase_5>\nnode = torch.jit.ScriptModule()._c.findNode(\"aten::mul\")"
+  ],
+  "gpt_output": "<needimport>\nimport torch\nimport re\nimport itertools\n\n<testcase_1>\nnode = torch.jit.ScriptModule()._c\n\n<testcase_2>\nnode = torch.jit.ScriptModule()._c.findNode(\"prim::GetAttr\")\n\n<testcase_3>\nnode = torch.jit.ScriptModule()._c.findNode(\"aten::add\")\n\n<testcase_4>\nnode = torch.jit.ScriptModule()._c.findNode(\"prim::Constant\")\n\n<testcase_5>\nnode = torch.jit.ScriptModule()._c.findNode(\"aten::mul\")",
+  "needimport": "import torch\nimport re\nimport itertools\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "kind": "prim::Return",
+        "inputs": [
+          "6"
+        ],
+        "outputs": [],
+        "scope": ""
+      }
+    ],
+    "ans2": [
+      {
+        "kind": "prim::Return",
+        "inputs": [
+          "5"
+        ],
+        "outputs": [],
+        "scope": ""
+      }
+    ],
+    "ans3": [
+      {
+        "kind": "prim::Return",
+        "inputs": [
+          "6"
+        ],
+        "outputs": [],
+        "scope": ""
+      }
+    ],
+    "ans4": [
+      {
+        "kind": "aten::add",
+        "inputs": [
+          "x.1",
+          "3",
+          "4"
+        ],
+        "outputs": [
+          "5"
+        ],
+        "scope": ""
+      }
+    ],
+    "ans5": [
+      {
+        "kind": "prim::Return",
+        "inputs": [
+          "3"
+        ],
+        "outputs": [],
+        "scope": ""
+      }
+    ]
+  }
+}

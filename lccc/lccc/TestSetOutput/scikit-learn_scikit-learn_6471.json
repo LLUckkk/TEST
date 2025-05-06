@@ -1,0 +1,74 @@
+{
+  "input_header": "def _update_mean_variance(n_past, mu, var, X, sample_weight=None):",
+  "input_docstring": "Compute online update of Gaussian mean and variance.\n\nGiven starting sample count, mean, and variance, a new set of\npoints X, and optionally sample weights, return the updated mean and\nvariance. (NB - each dimension (column) in X is treated as independent\n-- you get variance, not covariance).\n\nCan take scalar mean and variance, or vector mean and variance to\nsimultaneously update a number of independent Gaussians.\n\nSee Stanford CS tech report STAN-CS-79-773 by Chan, Golub, and LeVeque:\n\nhttp://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf\n\nParameters\n----------\nn_past : int\n    Number of samples represented in old mean and variance. If sample\n    weights were given, this should contain the sum of sample\n    weights represented in old mean and variance.\n\nmu : array-like of shape (number of Gaussians,)\n    Means for Gaussians in original set.\n\nvar : array-like of shape (number of Gaussians,)\n    Variances for Gaussians in original set.\n\nsample_weight : array-like of shape (n_samples,), default=None\n    Weights applied to individual samples (1. for unweighted).\n\nReturns\n-------\ntotal_mu : array-like of shape (number of Gaussians,)\n    Updated mean for each Gaussian over the combined set.\n\ntotal_var : array-like of shape (number of Gaussians,)\n    Updated variance for each Gaussian over the combined set.",
+  "output_code": "    def _update_mean_variance(n_past, mu, var, X, sample_weight=None):\n        \n        if X.shape[0] == 0:\n            return mu, var\n\n        if sample_weight is not None:\n            n_new = float(sample_weight.sum())\n            if np.isclose(n_new, 0.0):\n                return mu, var\n            new_mu = np.average(X, axis=0, weights=sample_weight)\n            new_var = np.average((X - new_mu) ** 2, axis=0, weights=sample_weight)\n        else:\n            n_new = X.shape[0]\n            new_var = np.var(X, axis=0)\n            new_mu = np.mean(X, axis=0)\n\n        if n_past == 0:\n            return new_mu, new_var\n\n        n_total = float(n_past + n_new)\n\n        total_mu = (n_new * new_mu + n_past * mu) / n_total\n\n        old_ssd = n_past * var\n        new_ssd = n_new * new_var\n        total_ssd = old_ssd + new_ssd + (n_new * n_past / n_total) * (mu - new_mu) ** 2\n        total_var = total_ssd / n_total\n\n        return total_mu, total_var",
+  "input_contexts": [
+    {
+      "id": "scikit-learn_scikit-learn_6471_2",
+      "input_code": "def test_gnb_check_update_with_no_data():\n    \n    prev_points = 100\n    mean = 0.0\n    var = 1.0\n    x_empty = np.empty((0, X.shape[1]))\n    tmean, tvar = GaussianNB._update_mean_variance(prev_points, mean, var, x_empty)\n    assert tmean == mean\n    assert tvar == var\n"
+    },
+    {
+      "id": "scikit-learn_scikit-learn_6471_1",
+      "input_code": "    def _partial_fit(self, X, y, classes=None, _refit=False, sample_weight=None):\n        \n        if _refit:\n            self.classes_ = None\n\n        first_call = _check_partial_fit_first_call(self, classes)\n        X, y = validate_data(self, X, y, reset=first_call)\n        if sample_weight is not None:\n            sample_weight = _check_sample_weight(sample_weight, X)\n\n        self.epsilon_ = self.var_smoothing * np.var(X, axis=0).max()\n\n        if first_call:\n            n_features = X.shape[1]\n            n_classes = len(self.classes_)\n            self.theta_ = np.zeros((n_classes, n_features))\n            self.var_ = np.zeros((n_classes, n_features))\n\n            self.class_count_ = np.zeros(n_classes, dtype=np.float64)\n\n            if self.priors is not None:\n                priors = np.asarray(self.priors)\n                if len(priors) != n_classes:\n                    raise ValueError(\"Number of priors must match number of classes.\")\n                if not np.isclose(priors.sum(), 1.0):\n                    raise ValueError(\"The sum of the priors should be 1.\")\n                if (priors < 0).any():\n                    raise ValueError(\"Priors must be non-negative.\")\n                self.class_prior_ = priors\n            else:\n                self.class_prior_ = np.zeros(len(self.classes_), dtype=np.float64)\n        else:\n            if X.shape[1] != self.theta_.shape[1]:\n                msg = \"Number of features %d does not match previous data %d.\"\n                raise ValueError(msg % (X.shape[1], self.theta_.shape[1]))\n            self.var_[:, :] -= self.epsilon_\n\n        classes = self.classes_\n\n        unique_y = np.unique(y)\n        unique_y_in_classes = np.isin(unique_y, classes)\n\n        if not np.all(unique_y_in_classes):\n            raise ValueError(\n                \"The target label(s) %s in y do not exist in the initial classes %s\"\n                % (unique_y[~unique_y_in_classes], classes)\n            )\n\n        for y_i in unique_y:\n            i = classes.searchsorted(y_i)\n            X_i = X[y == y_i, :]\n\n            if sample_weight is not None:\n                sw_i = sample_weight[y == y_i]\n                N_i = sw_i.sum()\n            else:\n                sw_i = None\n                N_i = X_i.shape[0]\n\n            new_theta, new_sigma = self._update_mean_variance(\n                self.class_count_[i], self.theta_[i, :], self.var_[i, :], X_i, sw_i\n            )\n\n            self.theta_[i, :] = new_theta\n            self.var_[i, :] = new_sigma\n            self.class_count_[i] += N_i\n\n        self.var_[:, :] += self.epsilon_\n\n        if self.priors is None:\n            self.class_prior_ = self.class_count_ / self.class_count_.sum()\n\n        return self\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\n\n<testcase_1>\nn_past = 100\nmu = np.array([1.0, 2.0, 3.0])\nvar = np.array([0.5, 0.5, 0.5])\nX = np.array([[1.1, 2.1, 3.1], [0.9, 1.9, 2.9], [1.2, 2.2, 3.2]])\nsample_weight = np.array([0.5, 0.3, 0.2])\n\n<testcase_2>\nn_past = 50\nmu = np.array([0.0, 0.0])\nvar = np.array([1.0, 1.0])\nX = np.array([[0.1, -0.1], [-0.1, 0.1], [0.2, -0.2]])\nsample_weight = None\n\n<testcase_3>\nn_past = 200\nmu = np.array([5.0])\nvar = np.array([2.0])\nX = np.array([[4.8], [5.2], [5.0]])\nsample_weight = np.array([1.0, 1.0, 1.0])\n\n<testcase_4>\nn_past = 0\nmu = np.array([0.0, 0.0, 0.0])\nvar = np.array([0.0, 0.0, 0.0])\nX = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])\nsample_weight = None\n\n<testcase_5>\nn_past = 150\nmu = np.array([10.0, 20.0])\nvar = np.array([5.0, 10.0])\nX = np.array([[9.5, 19.5], [10.5, 20.5], [10.0, 20.0]])\nsample_weight = np.array([0.4, 0.4, 0.2])"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\n\n<testcase_1>\nn_past = 100\nmu = np.array([1.0, 2.0, 3.0])\nvar = np.array([0.5, 0.5, 0.5])\nX = np.array([[1.1, 2.1, 3.1], [0.9, 1.9, 2.9], [1.2, 2.2, 3.2]])\nsample_weight = np.array([0.5, 0.3, 0.2])\n\n<testcase_2>\nn_past = 50\nmu = np.array([0.0, 0.0])\nvar = np.array([1.0, 1.0])\nX = np.array([[0.1, -0.1], [-0.1, 0.1], [0.2, -0.2]])\nsample_weight = None\n\n<testcase_3>\nn_past = 200\nmu = np.array([5.0])\nvar = np.array([2.0])\nX = np.array([[4.8], [5.2], [5.0]])\nsample_weight = np.array([1.0, 1.0, 1.0])\n\n<testcase_4>\nn_past = 0\nmu = np.array([0.0, 0.0, 0.0])\nvar = np.array([0.0, 0.0, 0.0])\nX = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])\nsample_weight = None\n\n<testcase_5>\nn_past = 150\nmu = np.array([10.0, 20.0])\nvar = np.array([5.0, 10.0])\nX = np.array([[9.5, 19.5], [10.5, 20.5], [10.0, 20.0]])\nsample_weight = np.array([0.4, 0.4, 0.2])",
+  "needimport": "import numpy as np\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        1.0005940594059406,
+        2.0005940594059406,
+        3.0005940594059406
+      ],
+      [
+        0.49520756788550147,
+        0.49520756788550147,
+        0.49520756788550147
+      ]
+    ],
+    "ans2": [
+      [
+        0.0037735849056603774,
+        -0.0037735849056603774
+      ],
+      [
+        0.9445140619437522,
+        0.9445140619437522
+      ]
+    ],
+    "ans3": [
+      [
+        5.0
+      ],
+      [
+        1.9708374384236453
+      ]
+    ],
+    "ans4": [
+      [
+        4.0,
+        5.0,
+        6.0
+      ],
+      [
+        6.0,
+        6.0,
+        6.0
+      ]
+    ],
+    "ans5": [
+      [
+        10.0,
+        20.0
+      ],
+      [
+        4.968211920529802,
+        9.935099337748344
+      ]
+    ]
+  }
+}

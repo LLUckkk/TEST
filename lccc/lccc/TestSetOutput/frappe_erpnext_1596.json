@@ -1,0 +1,23 @@
+{
+  "input_header": "def set_status(self):",
+  "input_docstring": null,
+  "output_code": "\tdef set_status(self):\n\t\tif self.docstatus == 0:\n\t\t\tself.repost_status = \"Queued\"",
+  "input_contexts": [
+    {
+      "id": "frappe_erpnext_1596_1",
+      "input_code": "\tdef before_validate(self):\n\t\tself.load_vouchers_based_on_filters()\n\t\tself.set_status()\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport None\n\n<testcase_1>\nself = type('TestObject', (object,), {'docstatus': 0, 'repost_status': None})()\n\n<testcase_2>\nself = type('TestObject', (object,), {'docstatus': 1, 'repost_status': None})()\n\n<testcase_3>\nself = type('TestObject', (object,), {'docstatus': 2, 'repost_status': None})()\n\n<testcase_4>\nself = type('TestObject', (object,), {'docstatus': 0, 'repost_status': 'Pending'})()\n\n<testcase_5>\nself = type('TestObject', (object,), {'docstatus': 1, 'repost_status': 'Completed'})()\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport None\n\n<testcase_1>\nself = type('TestObject', (object,), {'docstatus': 0, 'repost_status': None})()\n\n<testcase_2>\nself = type('TestObject', (object,), {'docstatus': 1, 'repost_status': None})()\n\n<testcase_3>\nself = type('TestObject', (object,), {'docstatus': 2, 'repost_status': None})()\n\n<testcase_4>\nself = type('TestObject', (object,), {'docstatus': 0, 'repost_status': 'Pending'})()\n\n<testcase_5>\nself = type('TestObject', (object,), {'docstatus': 1, 'repost_status': 'Completed'})()\n```",
+  "needimport": "import None\n\n",
+  "test_results": {
+    "ans1": "Queued",
+    "ans2": null,
+    "ans3": null,
+    "ans4": "Queued",
+    "ans5": "Completed"
+  }
+}

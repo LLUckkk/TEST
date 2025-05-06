@@ -1,0 +1,47 @@
+{
+  "input_header": "def _get_dense_mask(X, value_to_mask):",
+  "input_docstring": null,
+  "output_code": "def _get_dense_mask(X, value_to_mask):\n    with suppress(ImportError, AttributeError):\n        import pandas\n\n        if value_to_mask is pandas.NA:\n            return pandas.isna(X)\n\n    if is_scalar_nan(value_to_mask):\n        if X.dtype.kind == \"f\":\n            Xt = np.isnan(X)\n        elif X.dtype.kind in (\"i\", \"u\"):\n            Xt = np.zeros(X.shape, dtype=bool)\n        else:\n            Xt = _object_dtype_isnan(X)\n    else:\n        Xt = X == value_to_mask\n\n    return Xt",
+  "input_contexts": [
+    {
+      "id": "scikit-learn_scikit-learn_8655_1",
+      "input_code": "def _get_mask(X, value_to_mask):\n    \n    if not sp.issparse(X):\n        return _get_dense_mask(X, value_to_mask)\n\n    Xt = _get_dense_mask(X.data, value_to_mask)\n\n    sparse_constructor = sp.csr_matrix if X.format == \"csr\" else sp.csc_matrix\n    Xt_sparse = sparse_constructor(\n        (Xt, X.indices.copy(), X.indptr.copy()), shape=X.shape, dtype=bool\n    )\n\n    return Xt_sparse\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\nimport pandas as pd\n\n<testcase_1>\nX = np.array([1, 2, 3, 4, 5])\nvalue_to_mask = 3\n\n<testcase_2>\nX = np.array([1.0, 2.0, np.nan, 4.0, 5.0])\nvalue_to_mask = np.nan\n\n<testcase_3>\nX = np.array(['a', 'b', 'c', 'd', 'e'])\nvalue_to_mask = 'c'\n\n<testcase_4>\nX = pd.Series([1, 2, pd.NA, 4, 5])\nvalue_to_mask = pd.NA\n\n<testcase_5>\nX = np.array([10, 20, 30, 40, 50])\nvalue_to_mask = 25"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\nimport pandas as pd\n\n<testcase_1>\nX = np.array([1, 2, 3, 4, 5])\nvalue_to_mask = 3\n\n<testcase_2>\nX = np.array([1.0, 2.0, np.nan, 4.0, 5.0])\nvalue_to_mask = np.nan\n\n<testcase_3>\nX = np.array(['a', 'b', 'c', 'd', 'e'])\nvalue_to_mask = 'c'\n\n<testcase_4>\nX = pd.Series([1, 2, pd.NA, 4, 5])\nvalue_to_mask = pd.NA\n\n<testcase_5>\nX = np.array([10, 20, 30, 40, 50])\nvalue_to_mask = 25",
+  "needimport": "import numpy as np\nimport pandas as pd\n\n",
+  "test_results": {
+    "ans1": [
+      false,
+      false,
+      true,
+      false,
+      false
+    ],
+    "ans2": [
+      false,
+      false,
+      true,
+      false,
+      false
+    ],
+    "ans3": [
+      false,
+      false,
+      true,
+      false,
+      false
+    ],
+    "ans4": "0    False\n1    False\n2     True\n3    False\n4    False\ndtype: bool",
+    "ans5": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "ans1": [
+    {
+      "kind": "prim::Return",
+      "inputs": [
+        "6"
+      ],
+      "outputs": [],
+      "scope": ""
+    }
+  ],
+  "ans2": [
+    {
+      "kind": "prim::Return",
+      "inputs": [
+        "5"
+      ],
+      "outputs": [],
+      "scope": ""
+    }
+  ],
+  "ans3": [
+    {
+      "kind": "prim::Return",
+      "inputs": [
+        "6"
+      ],
+      "outputs": [],
+      "scope": ""
+    }
+  ],
+  "ans4": [
+    {
+      "kind": "aten::add",
+      "inputs": [
+        "x.1",
+        "3",
+        "4"
+      ],
+      "outputs": [
+        "5"
+      ],
+      "scope": ""
+    }
+  ],
+  "ans5": [
+    {
+      "kind": "prim::Return",
+      "inputs": [
+        "3"
+      ],
+      "outputs": [],
+      "scope": ""
+    }
+  ]
+}
