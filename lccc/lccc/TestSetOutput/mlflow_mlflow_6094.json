@@ -1,0 +1,67 @@
+{
+  "input_header": "def from_conda_yaml(cls, path):",
+  "input_docstring": null,
+  "output_code": "    def from_conda_yaml(cls, path):\n        return cls.from_dict(cls.get_dependencies_from_conda_yaml(path))",
+  "input_contexts": [
+    {
+      "id": "mlflow_mlflow_6094_1",
+      "input_code": "    def run(\n        self,\n        project_uri,\n        entry_point,\n        params,\n        version,\n        backend_config,\n        tracking_uri,\n        experiment_id,\n    ):\n        work_dir = fetch_and_validate_project(project_uri, version, entry_point, params)\n        project = load_project(work_dir)\n        if MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG in backend_config:\n            run_id = backend_config[MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG]\n        else:\n            run_id = None\n        active_run = get_or_create_run(\n            run_id, project_uri, experiment_id, work_dir, version, entry_point, params\n        )\n        command_args = []\n        command_separator = \" \"\n        env_manager = backend_config[PROJECT_ENV_MANAGER]\n        synchronous = backend_config[PROJECT_SYNCHRONOUS]\n        docker_args = backend_config[PROJECT_DOCKER_ARGS]\n        storage_dir = backend_config[PROJECT_STORAGE_DIR]\n        build_image = backend_config[PROJECT_BUILD_IMAGE]\n        docker_auth = backend_config[PROJECT_DOCKER_AUTH]\n        if env_manager is None:\n            env_manager = _env_type_to_env_manager(project.env_type)\n        else:\n            if project.env_type == env_type.PYTHON and env_manager == _EnvManager.CONDA:\n                raise MlflowException.invalid_parameter_value(\n                    \"python_env project cannot be executed using conda. Set `--env-manager` to \"\n                    \"'virtualenv' or 'local' to execute this project.\"\n                )\n\n        if project.docker_env:\n            from mlflow.projects.docker import (\n                build_docker_image,\n                validate_docker_env,\n                validate_docker_installation,\n            )\n\n            tracking.MlflowClient().set_tag(active_run.info.run_id, MLFLOW_PROJECT_ENV, \"docker\")\n            validate_docker_env(project)\n            validate_docker_installation()\n            image = build_docker_image(\n                work_dir=work_dir,\n                repository_uri=project.name,\n                base_image=project.docker_env.get(\"image\"),\n                run_id=active_run.info.run_id,\n                build_image=build_image,\n                docker_auth=docker_auth,\n            )\n            command_args += _get_docker_command(\n                image=image,\n                active_run=active_run,\n                docker_args=docker_args,\n                volumes=project.docker_env.get(\"volumes\"),\n                user_env_vars=project.docker_env.get(\"environment\"),\n            )\n        elif env_manager == _EnvManager.VIRTUALENV:\n            tracking.MlflowClient().set_tag(\n                active_run.info.run_id, MLFLOW_PROJECT_ENV, \"virtualenv\"\n            )\n            command_separator = \" && \"\n            if project.env_type == env_type.CONDA:\n                python_env = _PythonEnv.from_conda_yaml(project.env_config_path)\n            else:\n                python_env = (\n                    _PythonEnv.from_yaml(project.env_config_path)\n                    if project.env_config_path\n                    else _PythonEnv()\n                )\n\n            if is_in_databricks_runtime():\n                nfs_tmp_dir = get_or_create_nfs_tmp_dir()\n                env_root = Path(nfs_tmp_dir) / \"envs\"\n                pyenv_root_dir = str(env_root / _PYENV_ROOT_DIR)\n                virtualenv_root = env_root / _VIRTUALENV_ENVS_DIR\n                env_vars = _get_virtualenv_extra_env_vars(str(env_root))\n            else:\n                pyenv_root_dir = None\n                virtualenv_root = Path(_get_mlflow_virtualenv_root())\n                env_vars = None\n            work_dir_path = Path(work_dir)\n            env_name = _get_virtualenv_name(python_env, work_dir_path)\n            env_dir = virtualenv_root / env_name\n            activate_cmd = _create_virtualenv(\n                local_model_path=work_dir_path,\n                python_env=python_env,\n                env_dir=env_dir,\n                pyenv_root_dir=pyenv_root_dir,\n                env_manager=env_manager,\n                extra_env=env_vars,\n            )\n            command_args += [activate_cmd]\n        elif env_manager == _EnvManager.CONDA:\n            tracking.MlflowClient().set_tag(active_run.info.run_id, MLFLOW_PROJECT_ENV, \"conda\")\n            command_separator = \" && \"\n            conda_env = get_or_create_conda_env(project.env_config_path)\n            command_args += conda_env.get_activate_command()\n\n        if synchronous:\n            command_args += get_entry_point_command(project, entry_point, params, storage_dir)\n            command_str = command_separator.join(command_args)\n            return _run_entry_point(\n                command_str, work_dir, experiment_id, run_id=active_run.info.run_id\n            )\n        return _invoke_mlflow_run_subprocess(\n            work_dir=work_dir,\n            entry_point=entry_point,\n            parameters=params,\n            experiment_id=experiment_id,\n            env_manager=env_manager,\n            docker_args=docker_args,\n            storage_dir=storage_dir,\n            run_id=active_run.info.run_id,\n        )\n"
+    },
+    {
+      "id": "mlflow_mlflow_6094_2",
+      "input_code": "def _get_python_env(local_model_path):\n    \n    model_config = Model.load(local_model_path / MLMODEL_FILE_NAME)\n    python_env_file = local_model_path / _get_python_env_file(model_config)\n    conda_env_file = local_model_path / _get_conda_env_file(model_config)\n    requirements_file = local_model_path / _REQUIREMENTS_FILE_NAME\n\n    if python_env_file.exists():\n        return _PythonEnv.from_yaml(python_env_file)\n    else:\n        _logger.info(\n            \"This model is missing %s, which is because it was logged in an older version\"\n            \"of MLflow (< 1.26.0) that does not support restoring a model environment with \"\n            \"virtualenv. Attempting to extract model dependencies from %s and %s instead.\",\n            _PYTHON_ENV_FILE_NAME,\n            _REQUIREMENTS_FILE_NAME,\n            _CONDA_ENV_FILE_NAME,\n        )\n        if requirements_file.exists():\n            deps = _PythonEnv.get_dependencies_from_conda_yaml(conda_env_file)\n            return _PythonEnv(\n                python=deps[\"python\"],\n                build_dependencies=deps[\"build_dependencies\"],\n                dependencies=[f\"-r {_REQUIREMENTS_FILE_NAME}\"],\n            )\n        else:\n            return _PythonEnv.from_conda_yaml(conda_env_file)\n"
+    },
+    {
+      "id": "mlflow_mlflow_6094_6",
+      "input_code": "def test_from_conda_yaml_invalid_python_comparator(tmp_path):\n    content = f\"\"\"\nname: example\nchannels:\n  - conda-forge\ndependencies:\n  - python<{PYTHON_VERSION}\n  - pip:\n    - a\n    - b\n\"\"\"\n    yaml_path = tmp_path / \"conda.yaml\"\n    yaml_path.write_text(content)\n    with pytest.raises(Exception, match=\"Invalid version comparator for python\"):\n        _PythonEnv.from_conda_yaml(yaml_path)\n"
+    },
+    {
+      "id": "mlflow_mlflow_6094_4",
+      "input_code": "def test_from_conda_yaml_build_dependencies(tmp_path):\n    content = f\"\"\"\nname: example\nchannels:\n  - conda-forge\ndependencies:\n  - python={PYTHON_VERSION}\n  - pip=1.2.3\n  - wheel==4.5.6\n  - setuptools<=7.8.9\n  - pip:\n    - a\n    - b\n\"\"\"\n    yaml_path = tmp_path / \"conda.yaml\"\n    yaml_path.write_text(content)\n    python_env = _PythonEnv.from_conda_yaml(yaml_path)\n    assert python_env.python == PYTHON_VERSION\n    assert python_env.build_dependencies == [\"pip==1.2.3\", \"wheel==4.5.6\", \"setuptools<=7.8.9\"]\n    assert python_env.dependencies == [\"a\", \"b\"]\n"
+    },
+    {
+      "id": "mlflow_mlflow_6094_5",
+      "input_code": "def test_from_conda_yaml_use_current_python_version_when_no_python_spec_in_conda_yaml(tmp_path):\n    content = \"\"\"\nname: example\nchannels:\n  - conda-forge\ndependencies:\n  - pip\n  - pip:\n    - a\n    - b\n\"\"\"\n    yaml_path = tmp_path / \"conda.yaml\"\n    yaml_path.write_text(content)\n    assert _PythonEnv.from_conda_yaml(yaml_path).python == PYTHON_VERSION\n"
+    },
+    {
+      "id": "mlflow_mlflow_6094_3",
+      "input_code": "def test_from_conda_yaml(tmp_path):\n    content = f\"\"\"\nname: example\nchannels:\n  - conda-forge\ndependencies:\n  - python={PYTHON_VERSION}\n  - pip\n  - pip:\n    - a\n    - b\n\"\"\"\n    yaml_path = tmp_path / \"conda.yaml\"\n    yaml_path.write_text(content)\n    python_env = _PythonEnv.from_conda_yaml(yaml_path)\n    assert python_env.python == PYTHON_VERSION\n    assert python_env.build_dependencies == [\"pip\"]\n    assert python_env.dependencies == [\"a\", \"b\"]\n"
+    },
+    {
+      "id": "mlflow_mlflow_6094_7",
+      "input_code": "def test_from_conda_yaml_conda_dependencies_warning(tmp_path):\n    content = f\"\"\"\nname: example\nchannels:\n  - conda-forge\ndependencies:\n  - python={PYTHON_VERSION}\n  - foo\n  - bar\n  - pip:\n    - a\n\"\"\"\n    yaml_path = tmp_path / \"conda.yaml\"\n    yaml_path.write_text(content)\n    with mock.patch(\"mlflow.utils.environment._logger.warning\") as mock_warning:\n        _PythonEnv.from_conda_yaml(yaml_path)\n        mock_warning.assert_called_with(\n            \"The following conda dependencies will not be installed \"\n            \"in the resulting environment: %s\",\n            [\"foo\", \"bar\"],\n        )\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport tempfile\nimport os\n\n<testcase_1>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: test_env\nchannels:\n  - defaults\ndependencies:\n  - python=3.8\n  - numpy\n  - pip:\n    - pandas\n\"\"\")\npath.close()\npath = path.name\n\n<testcase_2>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: example_env\nchannels:\n  - conda-forge\ndependencies:\n  - python=3.9\n  - scipy\n  - pip:\n    - scikit-learn\n\"\"\")\npath.close()\npath = path.name\n\n<testcase_3>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: data_env\nchannels:\n  - anaconda\ndependencies:\n  - python=3.7\n  - matplotlib\n  - pip:\n    - seaborn\n\"\"\")\npath.close()\npath = path.name\n\n<testcase_4>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: ml_env\nchannels:\n  - bioconda\ndependencies:\n  - python=3.6\n  - tensorflow\n  - pip:\n    - keras\n\"\"\")\npath.close()\npath = path.name\n\n<testcase_5>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: analysis_env\nchannels:\n  - conda-forge\ndependencies:\n  - python=3.10\n  - pandas\n  - pip:\n    - jupyter\n\"\"\")\npath.close()\npath = path.name\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport tempfile\nimport os\n\n<testcase_1>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: test_env\nchannels:\n  - defaults\ndependencies:\n  - python=3.8\n  - numpy\n  - pip:\n    - pandas\n\"\"\")\npath.close()\npath = path.name\n\n<testcase_2>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: example_env\nchannels:\n  - conda-forge\ndependencies:\n  - python=3.9\n  - scipy\n  - pip:\n    - scikit-learn\n\"\"\")\npath.close()\npath = path.name\n\n<testcase_3>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: data_env\nchannels:\n  - anaconda\ndependencies:\n  - python=3.7\n  - matplotlib\n  - pip:\n    - seaborn\n\"\"\")\npath.close()\npath = path.name\n\n<testcase_4>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: ml_env\nchannels:\n  - bioconda\ndependencies:\n  - python=3.6\n  - tensorflow\n  - pip:\n    - keras\n\"\"\")\npath.close()\npath = path.name\n\n<testcase_5>\ncls = _PythonEnv\npath = tempfile.NamedTemporaryFile(delete=False)\npath.write(b\"\"\"\nname: analysis_env\nchannels:\n  - conda-forge\ndependencies:\n  - python=3.10\n  - pandas\n  - pip:\n    - jupyter\n\"\"\")\npath.close()\npath = path.name\n```",
+  "needimport": "import tempfile\nimport os\n\n",
+  "test_results": {
+    "ans1": {
+      "python": "3.8",
+      "build_dependencies": "[]",
+      "dependencies": "['pandas']"
+    },
+    "ans2": {
+      "python": "3.9",
+      "build_dependencies": "[]",
+      "dependencies": "['scikit-learn']"
+    },
+    "ans3": {
+      "python": "3.7",
+      "build_dependencies": "[]",
+      "dependencies": "['seaborn']"
+    },
+    "ans4": {
+      "python": "3.6",
+      "build_dependencies": "[]",
+      "dependencies": "['keras']"
+    },
+    "ans5": {
+      "python": "3.10",
+      "build_dependencies": "[]",
+      "dependencies": "['jupyter']"
+    }
+  }
+}

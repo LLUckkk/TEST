@@ -1,0 +1,23 @@
+{
+  "input_header": "def enable(self):",
+  "input_docstring": "Enable the tool",
+  "output_code": "    def enable(self):\n        \n\n        self._enabled = True",
+  "input_contexts": [
+    {
+      "id": "apache_tvm_1837_1",
+      "input_code": "    def init(self) -> Tuple[int, Dict[str, Any]]:\n        \n\n        self._runner.change_logger(self._logger)\n        self._runner.save_cache(self._cache_dir)\n        self._tool = self._init_tool()\n        self._tasks = self._execute(\"create_tasks\", self._tool)\n        if self._max_tasks > 0:\n            self._tasks = self._tasks[: self._max_tasks]\n        self._tool.disable()\n        self._runner.build(self._cache_dir, force_build=True, disable_tools=[self._tool.tool_type])\n        baseline = self._reward_runner(-1)\n        self._tool.enable()\n        tasks_info = {\"tasks_num\": len(self._tasks), \"tasks\": self._tasks}\n        self._logger.info(msc_utils.msg_block(self.env_mark(\"TASKS\"), tasks_info))\n        return len(self._tasks), baseline\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport None\n\n<testcase_1>\nself._enabled = False\n\n<testcase_2>\nself._enabled = None\n\n<testcase_3>\nself._enabled = True\n\n<testcase_4>\nself._enabled = False\n\n<testcase_5>\nself._enabled = True\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport None\n\n<testcase_1>\nself._enabled = False\n\n<testcase_2>\nself._enabled = None\n\n<testcase_3>\nself._enabled = True\n\n<testcase_4>\nself._enabled = False\n\n<testcase_5>\nself._enabled = True\n```",
+  "needimport": "import None\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": true,
+    "ans4": true,
+    "ans5": true
+  }
+}

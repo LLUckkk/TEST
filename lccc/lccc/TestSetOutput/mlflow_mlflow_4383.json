@@ -1,0 +1,23 @@
+{
+  "input_header": "def _get_presigned_uri(self, remote_file_path):",
+  "input_docstring": null,
+  "output_code": "    def _get_presigned_uri(self, remote_file_path):\n        s3_client = self._get_s3_client()\n        s3_full_path = posixpath.join(self.bucket_path, remote_file_path)\n        return s3_client.generate_presigned_url(\n            \"get_object\", Params={\"Bucket\": self.bucket, \"Key\": s3_full_path}\n        )",
+  "input_contexts": [
+    {
+      "id": "mlflow_mlflow_4383_1",
+      "input_code": "    def _get_read_credential_infos(self, remote_file_paths):\n        return [\n            ArtifactCredentialInfo(signed_uri=self._get_presigned_uri(path))\n            for path in remote_file_paths\n        ]\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport posixpath\n\n<testcase_1>\nremote_file_path = \"data/file1.txt\"\n\n<testcase_2>\nremote_file_path = \"images/photo.jpg\"\n\n<testcase_3>\nremote_file_path = \"documents/report.pdf\"\n\n<testcase_4>\nremote_file_path = \"videos/movie.mp4\"\n\n<testcase_5>\nremote_file_path = \"backups/backup_2023_10_01.zip\""
+  ],
+  "gpt_output": "<needimport>\nimport posixpath\n\n<testcase_1>\nremote_file_path = \"data/file1.txt\"\n\n<testcase_2>\nremote_file_path = \"images/photo.jpg\"\n\n<testcase_3>\nremote_file_path = \"documents/report.pdf\"\n\n<testcase_4>\nremote_file_path = \"videos/movie.mp4\"\n\n<testcase_5>\nremote_file_path = \"backups/backup_2023_10_01.zip\"",
+  "needimport": "import posixpath\n\n",
+  "test_results": {
+    "ans1": "https://mock-s3.com/test-bucket/mlflow-data/data/file1.txt?method=get_object",
+    "ans2": "https://mock-s3.com/test-bucket/mlflow-data/images/photo.jpg?method=get_object",
+    "ans3": "https://mock-s3.com/test-bucket/mlflow-data/documents/report.pdf?method=get_object",
+    "ans4": "https://mock-s3.com/test-bucket/mlflow-data/videos/movie.mp4?method=get_object",
+    "ans5": "https://mock-s3.com/test-bucket/mlflow-data/backups/backup_2023_10_01.zip?method=get_object"
+  }
+}

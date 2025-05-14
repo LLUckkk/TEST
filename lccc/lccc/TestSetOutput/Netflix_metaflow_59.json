@@ -1,0 +1,47 @@
+{
+  "input_header": "def write(self, x):",
+  "input_docstring": null,
+  "output_code": "        def write(self, x):\n            if isinstance(x, str) or is_bytes(x):\n                try:\n                    self.flush()\n                except Exception:\n                    pass\n                return self.buffer.write(str(x))\n            return io.TextIOWrapper.write(self, x)",
+  "input_contexts": [
+    {
+      "id": "Netflix_metaflow_59_3",
+      "input_code": "    def _is_binary_writer(stream, default=False):\n        try:\n            stream.write(b\"\")\n        except Exception:\n            try:\n                stream.write(\"\")\n                return False\n            except Exception:\n                pass\n            return default\n        return True\n"
+    },
+    {
+      "id": "Netflix_metaflow_59_4",
+      "input_code": "        def raw_input(prompt=\"\"):\n            sys.stderr.flush()\n            if prompt:\n                stdout = _default_text_stdout()\n                stdout.write(prompt)\n            stdin = _default_text_stdin()\n            return stdin.readline().rstrip(\"\\r\\n\")\n"
+    },
+    {
+      "id": "Netflix_metaflow_59_5",
+      "input_code": "    def render_finish(self):\n        if self.is_hidden or self.is_fast():\n            return\n        self.file.write(AFTER_BAR)\n        self.file.flush()\n"
+    },
+    {
+      "id": "Netflix_metaflow_59_7",
+      "input_code": "def echo(message=None, file=None, nl=True, err=False, color=None):\n    \n    if file is None:\n        if err:\n            file = _default_text_stderr()\n        else:\n            file = _default_text_stdout()\n\n    if message is not None and not isinstance(message, echo_native_types):\n        message = text_type(message)\n\n    if nl:\n        message = message or u\"\"\n        if isinstance(message, text_type):\n            message += u\"\\n\"\n        else:\n            message += b\"\\n\"\n\n    if message and not PY2 and is_bytes(message):\n        binary_file = _find_binary_writer(file)\n        if binary_file is not None:\n            file.flush()\n            binary_file.write(message)\n            binary_file.flush()\n            return\n\n    if message and not is_bytes(message):\n        color = resolve_color_default(color)\n        if should_strip_ansi(file, color):\n            message = strip_ansi(message)\n        elif WIN:\n            if auto_wrap_for_ansi is not None:\n                file = auto_wrap_for_ansi(file)\n            elif not color:\n                message = strip_ansi(message)\n\n    if message:\n        file.write(message)\n    file.flush()\n"
+    },
+    {
+      "id": "Netflix_metaflow_59_1",
+      "input_code": "        def writelines(self, lines):\n            for line in lines:\n                self.write(line)\n"
+    },
+    {
+      "id": "Netflix_metaflow_59_6",
+      "input_code": "    def getchar(echo):\n        with raw_terminal() as fd:\n            ch = os.read(fd, 32)\n            ch = ch.decode(get_best_encoding(sys.stdin), \"replace\")\n            if echo and isatty(sys.stdout):\n                sys.stdout.write(ch)\n            _translate_ch_to_exc(ch)\n            return ch\n"
+    },
+    {
+      "id": "Netflix_metaflow_59_2",
+      "input_code": "    def writable(self):\n        if self._force_writable:\n            return True\n        x = getattr(self._stream, \"writable\", None)\n        if x is not None:\n            return x()\n        try:\n            self._stream.write(\"\")\n        except Exception:\n            try:\n                self._stream.write(b\"\")\n            except Exception:\n                return False\n        return True\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport io\n\n<testcase_1>\nself = io.StringIO()\nx = \"Hello, World!\"\n\n<testcase_2>\nself = io.BytesIO()\nx = b\"Hello, World!\"\n\n<testcase_3>\nself = io.StringIO()\nx = \"Another test string.\"\n\n<testcase_4>\nself = io.BytesIO()\nx = b\"Another test string.\"\n\n<testcase_5>\nself = io.StringIO()\nx = \"1234567890\""
+  ],
+  "gpt_output": "<needimport>\nimport io\n\n<testcase_1>\nself = io.StringIO()\nx = \"Hello, World!\"\n\n<testcase_2>\nself = io.BytesIO()\nx = b\"Hello, World!\"\n\n<testcase_3>\nself = io.StringIO()\nx = \"Another test string.\"\n\n<testcase_4>\nself = io.BytesIO()\nx = b\"Another test string.\"\n\n<testcase_5>\nself = io.StringIO()\nx = \"1234567890\"",
+  "needimport": "import io\n\n",
+  "test_results": {
+    "ans1": "Hello, World!",
+    "ans2": "Hello, World!",
+    "ans3": "Another test string.",
+    "ans4": "Another test string.",
+    "ans5": "1234567890"
+  }
+}

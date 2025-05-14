@@ -1,0 +1,39 @@
+{
+  "input_header": "def Indent(text, spaces=2):",
+  "input_docstring": null,
+  "output_code": "def Indent(text, spaces=2):\n  lines = text.split('\\n')\n  return '\\n'.join(\n      ' ' * spaces + line if line else line\n      for line in lines)",
+  "input_contexts": [
+    {
+      "id": "google_python-fire_371_2",
+      "input_code": "  def test_indent_multiple_lines(self):\n    text = formatting.Indent('hello\\nworld', spaces=2)\n    self.assertEqual('  hello\\n  world', text)\n"
+    },
+    {
+      "id": "google_python-fire_371_1",
+      "input_code": "  def test_indent(self):\n    text = formatting.Indent('hello', spaces=2)\n    self.assertEqual('  hello', text)\n"
+    },
+    {
+      "id": "google_python-fire_371_5",
+      "input_code": "def _CreateAvailabilityLine(header, items,\n                            header_indent=2, items_indent=25,\n                            line_length=LINE_LENGTH):\n  items_width = line_length - items_indent\n  items_text = '\\n'.join(formatting.WrappedJoin(items, width=items_width))\n  indented_items_text = formatting.Indent(items_text, spaces=items_indent)\n  indented_header = formatting.Indent(header, spaces=header_indent)\n  return indented_header + indented_items_text[len(indented_header):] + '\\n'\n"
+    },
+    {
+      "id": "google_python-fire_371_3",
+      "input_code": "def _CreateOutputSection(name, content):\n  return f\"\"\"{formatting.Bold(name)}\n{formatting.Indent(content, SECTION_INDENTATION)}\"\"\"\n"
+    },
+    {
+      "id": "google_python-fire_371_4",
+      "input_code": "def _CreateItem(name, description, indent=2):\n  if not description:\n    return name\n  description = formatting.Indent(description, indent)\n  return f\"\"\"{name}\n{description}\"\"\"\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport None\n\n<testcase_1>\ntext = \"This is a test.\"\nspaces = 4\n\n<testcase_2>\ntext = \"Line1\\nLine2\\nLine3\"\nspaces = 3\n\n<testcase_3>\ntext = \"Single line text\"\nspaces = 1\n\n<testcase_4>\ntext = \"Multiple\\nlines\\nwith\\nvarious\\nlengths\"\nspaces = 5\n\n<testcase_5>\ntext = \"Indented\\ntext\\nwith\\nnew\\nlines\"\nspaces = 6"
+  ],
+  "gpt_output": "<needimport>\nimport None\n\n<testcase_1>\ntext = \"This is a test.\"\nspaces = 4\n\n<testcase_2>\ntext = \"Line1\\nLine2\\nLine3\"\nspaces = 3\n\n<testcase_3>\ntext = \"Single line text\"\nspaces = 1\n\n<testcase_4>\ntext = \"Multiple\\nlines\\nwith\\nvarious\\nlengths\"\nspaces = 5\n\n<testcase_5>\ntext = \"Indented\\ntext\\nwith\\nnew\\nlines\"\nspaces = 6",
+  "needimport": "import None\n\n",
+  "test_results": {
+    "ans1": "    This is a test.",
+    "ans2": "   Line1\n   Line2\n   Line3",
+    "ans3": " Single line text",
+    "ans4": "     Multiple\n     lines\n     with\n     various\n     lengths",
+    "ans5": "      Indented\n      text\n      with\n      new\n      lines"
+  }
+}

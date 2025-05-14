@@ -1,0 +1,23 @@
+{
+  "input_header": "def is_inline_json(target):",
+  "input_docstring": null,
+  "output_code": "def is_inline_json(target):\n    try:\n        json.loads(target)\n        return True\n    except json.decoder.JSONDecodeError:\n        return False",
+  "input_contexts": [
+    {
+      "id": "apache_tvm_3033_1",
+      "input_code": "def target_from_cli(target, additional_target_options=None):\n    \n    extra_targets = []\n\n    if os.path.isfile(target):\n        with open(target) as target_file:\n            logger.debug(\"target input is a path: %s\", target)\n            target = \"\".join(target_file.readlines())\n    elif is_inline_json(target):\n        logger.debug(\"target input is inline JSON: %s\", target)\n    else:\n        logger.debug(\"target input is plain text: %s\", target)\n        try:\n            parsed_targets = parse_target(target)\n        except ValueError as error:\n            raise TVMCException(f\"Error parsing target string '{target}'.\\nThe error was: {error}\")\n\n        validate_targets(parsed_targets, additional_target_options)\n        tvm_targets = [\n            _combine_target_options(t, additional_target_options)\n            for t in parsed_targets\n            if t[\"is_tvm_target\"]\n        ]\n\n        if len(tvm_targets) == 1:\n            target = _recombobulate_target(tvm_targets[0])\n            target_host = None\n        else:\n            assert len(tvm_targets) == 2\n            target = _recombobulate_target(tvm_targets[0])\n            target_host = _recombobulate_target(tvm_targets[1])\n\n        extra_targets = [\n            _combine_target_options(t, additional_target_options)\n            for t in parsed_targets\n            if not t[\"is_tvm_target\"]\n        ]\n\n    return tvm.target.Target(target, host=target_host), extra_targets\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport json\n\n<testcase_1>\ntarget = '{\"key\": \"value\"}'\n\n<testcase_2>\ntarget = '{\"numbers\": [1, 2, 3, 4], \"boolean\": true}'\n\n<testcase_3>\ntarget = '{\"nested\": {\"inner_key\": \"inner_value\"}}'\n\n<testcase_4>\ntarget = 'not a json string'\n\n<testcase_5>\ntarget = '{\"incomplete_json\": [1, 2, 3}'\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport json\n\n<testcase_1>\ntarget = '{\"key\": \"value\"}'\n\n<testcase_2>\ntarget = '{\"numbers\": [1, 2, 3, 4], \"boolean\": true}'\n\n<testcase_3>\ntarget = '{\"nested\": {\"inner_key\": \"inner_value\"}}'\n\n<testcase_4>\ntarget = 'not a json string'\n\n<testcase_5>\ntarget = '{\"incomplete_json\": [1, 2, 3}'\n```",
+  "needimport": "import json\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": true,
+    "ans4": false,
+    "ans5": false
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "input_header": "def runs(self, *tags: str) -> Iterator[Run]:",
+  "input_docstring": "Returns an iterator over all `Run`s of this flow.\n\nAn optional filter is available that allows you to filter on tags.\nIf multiple tags are specified, only runs that have all the\nspecified tags are returned.\n\nParameters\n----------\ntags : str\n    Tags to match.\n\nYields\n------\nRun\n    `Run` objects in this flow.",
+  "output_code": "    def runs(self, *tags: str) -> Iterator[Run]:\n        \n        return self._filtered_children(*tags)",
+  "input_contexts": [
+    {
+      "id": "Netflix_metaflow_1693_1",
+      "input_code": "def tag_list(\n    obj,\n    run_id,\n    hide_system_tags,\n    list_all,\n    my_runs,\n    group_by_tag,\n    group_by_run,\n    flat,\n    arg_run_id,\n):\n    _set_current(obj)\n    if run_id is None and arg_run_id is None and not list_all and not my_runs:\n        list_all = True\n\n    if list_all and my_runs:\n        raise CommandException(\"Option --all cannot be used together with --my-runs.\")\n\n    if run_id is not None and arg_run_id is not None:\n        raise CommandException(\n            \"Specify a run either using --run-id or as an argument but not both\"\n        )\n\n    if arg_run_id is not None:\n        run_id = arg_run_id\n\n    if group_by_run and group_by_tag:\n        raise CommandException(\n            \"Option --group-by-tag cannot be used with --group-by-run\"\n        )\n\n    if flat and (group_by_run or group_by_tag):\n        raise CommandException(\n            \"Option --flat cannot be used with any --group-by-* option\"\n        )\n\n    system_tags_by_some_grouping = dict()\n    all_tags_by_some_grouping = dict()\n\n    def _populate_tag_groups_from_run(_run):\n        if group_by_run:\n            if hide_system_tags:\n                all_tags_by_some_grouping[_run.pathspec] = _run.tags - _run.system_tags\n            else:\n                system_tags_by_some_grouping[_run.pathspec] = _run.system_tags\n                all_tags_by_some_grouping[_run.pathspec] = _run.tags\n        elif group_by_tag:\n            for t in _run.tags - _run.system_tags:\n                all_tags_by_some_grouping.setdefault(t, []).append(_run.pathspec)\n            if not hide_system_tags:\n                for t in _run.system_tags:\n                    system_tags_by_some_grouping.setdefault(t, []).append(_run.pathspec)\n        else:\n            if hide_system_tags:\n                all_tags_by_some_grouping.setdefault(\"_\", set()).update(\n                    _run.tags.difference(_run.system_tags)\n                )\n            else:\n                system_tags_by_some_grouping.setdefault(\"_\", set()).update(\n                    _run.system_tags\n                )\n                all_tags_by_some_grouping.setdefault(\"_\", set()).update(_run.tags)\n\n    pathspecs = []\n    if list_all or my_runs:\n        user_namespace = resolve_identity() if my_runs else None\n        namespace(user_namespace)\n        try:\n            flow = Flow(pathspec=obj.flow.name)\n        except MetaflowNotFound:\n            raise CommandException(\n                \"Cannot list tags because the flow %s has never been run.\"\n                % (obj.flow.name,)\n            )\n        for run in flow.runs():\n            _populate_tag_groups_from_run(run)\n            pathspecs.append(run.pathspec)\n    else:\n        run = _get_client_run_obj(obj, run_id, None)\n        _populate_tag_groups_from_run(run)\n        pathspecs.append(run.pathspec)\n\n    if not group_by_run and not group_by_tag:\n        system_tags_by_some_grouping[\",\".join(pathspecs)] = (\n            system_tags_by_some_grouping.get(\"_\", set())\n        )\n        all_tags_by_some_grouping[\",\".join(pathspecs)] = all_tags_by_some_grouping.get(\n            \"_\", set()\n        )\n        if \"_\" in system_tags_by_some_grouping:\n            del system_tags_by_some_grouping[\"_\"]\n        if \"_\" in all_tags_by_some_grouping:\n            del all_tags_by_some_grouping[\"_\"]\n\n    if flat:\n        if len(all_tags_by_some_grouping) != 1:\n            raise MetaflowInternalError(\"Failed to flatten tag set\")\n        for v in all_tags_by_some_grouping.values():\n            for tag in v:\n                obj.echo(tag)\n            return\n\n    _print_tags_for_runs_by_groups(\n        obj, system_tags_by_some_grouping, all_tags_by_some_grouping, group_by_tag\n    )\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport itertools\n\n<testcase_1>\ntags = (\"data_processing\", \"completed\")\n\n<testcase_2>\ntags = (\"experiment_1\", \"failed\")\n\n<testcase_3>\ntags = (\"model_training\", \"gpu\")\n\n<testcase_4>\ntags = (\"test_run\", \"debug\")\n\n<testcase_5>\ntags = (\"production\", \"high_priority\")"
+  ],
+  "gpt_output": "<needimport>\nimport itertools\n\n<testcase_1>\ntags = (\"data_processing\", \"completed\")\n\n<testcase_2>\ntags = (\"experiment_1\", \"failed\")\n\n<testcase_3>\ntags = (\"model_training\", \"gpu\")\n\n<testcase_4>\ntags = (\"test_run\", \"debug\")\n\n<testcase_5>\ntags = (\"production\", \"high_priority\")",
+  "needimport": "import itertools\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "tag": "data_processing"
+      },
+      {
+        "tag": "completed"
+      }
+    ],
+    "ans2": [
+      {
+        "tag": "experiment_1"
+      },
+      {
+        "tag": "failed"
+      }
+    ],
+    "ans3": [
+      {
+        "tag": "model_training"
+      },
+      {
+        "tag": "gpu"
+      }
+    ],
+    "ans4": [
+      {
+        "tag": "test_run"
+      },
+      {
+        "tag": "debug"
+      }
+    ],
+    "ans5": [
+      {
+        "tag": "production"
+      },
+      {
+        "tag": "high_priority"
+      }
+    ]
+  }
+}

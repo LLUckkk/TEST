@@ -1,0 +1,59 @@
+{
+  "input_header": "def build_list( self, members: Iterable[str], open_tok=\"[\", close_tok=\"]\", force_newline=False ) -> str:",
+  "input_docstring": "Builds a list of the members given, appropriately indented,\nwith each field on a line.\n(special case: if there is only one field, then we do not put it on a new line\nunless that field contains a newline or `force_newline` is set to true).\n`open_tok` and `close_tok` are used to open and close the list, respectively.",
+  "output_code": "    def build_list(\n        self, members: Iterable[str], open_tok=\"[\", close_tok=\"]\", force_newline=False\n    ) -> str:\n        \n        mem_list = list(members)\n        if not mem_list:\n            return f\"{open_tok}{close_tok}\"\n        if len(mem_list) == 1 and not force_newline and \"\\n\" not in mem_list[0]:\n            return f\"{open_tok}{mem_list[0]}{close_tok}\"\n        member_lines = \",\\n\".join(map(self.indent, mem_list))\n        return f\"{open_tok}\\n{member_lines}\\n{close_tok}\"",
+  "input_contexts": [
+    {
+      "id": "apache_tvm_5166_1",
+      "input_code": "    def build_ast_node(self, nodename: str, force_newline=False, **kwargs: str) -> str:\n        \n        return self.build_list(\n            map(lambda field: f\"{field[0]}={field[1]}\", kwargs.items()),\n            open_tok=f\"{nodename}(\",\n            close_tok=\")\",\n            force_newline=force_newline,\n        )\n"
+    },
+    {
+      "id": "apache_tvm_5166_10",
+      "input_code": "    def visit_dataflow_block_(self, block: relax.DataflowBlock) -> str:\n        \n        return self.build_ast_node(\n            \"DataflowBlock\",\n            bindings=self.build_list(map(self.visit_binding_, block.bindings), force_newline=True),\n        )\n"
+    },
+    {
+      "id": "apache_tvm_5166_9",
+      "input_code": "    def visit_binding_block_(self, block: relax.BindingBlock) -> str:\n        \n        return self.build_ast_node(\n            \"BindingBlock\",\n            bindings=self.build_list(map(self.visit_binding_, block.bindings), force_newline=True),\n        )\n"
+    },
+    {
+      "id": "apache_tvm_5166_8",
+      "input_code": "    def visit_struct_info_(self, struct_info_node: relax.StructInfo) -> str:\n        \n        if isinstance(struct_info_node, relax.ShapeStructInfo):\n            fields = {}\n            fields[\"ndim\"] = str(struct_info_node.ndim)\n            if struct_info_node.values is not None:\n                fields[\"values\"] = self.build_list(\n                    map(self.visit_prim_expr_, struct_info_node.values)\n                )\n            return self.build_ast_node(\"ShapeStructInfo\", **fields)\n        elif isinstance(struct_info_node, relax.ObjectStructInfo):\n            return self.build_ast_node(\"ObjectStructInfo\")\n        elif isinstance(struct_info_node, relax.PrimStructInfo):\n            return self.build_ast_node(\"PrimStructInfo\", dtype=struct_info_node.dtype)\n        elif isinstance(struct_info_node, relax.TensorStructInfo):\n            fields = {}\n            fields[\"dtype\"] = struct_info_node.dtype\n            if struct_info_node.shape:\n                fields[\"shape\"] = self.visit_expr(struct_info_node.shape)\n            else:\n                fields[\"ndim\"] = str(struct_info_node.ndim)\n            return self.build_ast_node(\"TensorStructInfo\", **fields)\n        elif isinstance(struct_info_node, relax.TupleStructInfo):\n            return self.build_ast_node(\n                \"TupleStructInfo\",\n                fields=self.build_list(map(self.visit_struct_info_, struct_info_node.fields)),\n            )\n        elif isinstance(struct_info_node, relax.FuncStructInfo):\n            fields = {}\n            if struct_info_node.params is not None:\n                fields[\"params\"] = self.build_list(\n                    map(self.visit_struct_info_, struct_info_node.params)\n                )\n            fields[\"ret\"] = self.visit_struct_info_(struct_info_node.ret)\n            fields[\"purity\"] = bool(struct_info_node.purity)\n            return self.build_ast_node(\"FuncStructInfo\", **fields)\n        else:\n            raise ValueError(\n                f\"Invalid Relax StructInfo {struct_info_node} ({type(struct_info_node)})\"\n            )\n"
+    },
+    {
+      "id": "apache_tvm_5166_5",
+      "input_code": "    def visit_call_(self, op: relax.Call) -> str:\n        fields = {\n            \"op\": self.visit_expr(op.op),\n            \"args\": self.build_list(map(self.visit_expr, op.args)),\n        }\n        if op.sinfo_args:\n            fields[\"sinfo_args\"] = self.build_list(map(self.visit_struct_info_, op.sinfo_args))\n        if op.attrs and self.include_call_attrs:\n\n            def display_attrs(attr_key):\n                attr_val = op.attrs[attr_key]\n\n                if isinstance(attr_val, str):\n                    attr_val = wrap_quotes(attr_val)\n                elif isinstance(attr_val, tvm.tir.IntImm):\n                    if attr_val.dtype == \"bool\":\n                        attr_val = bool(attr_val.value)\n                    else:\n                        attr_val = int(attr_val.value)\n\n                return f\"{wrap_quotes(attr_key)}: {attr_val}\"\n\n            fields[\"attrs\"] = self.build_list(\n                map(display_attrs, op.attrs.keys()),\n                open_tok=\"{\",\n                close_tok=\"}\",\n            )\n        return self.build_expr(op, \"Call\", **fields)\n"
+    },
+    {
+      "id": "apache_tvm_5166_3",
+      "input_code": "    def visit_shape_expr_(self, op: relax.ShapeExpr) -> str:\n        return self.build_expr(\n            op, \"ShapeExpr\", values=self.build_list(map(self.visit_prim_expr_, op.values))\n        )\n"
+    },
+    {
+      "id": "apache_tvm_5166_7",
+      "input_code": "    def visit_type_(self, type_node: relax.Type) -> str:\n        \n        if isinstance(type_node, relax.ShapeType):\n            return self.build_ast_node(\"ShapeType\", ndim=str(type_node.ndim))\n        if isinstance(type_node, relax.ObjectType):\n            return self.build_ast_node(\"ObjectType\")\n        if isinstance(type_node, relax.PackedFuncType):\n            return self.build_ast_node(\"PackedFuncType\")\n        if isinstance(type_node, tvm.ir.PrimType):\n            return self.build_ast_node(\"PrimType\", dtype=type_node.dtype)\n        if isinstance(type_node, relax.DynTensorType):\n            fields = {}\n            if type_node.ndim is not None:\n                fields[\"ndim\"] = str(type_node.ndim)\n            if type_node.dtype != \"\":\n                fields[\"dtype\"] = type_node.dtype\n            return self.build_ast_node(\"DynTensorType\", **fields)\n        if isinstance(type_node, relax.TupleType):\n            return self.build_ast_node(\n                \"TupleType\", fields=self.build_list(map(self.visit_type_, type_node.fields))\n            )\n        if isinstance(type_node, relax.FuncType):\n            return self.build_ast_node(\n                \"FuncType\",\n                arg_types=self.build_list(map(self.visit_type_, type_node.arg_types)),\n                ret_type=self.visit_type_(type_node.ret_type),\n            )\n        raise ValueError(f\"Invalid Relax Type {type_node} ({type(type_node)})\")\n"
+    },
+    {
+      "id": "apache_tvm_5166_4",
+      "input_code": "    def visit_function_(self, op: relax.Function) -> str:\n        fields = {\n            \"params\": self.build_list(map(self.visit_expr, op.params)),\n            \"body\": self.visit_expr(op.body),\n            \"ret_struct_info\": self.visit_struct_info_(op.ret_struct_info),\n            \"is_pure\": op.is_pure,\n        }\n        if op.attrs:\n            fields[\"attrs\"] = self.build_list(\n                map(\n                    lambda kv: f\"{wrap_quotes(str(kv[0]))}: {wrap_quotes(str(kv[1]))}\",\n                    op.attrs.items(),\n                ),\n                open_tok=\"{\",\n                close_tok=\"}\",\n            )\n        return self.build_expr(op, \"Function\", **fields)\n"
+    },
+    {
+      "id": "apache_tvm_5166_6",
+      "input_code": "    def visit_seq_expr_(self, op: relax.SeqExpr) -> str:\n        return self.build_expr(\n            op,\n            \"SeqExpr\",\n            blocks=self.build_list(map(self.visit_binding_block_, op.blocks)),\n            body=self.visit_expr(op.body),\n        )\n"
+    },
+    {
+      "id": "apache_tvm_5166_2",
+      "input_code": "    def visit_tuple_(self, op: relax.Tuple) -> str:\n        return self.build_expr(op, \"Tuple\", fields=self.build_list(map(self.visit_expr, op.fields)))\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport itertools\n\n<testcase_1>\nmembers = [\"param1=value1\", \"param2=value2\", \"param3=value3\"]\nopen_tok = \"{\"\nclose_tok = \"}\"\nforce_newline = True\n\n<testcase_2>\nmembers = [\"single_member\"]\nopen_tok = \"(\"\nclose_tok = \")\"\nforce_newline = False\n\n<testcase_3>\nmembers = [\"item1\", \"item2\", \"item3\"]\nopen_tok = \"[\"\nclose_tok = \"]\"\nforce_newline = False\n\n<testcase_4>\nmembers = [\"line1\\nline2\", \"line3\"]\nopen_tok = \"<\"\nclose_tok = \">\"\nforce_newline = False\n\n<testcase_5>\nmembers = itertools.chain([\"first\"], [\"second\", \"third\"])\nopen_tok = \"{\"\nclose_tok = \"}\"\nforce_newline = True"
+  ],
+  "gpt_output": "<needimport>\nimport itertools\n\n<testcase_1>\nmembers = [\"param1=value1\", \"param2=value2\", \"param3=value3\"]\nopen_tok = \"{\"\nclose_tok = \"}\"\nforce_newline = True\n\n<testcase_2>\nmembers = [\"single_member\"]\nopen_tok = \"(\"\nclose_tok = \")\"\nforce_newline = False\n\n<testcase_3>\nmembers = [\"item1\", \"item2\", \"item3\"]\nopen_tok = \"[\"\nclose_tok = \"]\"\nforce_newline = False\n\n<testcase_4>\nmembers = [\"line1\\nline2\", \"line3\"]\nopen_tok = \"<\"\nclose_tok = \">\"\nforce_newline = False\n\n<testcase_5>\nmembers = itertools.chain([\"first\"], [\"second\", \"third\"])\nopen_tok = \"{\"\nclose_tok = \"}\"\nforce_newline = True",
+  "needimport": "import itertools\n\n",
+  "test_results": {
+    "ans1": "{\n  param1=value1,\n  param2=value2,\n  param3=value3\n}",
+    "ans2": "(single_member)",
+    "ans3": "[\n  item1,\n  item2,\n  item3\n]",
+    "ans4": "<\n  line1\nline2,\n  line3\n>",
+    "ans5": "{\n  first,\n  second,\n  third\n}"
+  }
+}

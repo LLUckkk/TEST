@@ -1,0 +1,39 @@
+{
+  "input_header": "def _get_step_metrics(trainer):",
+  "input_docstring": null,
+  "output_code": "    def _get_step_metrics(trainer):\n        return trainer.logger_connector.cached_results.get_latest_batch_log_metrics()",
+  "input_contexts": [
+    {
+      "id": "mlflow_mlflow_3340_1",
+      "input_code": "    def on_train_batch_end(self, trainer, pl_module, *args):\n        \n        if not self.log_every_n_step:\n            return\n        metrics = _get_step_metrics(trainer)\n        metric_items = [\n            (name, val)\n            for (name, val) in metrics.items()\n            if (name not in self._epoch_metrics) and (f\"{name}_step\" not in metrics.keys())\n        ]\n        self._step_metrics.update(name for (name, _) in metric_items)\n        step = trainer.global_step\n        if ((step // self._global_steps_per_training_step) + 1) % self.log_every_n_step == 0:\n            self._log_metrics(trainer, step, metric_items)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport unittest\nfrom unittest.mock import MagicMock\n\n<testcase_1>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'accuracy': 0.95, 'loss': 0.05}\n\n<testcase_2>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'precision': 0.85, 'recall': 0.88}\n\n<testcase_3>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'f1_score': 0.9, 'auc': 0.92}\n\n<testcase_4>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'loss': 0.1, 'accuracy': 0.89, 'val_loss': 0.12}\n\n<testcase_5>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'train_loss': 0.07, 'train_accuracy': 0.93}\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport unittest\nfrom unittest.mock import MagicMock\n\n<testcase_1>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'accuracy': 0.95, 'loss': 0.05}\n\n<testcase_2>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'precision': 0.85, 'recall': 0.88}\n\n<testcase_3>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'f1_score': 0.9, 'auc': 0.92}\n\n<testcase_4>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'loss': 0.1, 'accuracy': 0.89, 'val_loss': 0.12}\n\n<testcase_5>\ntrainer = MagicMock()\ntrainer.logger_connector.cached_results.get_latest_batch_log_metrics.return_value = {'train_loss': 0.07, 'train_accuracy': 0.93}\n```",
+  "needimport": "import unittest\nfrom unittest.mock import MagicMock\n\n",
+  "test_results": {
+    "ans1": {
+      "accuracy": 0.95,
+      "loss": 0.05
+    },
+    "ans2": {
+      "precision": 0.85,
+      "recall": 0.88
+    },
+    "ans3": {
+      "f1_score": 0.9,
+      "auc": 0.92
+    },
+    "ans4": {
+      "loss": 0.1,
+      "accuracy": 0.89,
+      "val_loss": 0.12
+    },
+    "ans5": {
+      "train_loss": 0.07,
+      "train_accuracy": 0.93
+    }
+  }
+}

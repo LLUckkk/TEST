@@ -1,0 +1,51 @@
+{
+  "input_header": "def check_run_is_active(run_info):",
+  "input_docstring": null,
+  "output_code": "def check_run_is_active(run_info):\n    if run_info.lifecycle_stage != LifecycleStage.ACTIVE:\n        raise MlflowException(\n            f\"The run {run_info.run_id} must be in 'active' lifecycle_stage.\",\n            error_code=INVALID_PARAMETER_VALUE,\n        )",
+  "input_contexts": [
+    {
+      "id": "mlflow_mlflow_1669_2",
+      "input_code": "    def log_metric(self, run_id, metric):\n        _validate_run_id(run_id)\n        _validate_metric(metric.key, metric.value, metric.timestamp, metric.step)\n        run_info = self._get_run_info(run_id)\n        check_run_is_active(run_info)\n        self._log_run_metric(run_info, metric)\n"
+    },
+    {
+      "id": "mlflow_mlflow_1669_8",
+      "input_code": "    def log_inputs(self, run_id: str, datasets: Optional[list[DatasetInput]] = None):\n        \n        _validate_run_id(run_id)\n        run_info = self._get_run_info(run_id)\n        check_run_is_active(run_info)\n\n        if datasets is None:\n            return\n\n        experiment_dir = self._get_experiment_path(run_info.experiment_id, assert_exists=True)\n        run_dir = self._get_run_dir(run_info.experiment_id, run_id)\n\n        for dataset_input in datasets:\n            dataset = dataset_input.dataset\n            dataset_id = FileStore._get_dataset_id(\n                dataset_name=dataset.name, dataset_digest=dataset.digest\n            )\n            dataset_dir = os.path.join(experiment_dir, FileStore.DATASETS_FOLDER_NAME, dataset_id)\n            if not os.path.exists(dataset_dir):\n                os.makedirs(dataset_dir, exist_ok=True)\n                write_yaml(dataset_dir, FileStore.META_DATA_FILE_NAME, dict(dataset))\n\n            input_id = FileStore._get_input_id(dataset_id=dataset_id, run_id=run_id)\n            input_dir = os.path.join(run_dir, FileStore.INPUTS_FOLDER_NAME, input_id)\n            if not os.path.exists(input_dir):\n                os.makedirs(input_dir, exist_ok=True)\n                fs_input = FileStore._FileStoreInput(\n                    source_type=InputVertexType.DATASET,\n                    source_id=dataset_id,\n                    destination_type=InputVertexType.RUN,\n                    destination_id=run_id,\n                    tags={tag.key: tag.value for tag in dataset_input.tags},\n                )\n                fs_input.write_yaml(input_dir, FileStore.META_DATA_FILE_NAME)\n"
+    },
+    {
+      "id": "mlflow_mlflow_1669_3",
+      "input_code": "    def log_param(self, run_id, param):\n        _validate_run_id(run_id)\n        param = _validate_param(param.key, param.value)\n        run_info = self._get_run_info(run_id)\n        check_run_is_active(run_info)\n        self._log_run_param(run_info, param)\n"
+    },
+    {
+      "id": "mlflow_mlflow_1669_4",
+      "input_code": "    def set_tag(self, run_id, tag):\n        _validate_run_id(run_id)\n        _validate_tag_name(tag.key)\n        run_info = self._get_run_info(run_id)\n        check_run_is_active(run_info)\n        self._set_run_tag(run_info, tag)\n        if tag.key == MLFLOW_RUN_NAME:\n            run_status = RunStatus.from_string(run_info.status)\n            self.update_run_info(run_id, run_status, run_info.end_time, tag.value)\n"
+    },
+    {
+      "id": "mlflow_mlflow_1669_7",
+      "input_code": "    def record_logged_model(self, run_id, mlflow_model):\n        from mlflow.models import Model\n\n        if not isinstance(mlflow_model, Model):\n            raise TypeError(\n                f\"Argument 'mlflow_model' should be mlflow.models.Model, got '{type(mlflow_model)}'\"\n            )\n        _validate_run_id(run_id)\n        run_info = self._get_run_info(run_id)\n        check_run_is_active(run_info)\n        model_dict = mlflow_model.get_tags_dict()\n        run_info = self._get_run_info(run_id)\n        path = self._get_tag_path(run_info.experiment_id, run_info.run_id, MLFLOW_LOGGED_MODELS)\n        if os.path.exists(path):\n            with open(path) as f:\n                model_list = json.loads(f.read())\n        else:\n            model_list = []\n        tag = RunTag(MLFLOW_LOGGED_MODELS, json.dumps(model_list + [model_dict]))\n\n        try:\n            self._set_run_tag(run_info, tag)\n        except Exception as e:\n            raise MlflowException(e, INTERNAL_ERROR)\n"
+    },
+    {
+      "id": "mlflow_mlflow_1669_5",
+      "input_code": "    def delete_tag(self, run_id, key):\n        \n        _validate_run_id(run_id)\n        run_info = self._get_run_info(run_id)\n        check_run_is_active(run_info)\n        tag_path = self._get_tag_path(run_info.experiment_id, run_id, key)\n        if not exists(tag_path):\n            raise MlflowException(\n                f\"No tag with name: {key} in run with id {run_id}\",\n                error_code=RESOURCE_DOES_NOT_EXIST,\n            )\n        os.remove(tag_path)\n"
+    },
+    {
+      "id": "mlflow_mlflow_1669_6",
+      "input_code": "    def log_batch(self, run_id, metrics, params, tags):\n        _validate_run_id(run_id)\n        metrics, params, tags = _validate_batch_log_data(metrics, params, tags)\n        _validate_batch_log_limits(metrics, params, tags)\n        _validate_param_keys_unique(params)\n        run_info = self._get_run_info(run_id)\n        check_run_is_active(run_info)\n        try:\n            for param in params:\n                self._log_run_param(run_info, param)\n            for metric in metrics:\n                self._log_run_metric(run_info, metric)\n            for tag in tags:\n                if tag.key == MLFLOW_RUN_NAME:\n                    run_status = RunStatus.from_string(run_info.status)\n                    self.update_run_info(run_id, run_status, run_info.end_time, tag.value)\n                self._set_run_tag(run_info, tag)\n        except Exception as e:\n            raise MlflowException(e, INTERNAL_ERROR)\n"
+    },
+    {
+      "id": "mlflow_mlflow_1669_1",
+      "input_code": "    def update_run_info(self, run_id, run_status, end_time, run_name):\n        _validate_run_id(run_id)\n        run_info = self._get_run_info(run_id)\n        check_run_is_active(run_info)\n        new_info = run_info._copy_with_overrides(run_status, end_time, run_name=run_name)\n        if run_name:\n            self._set_run_tag(run_info, RunTag(MLFLOW_RUN_NAME, run_name))\n        self._overwrite_run_info(new_info)\n        return new_info\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport enum\n\nclass LifecycleStage(enum.Enum):\n    ACTIVE = \"active\"\n    DELETED = \"deleted\"\n\nclass RunInfo:\n    def __init__(self, run_id, lifecycle_stage):\n        self.run_id = run_id\n        self.lifecycle_stage = lifecycle_stage\n\n<testcase_1>\nrun_info = RunInfo(run_id=\"12345\", lifecycle_stage=LifecycleStage.ACTIVE)\n\n<testcase_2>\nrun_info = RunInfo(run_id=\"67890\", lifecycle_stage=LifecycleStage.DELETED)\n\n<testcase_3>\nrun_info = RunInfo(run_id=\"abcde\", lifecycle_stage=LifecycleStage.ACTIVE)\n\n<testcase_4>\nrun_info = RunInfo(run_id=\"fghij\", lifecycle_stage=LifecycleStage.DELETED)\n\n<testcase_5>\nrun_info = RunInfo(run_id=\"klmno\", lifecycle_stage=LifecycleStage.ACTIVE)\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport enum\n\nclass LifecycleStage(enum.Enum):\n    ACTIVE = \"active\"\n    DELETED = \"deleted\"\n\nclass RunInfo:\n    def __init__(self, run_id, lifecycle_stage):\n        self.run_id = run_id\n        self.lifecycle_stage = lifecycle_stage\n\n<testcase_1>\nrun_info = RunInfo(run_id=\"12345\", lifecycle_stage=LifecycleStage.ACTIVE)\n\n<testcase_2>\nrun_info = RunInfo(run_id=\"67890\", lifecycle_stage=LifecycleStage.DELETED)\n\n<testcase_3>\nrun_info = RunInfo(run_id=\"abcde\", lifecycle_stage=LifecycleStage.ACTIVE)\n\n<testcase_4>\nrun_info = RunInfo(run_id=\"fghij\", lifecycle_stage=LifecycleStage.DELETED)\n\n<testcase_5>\nrun_info = RunInfo(run_id=\"klmno\", lifecycle_stage=LifecycleStage.ACTIVE)\n```",
+  "needimport": "import enum\n\nclass LifecycleStage(enum.Enum):\n    ACTIVE = \"active\"\n    DELETED = \"deleted\"\n\nclass RunInfo:\n    def __init__(self, run_id, lifecycle_stage):\n        self.run_id = run_id\n        self.lifecycle_stage = lifecycle_stage\n\n",
+  "test_results": {
+    "ans1": "active",
+    "ans2": "deleted",
+    "ans3": "active",
+    "ans4": "deleted",
+    "ans5": "active"
+  }
+}

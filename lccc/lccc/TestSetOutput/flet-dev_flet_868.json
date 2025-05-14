@@ -1,0 +1,101 @@
+{
+  "input_header": "def _get_children(self) -> \"List[Control]\":",
+  "input_docstring": null,
+  "output_code": "    def _get_children(self) -> \"List[Control]\":\n        return []",
+  "input_contexts": [
+    {
+      "id": "flet-dev_flet_868_2",
+      "input_code": "    def _remove_control_recursively(self, index, control: \"Control\") -> \"List[Control]\":\n        removed_controls = []\n\n        if control.__uid in index:\n            del index[control.__uid]\n\n            for child in control._get_children():\n                removed_controls.extend(self._remove_control_recursively(index, child))\n            for child in control._previous_children:\n                removed_controls.extend(self._remove_control_recursively(index, child))\n            removed_controls.append(control)\n        return removed_controls\n"
+    },
+    {
+      "id": "flet-dev_flet_868_3",
+      "input_code": "    def _build_add_commands(\n        self, indent: int = 0, index=None, added_controls=None\n    ) -> List[Command]:\n        if index:\n            self.page = index[\"page\"]\n        content = self.build()\n\n        if content is not None:\n            if isinstance(content, Control) and hasattr(self, \"controls\"):\n                self.controls = [content]\n            elif (\n                isinstance(content, List)\n                and hasattr(self, \"controls\")\n                and all(isinstance(control, Control) for control in content)\n            ):\n                self.controls = content\n        if self.__uid and index is not None and self.__uid in index:\n            del index[self.__uid]\n        commands = []\n\n        command = self._build_command(False)\n        command.indent = indent\n        command.values.append(self._get_control_name())\n        commands.append(command)\n\n        if added_controls is not None:\n            added_controls.append(self)\n\n        children = self._get_children()\n        for control in children:\n            childCmd = control._build_add_commands(\n                indent=indent + 2, index=index, added_controls=added_controls\n            )\n            commands.extend(childCmd)\n            control.parent = self\n        self.__previous_children.clear()\n        self.__previous_children.extend(children)\n\n        return commands\n"
+    },
+    {
+      "id": "flet-dev_flet_868_1",
+      "input_code": "    def build_update_commands(\n        self, index, commands, added_controls, removed_controls, isolated: bool = False\n    ) -> None:\n        update_cmd = self._build_command(update=True)\n\n        if len(update_cmd.attrs) > 0:\n            update_cmd.name = \"set\"\n            commands.append(update_cmd)\n        if isolated:\n            return\n\n        previous_children = self.__previous_children\n        current_children = self._get_children()\n\n        hashes = {}\n        previous_ints = []\n        current_ints = []\n\n        for ctrl in previous_children:\n            hashes[hash(ctrl)] = ctrl\n            previous_ints.append(hash(ctrl))\n        for ctrl in current_children:\n            hashes[hash(ctrl)] = ctrl\n            current_ints.append(hash(ctrl))\n        sm = SequenceMatcher(None, previous_ints, current_ints)\n\n        n = 0\n        for tag, a1, a2, b1, b2 in sm.get_opcodes():\n            if tag == \"delete\" or tag == \"replace\":\n\n                ids = []\n                for h in previous_ints[a1:a2]:\n                    ctrl = hashes[h]\n\n                    i = 0\n                    replaced = False\n                    while i < len(commands):\n                        cmd = commands[i]\n                        if cmd.name == \"add\" and any(\n                            c for c in cmd.commands if c.attrs.get(\"id\") == ctrl.__uid\n                        ):\n\n                            commands.insert(i, Command(0, \"remove\", [ctrl.__uid]))\n                            replaced = True\n                            break\n                        i += 1\n                    removed_controls.extend(\n                        self._remove_control_recursively(index, ctrl)\n                    )\n                    if not replaced:\n                        ids.append(ctrl.__uid)\n                if len(ids) > 0:\n                    commands.append(Command(0, \"remove\", ids))\n                if tag == \"replace\":\n\n                    for h in current_ints[b1:b2]:\n                        ctrl = hashes[h]\n                        innerCmds = ctrl._build_add_commands(\n                            index=index, added_controls=added_controls\n                        )\n                        assert self.__uid is not None\n                        ctrl.parent = self\n                        commands.append(\n                            Command(\n                                indent=0,\n                                name=\"add\",\n                                attrs={\"to\": self.__uid, \"at\": str(n)},\n                                commands=innerCmds,\n                            )\n                        )\n                        n += 1\n            elif tag == \"equal\":\n\n                for h in previous_ints[a1:a2]:\n                    ctrl = hashes[h]\n                    ctrl.build_update_commands(\n                        index,\n                        commands,\n                        added_controls,\n                        removed_controls,\n                        isolated=ctrl.is_isolated(),\n                    )\n                    n += 1\n            elif tag == \"insert\":\n\n                for h in current_ints[b1:b2]:\n                    ctrl = hashes[h]\n                    innerCmds = ctrl._build_add_commands(\n                        index=index, added_controls=added_controls\n                    )\n                    assert self.__uid is not None\n                    ctrl.parent = self\n                    commands.append(\n                        Command(\n                            indent=0,\n                            name=\"add\",\n                            attrs={\"to\": self.__uid, \"at\": str(n)},\n                            commands=innerCmds,\n                        )\n                    )\n                    n += 1\n        self.__previous_children.clear()\n        self.__previous_children.extend(current_children)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport typing\nfrom typing import List\n\n<testcase_1>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return [Control(\"child1\"), Control(\"child2\")]\n\ncontrol_instance = Control(\"parent1\")\nchildren = control_instance._get_children()\n\n<testcase_2>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return []\n\ncontrol_instance = Control(\"parent2\")\nchildren = control_instance._get_children()\n\n<testcase_3>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return [Control(\"child1\")]\n\ncontrol_instance = Control(\"parent3\")\nchildren = control_instance._get_children()\n\n<testcase_4>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return [Control(\"child1\"), Control(\"child2\"), Control(\"child3\")]\n\ncontrol_instance = Control(\"parent4\")\nchildren = control_instance._get_children()\n\n<testcase_5>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return [Control(\"child1\"), Control(\"child2\"), Control(\"child3\"), Control(\"child4\")]\n\ncontrol_instance = Control(\"parent5\")\nchildren = control_instance._get_children()\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport typing\nfrom typing import List\n\n<testcase_1>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return [Control(\"child1\"), Control(\"child2\")]\n\ncontrol_instance = Control(\"parent1\")\nchildren = control_instance._get_children()\n\n<testcase_2>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return []\n\ncontrol_instance = Control(\"parent2\")\nchildren = control_instance._get_children()\n\n<testcase_3>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return [Control(\"child1\")]\n\ncontrol_instance = Control(\"parent3\")\nchildren = control_instance._get_children()\n\n<testcase_4>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return [Control(\"child1\"), Control(\"child2\"), Control(\"child3\")]\n\ncontrol_instance = Control(\"parent4\")\nchildren = control_instance._get_children()\n\n<testcase_5>\nclass Control:\n    def __init__(self, uid):\n        self.__uid = uid\n    def _get_children(self) -> List[\"Control\"]:\n        return [Control(\"child1\"), Control(\"child2\"), Control(\"child3\"), Control(\"child4\")]\n\ncontrol_instance = Control(\"parent5\")\nchildren = control_instance._get_children()\n```",
+  "needimport": "import typing\nfrom typing import List\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "uid": "child1",
+        "children": [
+          {
+            "uid": "grandchild1",
+            "children": []
+          }
+        ]
+      },
+      {
+        "uid": "child2",
+        "children": [
+          {
+            "uid": "grandchild2",
+            "children": []
+          }
+        ]
+      }
+    ],
+    "ans2": [
+      {
+        "uid": "child1",
+        "children": []
+      },
+      {
+        "uid": "child2",
+        "children": []
+      }
+    ],
+    "ans3": [
+      {
+        "uid": "child",
+        "children": [
+          {
+            "uid": "grandchild",
+            "children": []
+          }
+        ]
+      }
+    ],
+    "ans4": [
+      {
+        "uid": "child",
+        "children": [
+          {
+            "uid": "grandchild",
+            "children": [
+              {
+                "uid": "greatgrandchild",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "ans5": [
+      {
+        "uid": "child1",
+        "children": []
+      },
+      {
+        "uid": "child2",
+        "children": []
+      },
+      {
+        "uid": "child3",
+        "children": []
+      },
+      {
+        "uid": "child4",
+        "children": []
+      }
+    ]
+  }
+}
