@@ -1,0 +1,31 @@
+{
+  "input_header": "def foreground_color(bg_color, dark='000000', light='ffffff'):",
+  "input_docstring": "Return the ideal foreground color (dark or light) for a given background color in hexadecimal RGB format.\n\n:param dark: RBG color code for dark text\n:param light: RBG color code for light text",
+  "output_code": "def foreground_color(bg_color, dark='000000', light='ffffff'):\n    \n    THRESHOLD = 150\n    bg_color = bg_color.strip('#')\n    r, g, b = [int(bg_color[c:c + 2], 16) for c in (0, 2, 4)]\n    if r * 0.299 + g * 0.587 + b * 0.114 > THRESHOLD:\n        return dark\n    else:\n        return light",
+  "input_contexts": [
+    {
+      "id": "netbox-community_netbox_3984_2",
+      "input_code": "    def _draw_device(self, device, coords, size, color=None, image=None):\n        name = get_device_name(device)\n        description = get_device_description(device)\n        text_color = f'#{foreground_color(color)}' if color else '#000000'\n        text_coords = (\n            coords[0] + size[0] / 2,\n            coords[1] + size[1] / 2\n        )\n\n        is_shaded = self.highlight_devices and device not in self.highlight_devices\n        css_extra = ' shaded' if is_shaded else ''\n\n        link = Hyperlink(href=f'{self.base_url}{device.get_absolute_url()}', target=\"_parent\")\n        link.set_desc(description)\n\n        if color:\n            link.add(Rect(coords, size, style=f'fill: #{color}', class_=f'slot{css_extra}'))\n        else:\n            link.add(Rect(coords, size, class_=f'slot blocked{css_extra}'))\n        link.add(Text(name, insert=text_coords, fill=text_color, class_=f'label{css_extra}'))\n\n        if self.include_images and image:\n            url = f'{self.base_url}{image.url}' if image.url.startswith('/') else image.url\n            image = Image(\n                href=url,\n                insert=coords,\n                size=size,\n                class_=f'device-image{css_extra}'\n            )\n            image.fit(scale='slice')\n            link.add(image)\n            link.add(\n                Text(name, insert=text_coords, stroke='black', stroke_width='0.2em', stroke_linejoin='round',\n                     class_=f'device-image-label{css_extra}')\n            )\n            link.add(\n                Text(name, insert=text_coords, fill='white', class_=f'device-image-label{css_extra}')\n            )\n\n        self.drawing.add(link)\n"
+    },
+    {
+      "id": "netbox-community_netbox_3984_3",
+      "input_code": "def fgcolor(value, dark='000000', light='ffffff'):\n    \n    value = value.lower().strip('#')\n    if not re.match('^[0-9a-f]{6}$', value):\n        return ''\n    return f'#{foreground_color(value, dark, light)}'\n"
+    },
+    {
+      "id": "netbox-community_netbox_3984_1",
+      "input_code": "    def __init__(self, position, width, url, color, labels, radius=10, object=object, **extra):\n        super(Node, self).__init__(href=url, target='_parent', **extra)\n\n        self.object = object\n\n        x, y = position\n\n        dimensions = (width - 2, PADDING + LINE_HEIGHT * len(labels) + PADDING)\n        box = Rect((x + OFFSET, y), dimensions, rx=radius, class_='parent-object', style=f'fill: #{color}')\n        self.add(box)\n\n        cursor = y + PADDING\n\n        for i, label in enumerate(labels):\n            cursor += LINE_HEIGHT\n            text_coords = (x + width / 2, cursor - LINE_HEIGHT / 2)\n            text_color = f'#{foreground_color(color, dark=\"303030\")}'\n            text = Text(label, insert=text_coords, fill=text_color, class_='bold' if not i else [])\n            self.add(text)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport re\n\n<testcase_1>\nbg_color = '#ff5733'\ndark = '000000'\nlight = 'ffffff'\n\n<testcase_2>\nbg_color = '#1a1a1a'\ndark = '000000'\nlight = 'ffffff'\n\n<testcase_3>\nbg_color = '#abcdef'\ndark = '333333'\nlight = 'cccccc'\n\n<testcase_4>\nbg_color = '#123456'\ndark = '111111'\nlight = 'eeeeee'\n\n<testcase_5>\nbg_color = '#f0f0f0'\ndark = '222222'\nlight = 'dddddd'"
+  ],
+  "gpt_output": "<needimport>\nimport re\n\n<testcase_1>\nbg_color = '#ff5733'\ndark = '000000'\nlight = 'ffffff'\n\n<testcase_2>\nbg_color = '#1a1a1a'\ndark = '000000'\nlight = 'ffffff'\n\n<testcase_3>\nbg_color = '#abcdef'\ndark = '333333'\nlight = 'cccccc'\n\n<testcase_4>\nbg_color = '#123456'\ndark = '111111'\nlight = 'eeeeee'\n\n<testcase_5>\nbg_color = '#f0f0f0'\ndark = '222222'\nlight = 'dddddd'",
+  "needimport": "import re\n\n",
+  "test_results": {
+    "ans1": "ffffff",
+    "ans2": "ffffff",
+    "ans3": "333333",
+    "ans4": "eeeeee",
+    "ans5": "222222"
+  }
+}

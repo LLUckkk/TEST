@@ -1,0 +1,82 @@
+{
+  "input_header": "def get(self, key, default=None):",
+  "input_docstring": null,
+  "output_code": "    def get(self, key, default=None):\n        return self.node.get(key, default)",
+  "input_contexts": [
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_8",
+      "input_code": "    def children(self):\n        return self.node.get(\"children\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_6",
+      "input_code": "    def shared_plugin_data(self):\n        return self.node.get(\"sharedPluginData\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_1",
+      "input_code": "    def id(self) -> str:\n        return self.node.get(\"id\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_13",
+      "input_code": "    def absolute_bounding_box(self):\n        return self.node.get(\"absoluteBoundingBox\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_3",
+      "input_code": "    def visible(self) -> bool:\n        \n        return self.node.get(\"visible\", True)\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_9",
+      "input_code": "    def background_color(self):\n        return self.node.get(\"backgroundColor\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_11",
+      "input_code": "    def export_settings(self):\n        return self.node.get(\"exportSettings\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_2",
+      "input_code": "    def name(self) -> str:\n        return self.node.get(\"name\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_10",
+      "input_code": "    def prototype_start_node_id(self) -> str:\n        return self.node.get(\"prototypeStartNodeID\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_12",
+      "input_code": "    def export_settings(self):\n        return self.node.get(\"exportSettings\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_15",
+      "input_code": "    def relative_transform(self):\n        return self.node.get(\"relativeTransform\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_4",
+      "input_code": "    def type(self) -> str:\n        return self.node.get(\"type\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_7",
+      "input_code": "    def children(self):\n        return self.node.get(\"children\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_14",
+      "input_code": "    def size(self):\n        return self.node.get(\"size\")\n"
+    },
+    {
+      "id": "ParthJadhav_Tkinter-Designer_48_5",
+      "input_code": "    def plugin_data(self):\n        return self.node.get(\"pluginData\")\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport json\n\n<testcase_1>\nkey = \"children\"\ndefault = None\n\n<testcase_2>\nkey = \"visible\"\ndefault = True\n\n<testcase_3>\nkey = \"backgroundColor\"\ndefault = \"#FFFFFF\"\n\n<testcase_4>\nkey = \"id\"\ndefault = \"default_id\"\n\n<testcase_5>\nkey = \"exportSettings\"\ndefault = []"
+  ],
+  "gpt_output": "<needimport>\nimport json\n\n<testcase_1>\nkey = \"children\"\ndefault = None\n\n<testcase_2>\nkey = \"visible\"\ndefault = True\n\n<testcase_3>\nkey = \"backgroundColor\"\ndefault = \"#FFFFFF\"\n\n<testcase_4>\nkey = \"id\"\ndefault = \"default_id\"\n\n<testcase_5>\nkey = \"exportSettings\"\ndefault = []",
+  "needimport": "import json\n\n",
+  "test_results": {
+    "ans1": [
+      "node1",
+      "node2"
+    ],
+    "ans2": false,
+    "ans3": "#000000",
+    "ans4": "element_123",
+    "ans5": []
+  }
+}

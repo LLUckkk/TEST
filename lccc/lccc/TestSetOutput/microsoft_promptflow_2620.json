@@ -1,0 +1,27 @@
+{
+  "input_header": "def get_commit_id():",
+  "input_docstring": "Get commit id from BUILD_INFO environment variable.\n\nBUILD_INFO is a json string in the promptflow-python image, like\n'{\n    \"build_number\": \"20240326.v2\",\n    \"date\": \"2024-03-27 05:12:33\",\n    \"commit_id\": \"...\",\n    \"branch\": \"main\"\n}'",
+  "output_code": "def get_commit_id():\n    \n    build_info = os.environ.get(\"BUILD_INFO\", \"\")\n    try:\n        build_info_dict = json.loads(build_info)\n        return build_info_dict[\"commit_id\"]\n    except Exception:\n        return \"unknown\"",
+  "input_contexts": [
+    {
+      "id": "microsoft_promptflow_2620_1",
+      "input_code": "def version():\n    return {\n        \"status\": \"healthy\",\n        \"version\": __version__,\n        \"commit_id\": get_commit_id(),\n        \"feature_list\": get_feature_list(),\n    }\n"
+    },
+    {
+      "id": "microsoft_promptflow_2620_2",
+      "input_code": "    def test_get_commit_id(self, monkeypatch):\n        monkeypatch.setenv(\"BUILD_INFO\", '{\"commit_id\": \"test-commit-id\"}')\n        commit_id = get_commit_id()\n        assert commit_id == \"test-commit-id\"\n        monkeypatch.setenv(\"BUILD_INFO\", \"\")\n        commit_id = get_commit_id()\n        assert commit_id == \"unknown\"\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport os\nimport json\n\n<testcase_1>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"abc123\"}'\n\n<testcase_2>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"def456\", \"build_number\": \"20240326.v2\"}'\n\n<testcase_3>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"ghi789\", \"branch\": \"develop\"}'\n\n<testcase_4>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"jkl012\", \"date\": \"2024-03-27 05:12:33\"}'\n\n<testcase_5>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"mno345\", \"build_number\": \"20240326.v3\", \"branch\": \"feature-x\"}'\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport os\nimport json\n\n<testcase_1>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"abc123\"}'\n\n<testcase_2>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"def456\", \"build_number\": \"20240326.v2\"}'\n\n<testcase_3>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"ghi789\", \"branch\": \"develop\"}'\n\n<testcase_4>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"jkl012\", \"date\": \"2024-03-27 05:12:33\"}'\n\n<testcase_5>\nos.environ[\"BUILD_INFO\"] = '{\"commit_id\": \"mno345\", \"build_number\": \"20240326.v3\", \"branch\": \"feature-x\"}'\n```",
+  "needimport": "import os\nimport json\n\n",
+  "test_results": {
+    "ans1": "abc123",
+    "ans2": "def456",
+    "ans3": "ghi789",
+    "ans4": "jkl012",
+    "ans5": "mno345"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "input_header": "def remove_process(self, run_id: str) -> Process:",
+  "input_docstring": null,
+  "output_code": "    def remove_process(self, run_id: str) -> Process:\n        return self._processes_mapping.pop(run_id, None)",
+  "input_contexts": [
+    {
+      "id": "microsoft_promptflow_2614_1",
+      "input_code": "    def end_process(self, run_id: str):\n        process = self.remove_process(run_id)\n        if process and process.is_alive():\n            try:\n                os.kill(process.pid, signal.SIGINT)\n                service_logger.info(f\"Kill process[{process.pid}] for run[{run_id}] with SIGINT.\")\n                process.join(timeout=30)\n                if process.is_alive():\n                    os.kill(process.pid, signal.SIGKILL)\n                    service_logger.info(f\"Kill process[{process.pid}] for run[{run_id}] with SIGKILL.\")\n                service_logger.info(f\"Successfully terminated process[{process.pid}] for run[{run_id}].\")\n            except ProcessLookupError:\n                service_logger.info(\n                    f\"Process[{process.pid}] for run[{run_id}] not found, it might have already terminated.\"\n                )\n        else:\n            service_logger.info(f\"Process for run[{run_id}] not found in mapping, it may have already been removed.\")\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport os\nimport signal\n\n<testcase_1>\nrun_id = \"process_123\"\n\n<testcase_2>\nrun_id = \"run_456\"\n\n<testcase_3>\nrun_id = \"job_789\"\n\n<testcase_4>\nrun_id = \"task_101112\"\n\n<testcase_5>\nrun_id = \"operation_131415\""
+  ],
+  "gpt_output": "<needimport>\nimport os\nimport signal\n\n<testcase_1>\nrun_id = \"process_123\"\n\n<testcase_2>\nrun_id = \"run_456\"\n\n<testcase_3>\nrun_id = \"job_789\"\n\n<testcase_4>\nrun_id = \"task_101112\"\n\n<testcase_5>\nrun_id = \"operation_131415\"",
+  "needimport": "import os\nimport signal\n\n",
+  "test_results": {
+    "ans1": {
+      "previous": [
+        "process_123"
+      ],
+      "current": {
+        "target": null,
+        "args": [],
+        "kwargs": {},
+        "name": "Process-1",
+        "pid": null,
+        "is_alive": false
+      }
+    },
+    "ans2": {
+      "previous": [
+        "run_456"
+      ],
+      "current": {
+        "target": null,
+        "args": [],
+        "kwargs": {},
+        "name": "Process-2",
+        "pid": null,
+        "is_alive": false
+      }
+    },
+    "ans3": {
+      "previous": [
+        "job_789"
+      ],
+      "current": {
+        "target": null,
+        "args": [],
+        "kwargs": {},
+        "name": "Process-3",
+        "pid": null,
+        "is_alive": false
+      }
+    },
+    "ans4": {
+      "previous": [
+        "task_101112"
+      ],
+      "current": {
+        "target": null,
+        "args": [],
+        "kwargs": {},
+        "name": "Process-4",
+        "pid": null,
+        "is_alive": false
+      }
+    },
+    "ans5": {
+      "previous": [
+        "operation_131415"
+      ],
+      "current": {
+        "target": null,
+        "args": [],
+        "kwargs": {},
+        "name": "Process-5",
+        "pid": null,
+        "is_alive": false
+      }
+    }
+  }
+}

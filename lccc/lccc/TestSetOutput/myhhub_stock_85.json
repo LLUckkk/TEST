@@ -1,0 +1,107 @@
+{
+  "input_header": "def get_field_types(cols):",
+  "input_docstring": null,
+  "output_code": "def get_field_types(cols):\n    data = {}\n    for k in cols:\n        data[k] = cols[k]['type']\n    return data",
+  "input_contexts": [
+    {
+      "id": "myhhub_stock_85_1",
+      "input_code": "def save_after_close_stock_blocktrade_data(date):\n    try:\n        data = stf.fetch_stock_blocktrade_data(date)\n        if data is None or len(data.index) == 0:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_BLOCKTRADE['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'])\n\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"basic_data_other_daily_job.save_stock_blocktrade_data处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_2",
+      "input_code": "def save_nph_stock_spot_data(date, before=True):\n    if before:\n        return\n    try:\n        data = stock_data(date).get_data()\n        if data is None or len(data.index) == 0:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_SPOT['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SPOT['columns'])\n\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n\n    except Exception as e:\n        logging.error(f\"basic_data_daily_job.save_stock_spot_data处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_6",
+      "input_code": "def stock_sector_fund_flow_data(date, index_sector):\n    try:\n        times = tuple(range(3))\n        results = run_check_stock_sector_fund_flow(index_sector, times)\n        if results is None:\n            return\n\n        for t in times:\n            if t == 0:\n                data = results.get(t)\n            else:\n                r = results.get(t)\n                if r is not None:\n                    data = pd.merge(data, r, on=['name'], how='left')\n\n        if data is None or len(data.index) == 0:\n            return\n\n        data.insert(0, 'date', date.strftime(\"%Y-%m-%d\"))\n\n        if index_sector == 0:\n            tbs_table = tbs.TABLE_CN_STOCK_FUND_FLOW_INDUSTRY\n        else:\n            tbs_table = tbs.TABLE_CN_STOCK_FUND_FLOW_CONCEPT\n        table_name = tbs_table['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs_table['columns'])\n\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`name`\")\n    except Exception as e:\n        logging.error(f\"basic_data_other_daily_job.stock_sector_fund_flow_data处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_9",
+      "input_code": "def prepare(date):\n    try:\n        stocks_data = stock_hist_data(date=date).get_data()\n        if stocks_data is None:\n            return\n        results = run_check(stocks_data, date=date)\n        if results is None:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS['columns'])\n\n        dataKey = pd.DataFrame(results.keys())\n        _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])\n        dataKey.columns = _columns\n\n        dataVal = pd.DataFrame(results.values())\n        dataVal.drop('date', axis=1, inplace=True)\n\n        data = pd.merge(dataKey, dataVal, on=['code'], how='left')\n        date_str = date.strftime(\"%Y-%m-%d\")\n        if date.strftime(\"%Y-%m-%d\") != data.iloc[0]['date']:\n            data['date'] = date_str\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n\n    except Exception as e:\n        logging.error(f\"indicators_data_daily_job.prepare处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_14",
+      "input_code": "def prepare(date, strategy):\n    try:\n        stocks_data = stock_hist_data(date=date).get_data()\n        if stocks_data is None:\n            return\n        table_name = strategy['name']\n        strategy_func = strategy['func']\n        results = run_check(strategy_func, table_name, stocks_data, date)\n        if results is None:\n            return\n\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_STRATEGIES[0]['columns'])\n\n        data = pd.DataFrame(results)\n        columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])\n        data.columns = columns\n        _columns_backtest = tuple(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])\n        data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])\n        date_str = date.strftime(\"%Y-%m-%d\")\n        if date.strftime(\"%Y-%m-%d\") != data.iloc[0]['date']:\n            data['date'] = date_str\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n\n    except Exception as e:\n        logging.error(f\"strategy_data_daily_job.prepare处理异常：{strategy}策略{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_7",
+      "input_code": "def save_nph_stock_bonus(date, before=True):\n    if before:\n        return\n\n    try:\n        data = stf.fetch_stocks_bonus(date)\n        if data is None or len(data.index) == 0:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_BONUS['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BONUS['columns'])\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"basic_data_other_daily_job.save_nph_stock_bonus处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_8",
+      "input_code": "def stock_spot_buy(date):\n    try:\n        _table_name = tbs.TABLE_CN_STOCK_SPOT['name']\n        if not mdb.checkTableIsExist(_table_name):\n            return\n\n        sql = f'''SELECT * FROM `{_table_name}` WHERE `date` = '{date}' and \n                `pe9` > 0 and `pe9` <= 20 and `pbnewmrq` <= 10 and `roe_weight` >= 15'''\n        data = pd.read_sql(sql=sql, con=mdb.engine())\n        data = data.drop_duplicates(subset=\"code\", keep=\"last\")\n        if len(data.index) == 0:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_SPOT_BUY['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SPOT_BUY['columns'])\n\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"basic_data_other_daily_job.stock_spot_buy处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_13",
+      "input_code": "def save_nph_stock_selection_data(date, before=True):\n    if before:\n        return\n\n    try:\n        data = stf.fetch_stock_selection()\n        if data is None:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_SELECTION['name']\n        if mdb.checkTableIsExist(table_name):\n            _date = data.iloc[0]['date']\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{_date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SELECTION['columns'])\n\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"selection_data_daily_job.save_nph_stock_selection_data处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_5",
+      "input_code": "def save_nph_stock_fund_flow_data(date, before=True):\n    if before:\n        return\n\n    try:\n        times = tuple(range(4))\n        results = run_check_stock_fund_flow(times)\n        if results is None:\n            return\n\n        for t in times:\n            if t == 0:\n                data = results.get(t)\n            else:\n                r = results.get(t)\n                if r is not None:\n                    r.drop(columns=['name', 'new_price'], inplace=True)\n                    data = pd.merge(data, r, on=['code'], how='left')\n\n        if data is None or len(data.index) == 0:\n            return\n\n        data.insert(0, 'date', date.strftime(\"%Y-%m-%d\"))\n\n        table_name = tbs.TABLE_CN_STOCK_FUND_FLOW['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_FUND_FLOW['columns'])\n\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"basic_data_other_daily_job.save_nph_stock_fund_flow_data处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_10",
+      "input_code": "def guess_buy(date):\n    try:\n        _table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']\n        if not mdb.checkTableIsExist(_table_name):\n            return\n\n        _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])\n        _selcol = '`,`'.join(_columns)\n        sql = f'''SELECT `{_selcol}` FROM `{_table_name}` WHERE `date` = '{date}' and \n                `kdjk` >= 80 and `kdjd` >= 70 and `kdjj` >= 100 and `rsi_6` >= 80 and \n                `cci` >= 100 and `cr` >= 300 and `wr_6` >= -20 and `vr` >= 160'''\n        data = pd.read_sql(sql=sql, con=mdb.engine())\n        data = data.drop_duplicates(subset=\"code\", keep=\"last\")\n\n        if len(data.index) == 0:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_INDICATORS_BUY['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns'])\n\n        _columns_backtest = tuple(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])\n        data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"indicators_data_daily_job.guess_buy处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_12",
+      "input_code": "def prepare(date):\n    try:\n        stocks_data = stock_hist_data(date=date).get_data()\n        if stocks_data is None:\n            return\n        results = run_check(stocks_data, date=date)\n        if results is None:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_KLINE_PATTERN['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_KLINE_PATTERN['columns'])\n\n        dataKey = pd.DataFrame(results.keys())\n        _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])\n        dataKey.columns = _columns\n\n        dataVal = pd.DataFrame(results.values())\n\n        data = pd.merge(dataKey, dataVal, on=['code'], how='left')\n        date_str = date.strftime(\"%Y-%m-%d\")\n        if date.strftime(\"%Y-%m-%d\") != data.iloc[0]['date']:\n            data['date'] = date_str\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n\n    except Exception as e:\n        logging.error(f\"klinepattern_data_daily_job.prepare处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_11",
+      "input_code": "def guess_sell(date):\n    try:\n        _table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']\n        if not mdb.checkTableIsExist(_table_name):\n            return\n\n        _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])\n        _selcol = '`,`'.join(_columns)\n        sql = f'''SELECT `{_selcol}` FROM `{_table_name}` WHERE `date` = '{date}' and \n                `kdjk` < 20 and `kdjd` < 30 and `kdjj` < 10 and `rsi_6` < 20 and \n                `cci` < -100 and `cr` < 40 and `wr_6` < -80 and `vr` < 40'''\n        data = pd.read_sql(sql=sql, con=mdb.engine())\n        data = data.drop_duplicates(subset=\"code\", keep=\"last\")\n        if len(data.index) == 0:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_INDICATORS_SELL['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns'])\n\n        _columns_backtest = tuple(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])\n        data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"indicators_data_daily_job.guess_sell处理异常：{e}\")\n"
+    },
+    {
+      "id": "myhhub_stock_85_4",
+      "input_code": "def save_nph_stock_top_data(date, before=True):\n    if before:\n        return\n\n    try:\n        data = stf.fetch_stock_top_data(date)\n        if data is None or len(data.index) == 0:\n            return\n\n        table_name = tbs.TABLE_CN_STOCK_TOP['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_TOP['columns'])\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"basic_data_other_daily_job.save_stock_top_data处理异常：{e}\")\n    stock_spot_buy(date)\n"
+    },
+    {
+      "id": "myhhub_stock_85_3",
+      "input_code": "def save_nph_etf_spot_data(date, before=True):\n    if before:\n        return\n    try:\n        data = stf.fetch_etfs(date)\n        if data is None or len(data.index) == 0:\n            return\n\n        table_name = tbs.TABLE_CN_ETF_SPOT['name']\n        if mdb.checkTableIsExist(table_name):\n            del_sql = f\"DELETE FROM `{table_name}` where `date` = '{date}'\"\n            mdb.executeSql(del_sql)\n            cols_type = None\n        else:\n            cols_type = tbs.get_field_types(tbs.TABLE_CN_ETF_SPOT['columns'])\n\n        mdb.insert_db_from_df(data, table_name, cols_type, False, \"`date`,`code`\")\n    except Exception as e:\n        logging.error(f\"basic_data_daily_job.save_nph_etf_spot_data处理异常：{e}\")\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\n\n<testcase_1>\ncols = {\n    'date': {'type': 'DATE'},\n    'code': {'type': 'VARCHAR(10)'},\n    'price': {'type': 'FLOAT'},\n    'volume': {'type': 'INT'}\n}\n\n<testcase_2>\ncols = {\n    'date': {'type': 'DATE'},\n    'name': {'type': 'VARCHAR(50)'},\n    'sector': {'type': 'VARCHAR(30)'},\n    'fund_flow': {'type': 'FLOAT'}\n}\n\n<testcase_3>\ncols = {\n    'date': {'type': 'DATE'},\n    'code': {'type': 'VARCHAR(10)'},\n    'bonus': {'type': 'FLOAT'},\n    'dividend': {'type': 'FLOAT'}\n}\n\n<testcase_4>\ncols = {\n    'date': {'type': 'DATE'},\n    'code': {'type': 'VARCHAR(10)'},\n    'pe_ratio': {'type': 'FLOAT'},\n    'pb_ratio': {'type': 'FLOAT'},\n    'roe': {'type': 'FLOAT'}\n}\n\n<testcase_5>\ncols = {\n    'date': {'type': 'DATE'},\n    'code': {'type': 'VARCHAR(10)'},\n    'kdjk': {'type': 'FLOAT'},\n    'kdjd': {'type': 'FLOAT'},\n    'kdjj': {'type': 'FLOAT'},\n    'rsi_6': {'type': 'FLOAT'},\n    'cci': {'type': 'FLOAT'},\n    'cr': {'type': 'FLOAT'},\n    'wr_6': {'type': 'FLOAT'},\n    'vr': {'type': 'FLOAT'}\n}"
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\n\n<testcase_1>\ncols = {\n    'date': {'type': 'DATE'},\n    'code': {'type': 'VARCHAR(10)'},\n    'price': {'type': 'FLOAT'},\n    'volume': {'type': 'INT'}\n}\n\n<testcase_2>\ncols = {\n    'date': {'type': 'DATE'},\n    'name': {'type': 'VARCHAR(50)'},\n    'sector': {'type': 'VARCHAR(30)'},\n    'fund_flow': {'type': 'FLOAT'}\n}\n\n<testcase_3>\ncols = {\n    'date': {'type': 'DATE'},\n    'code': {'type': 'VARCHAR(10)'},\n    'bonus': {'type': 'FLOAT'},\n    'dividend': {'type': 'FLOAT'}\n}\n\n<testcase_4>\ncols = {\n    'date': {'type': 'DATE'},\n    'code': {'type': 'VARCHAR(10)'},\n    'pe_ratio': {'type': 'FLOAT'},\n    'pb_ratio': {'type': 'FLOAT'},\n    'roe': {'type': 'FLOAT'}\n}\n\n<testcase_5>\ncols = {\n    'date': {'type': 'DATE'},\n    'code': {'type': 'VARCHAR(10)'},\n    'kdjk': {'type': 'FLOAT'},\n    'kdjd': {'type': 'FLOAT'},\n    'kdjj': {'type': 'FLOAT'},\n    'rsi_6': {'type': 'FLOAT'},\n    'cci': {'type': 'FLOAT'},\n    'cr': {'type': 'FLOAT'},\n    'wr_6': {'type': 'FLOAT'},\n    'vr': {'type': 'FLOAT'}\n}",
+  "needimport": "import pandas as pd\n\n",
+  "test_results": {
+    "ans1": {
+      "date": "DATE",
+      "code": "VARCHAR(10)",
+      "price": "FLOAT",
+      "volume": "INT"
+    },
+    "ans2": {
+      "date": "DATE",
+      "name": "VARCHAR(50)",
+      "sector": "VARCHAR(30)",
+      "fund_flow": "FLOAT"
+    },
+    "ans3": {
+      "date": "DATE",
+      "code": "VARCHAR(10)",
+      "bonus": "FLOAT",
+      "dividend": "FLOAT"
+    },
+    "ans4": {
+      "date": "DATE",
+      "code": "VARCHAR(10)",
+      "pe_ratio": "FLOAT",
+      "pb_ratio": "FLOAT",
+      "roe": "FLOAT"
+    },
+    "ans5": {
+      "date": "DATE",
+      "code": "VARCHAR(10)",
+      "kdjk": "FLOAT",
+      "kdjd": "FLOAT",
+      "kdjj": "FLOAT",
+      "rsi_6": "FLOAT",
+      "cci": "FLOAT",
+      "cr": "FLOAT",
+      "wr_6": "FLOAT",
+      "vr": "FLOAT"
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "input_header": "def sigm(x):",
+  "input_docstring": null,
+  "output_code": "def sigm(x):\n    return 1/(1 + np.exp(-x))",
+  "input_contexts": [
+    {
+      "id": "wiseodd_generative-models_165_1",
+      "input_code": "def infer(X):\n    return sigm(X @ W)\n"
+    },
+    {
+      "id": "wiseodd_generative-models_165_2",
+      "input_code": "def generate(H):\n    return sigm(H @ W.T)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport numpy as np\n\n<testcase_1>\nx = np.array([0.5, -1.2, 3.3])\n\n<testcase_2>\nx = np.array([[0.1, 0.2], [-0.3, 0.4]])\n\n<testcase_3>\nx = np.array([[-1.5], [2.5], [0.0]])\n\n<testcase_4>\nx = np.array([10, -10, 0])\n\n<testcase_5>\nx = np.array([[1.1, -2.2, 3.3], [-4.4, 5.5, -6.6]])\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport numpy as np\n\n<testcase_1>\nx = np.array([0.5, -1.2, 3.3])\n\n<testcase_2>\nx = np.array([[0.1, 0.2], [-0.3, 0.4]])\n\n<testcase_3>\nx = np.array([[-1.5], [2.5], [0.0]])\n\n<testcase_4>\nx = np.array([10, -10, 0])\n\n<testcase_5>\nx = np.array([[1.1, -2.2, 3.3], [-4.4, 5.5, -6.6]])\n```",
+  "needimport": "import numpy as np\n\n",
+  "test_results": {
+    "ans1": [
+      0.6224593312018546,
+      0.23147521650098238,
+      0.9644288107273639
+    ],
+    "ans2": [
+      [
+        0.52497918747894,
+        0.549833997312478
+      ],
+      [
+        0.425557483188341,
+        0.598687660112452
+      ]
+    ],
+    "ans3": [
+      [
+        0.18242552380635635
+      ],
+      [
+        0.9241418199787566
+      ],
+      [
+        0.5
+      ]
+    ],
+    "ans4": [
+      0.9999546021312976,
+      4.5397868702434395e-05,
+      0.5
+    ],
+    "ans5": [
+      [
+        0.7502601055951177,
+        0.09975048911968513,
+        0.9644288107273639
+      ],
+      [
+        0.012128434984274237,
+        0.995929862284104,
+        0.0013585199504289591
+      ]
+    ]
+  }
+}

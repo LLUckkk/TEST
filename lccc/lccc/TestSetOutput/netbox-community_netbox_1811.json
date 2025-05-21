@@ -1,0 +1,39 @@
+{
+  "input_header": "def eval_conditions(self, data):",
+  "input_docstring": "Test whether the given data meets the conditions of the event rule (if any). Return True\nif met or no conditions are specified.",
+  "output_code": "    def eval_conditions(self, data):\n        \n        if not self.conditions:\n            return True\n\n        return ConditionSet(self.conditions).eval(data)",
+  "input_contexts": [
+    {
+      "id": "netbox-community_netbox_1811_4",
+      "input_code": "    def test_event_rule_conditions_with_logical_operation_and_negate(self):\n        \n        event_rule = EventRule(\n            name='Event Rule 1',\n            event_types=[OBJECT_CREATED, OBJECT_UPDATED],\n            conditions={\n                \"attr\": \"status.value\",\n                \"value\": [\"planned\", \"staging\"],\n                \"op\": \"in\",\n                \"negate\": True,\n            }\n        )\n\n        site = Site.objects.create(name='Site 1', slug='site-1', status=SiteStatusChoices.STATUS_ACTIVE)\n        data = serialize_for_event(site)\n\n        self.assertTrue(event_rule.eval_conditions(data))\n"
+    },
+    {
+      "id": "netbox-community_netbox_1811_5",
+      "input_code": "    def test_eventrule_conditions(self):\n        \n        event_rule = EventRule(\n            name='Event Rule 1',\n            event_types=[OBJECT_CREATED, OBJECT_UPDATED],\n            conditions={\n                'and': [\n                    {\n                        'attr': 'status.value',\n                        'value': 'active',\n                    }\n                ]\n            }\n        )\n\n        site = Site.objects.create(name='Site 1', slug='site-1', status=SiteStatusChoices.STATUS_STAGING)\n        data = serialize_for_event(site)\n\n        self.assertFalse(event_rule.eval_conditions(data))\n\n        site.status = SiteStatusChoices.STATUS_ACTIVE\n        data = serialize_for_event(site)\n\n        self.assertTrue(event_rule.eval_conditions(data))\n"
+    },
+    {
+      "id": "netbox-community_netbox_1811_3",
+      "input_code": "    def test_event_rule_conditions_with_logical_operation(self):\n        \n        event_rule = EventRule(\n            name='Event Rule 1',\n            event_types=[OBJECT_CREATED, OBJECT_UPDATED],\n            conditions={\n                \"attr\": \"status.value\",\n                \"value\": [\"planned\", \"staging\"],\n                \"op\": \"in\",\n            }\n        )\n\n        site = Site.objects.create(name='Site 1', slug='site-1', status=SiteStatusChoices.STATUS_ACTIVE)\n        data = serialize_for_event(site)\n\n        self.assertFalse(event_rule.eval_conditions(data))\n"
+    },
+    {
+      "id": "netbox-community_netbox_1811_2",
+      "input_code": "    def test_event_rule_conditions_without_logic_operator(self):\n        \n        event_rule = EventRule(\n            name='Event Rule 1',\n            event_types=[OBJECT_CREATED, OBJECT_UPDATED],\n            conditions={\n                'attr': 'status.value',\n                'value': 'active',\n            }\n        )\n\n        site = Site.objects.create(name='Site 1', slug='site-1', status=SiteStatusChoices.STATUS_ACTIVE)\n        data = serialize_for_event(site)\n\n        self.assertTrue(event_rule.eval_conditions(data))\n"
+    },
+    {
+      "id": "netbox-community_netbox_1811_1",
+      "input_code": "def process_event_rules(event_rules, object_type, event_type, data, username=None, snapshots=None, request_id=None):\n    user = User.objects.get(username=username) if username else None\n\n    for event_rule in event_rules:\n\n        if not event_rule.eval_conditions(data):\n            continue\n\n        event_data = event_rule.action_data or {}\n        event_data.update(data)\n\n        if event_rule.action_type == EventRuleActionChoices.WEBHOOK:\n\n            queue_name = get_config().QUEUE_MAPPINGS.get('webhook', RQ_QUEUE_DEFAULT)\n            rq_queue = get_queue(queue_name)\n\n            params = {\n                \"event_rule\": event_rule,\n                \"model_name\": object_type.model,\n                \"event_type\": event_type,\n                \"data\": event_data,\n                \"snapshots\": snapshots,\n                \"timestamp\": timezone.now().isoformat(),\n                \"username\": username,\n                \"retry\": get_rq_retry()\n            }\n            if snapshots:\n                params[\"snapshots\"] = snapshots\n            if request_id:\n                params[\"request_id\"] = request_id\n\n            rq_queue.enqueue(\n                \"extras.webhooks.send_webhook\",\n                **params\n            )\n\n        elif event_rule.action_type == EventRuleActionChoices.SCRIPT:\n            script = event_rule.action_object.python_class()\n\n            from extras.jobs import ScriptJob\n            ScriptJob.enqueue(\n                instance=event_rule.action_object,\n                name=script.name,\n                user=user,\n                data=event_data\n            )\n\n        elif event_rule.action_type == EventRuleActionChoices.NOTIFICATION:\n            event_rule.action_object.notify(\n                object_type=object_type,\n                object_id=event_data['id'],\n                object_repr=event_data.get('display'),\n                event_type=event_type\n            )\n\n        else:\n            raise ValueError(_(\"Unknown action type for an event rule: {action_type}\").format(\n                action_type=event_rule.action_type\n            ))\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport json\n\n<testcase_1>\ndata = {\n    \"status\": {\n        \"value\": \"active\"\n    }\n}\n\n<testcase_2>\ndata = {\n    \"status\": {\n        \"value\": \"planned\"\n    }\n}\n\n<testcase_3>\ndata = {\n    \"status\": {\n        \"value\": \"staging\"\n    }\n}\n\n<testcase_4>\ndata = {\n    \"status\": {\n        \"value\": \"inactive\"\n    }\n}\n\n<testcase_5>\ndata = {\n    \"status\": {\n        \"value\": \"active\"\n    },\n    \"additional_info\": {\n        \"location\": \"datacenter_1\",\n        \"priority\": \"high\"\n    }\n}\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport json\n\n<testcase_1>\ndata = {\n    \"status\": {\n        \"value\": \"active\"\n    }\n}\n\n<testcase_2>\ndata = {\n    \"status\": {\n        \"value\": \"planned\"\n    }\n}\n\n<testcase_3>\ndata = {\n    \"status\": {\n        \"value\": \"staging\"\n    }\n}\n\n<testcase_4>\ndata = {\n    \"status\": {\n        \"value\": \"inactive\"\n    }\n}\n\n<testcase_5>\ndata = {\n    \"status\": {\n        \"value\": \"active\"\n    },\n    \"additional_info\": {\n        \"location\": \"datacenter_1\",\n        \"priority\": \"high\"\n    }\n}\n```",
+  "needimport": "import json\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": false,
+    "ans3": true,
+    "ans4": true,
+    "ans5": true
+  }
+}

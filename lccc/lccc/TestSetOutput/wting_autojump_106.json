@@ -1,0 +1,31 @@
+{
+  "input_header": "def _get_value(self, action, arg_string):",
+  "input_docstring": null,
+  "output_code": "    def _get_value(self, action, arg_string):\n        type_func = self._registry_get('type', action.type, action.type)\n        if not _callable(type_func):\n            msg = _('%r is not callable')\n            raise ArgumentError(action, msg % type_func)\n\n        try:\n            result = type_func(arg_string)\n\n        except ArgumentTypeError:\n            name = getattr(action.type, '__name__', repr(action.type))\n            msg = str(_sys.exc_info()[1])\n            raise ArgumentError(action, msg)\n\n        except (TypeError, ValueError):\n            name = getattr(action.type, '__name__', repr(action.type))\n            msg = _('invalid %s value: %r')\n            raise ArgumentError(action, msg % (name, arg_string))\n\n        return result",
+  "input_contexts": [
+    {
+      "id": "wting_autojump_106_2",
+      "input_code": "    def _get_values(self, action, arg_strings):\n        if action.nargs not in [PARSER, REMAINDER]:\n            arg_strings = [s for s in arg_strings if s != '--']\n\n        if not arg_strings and action.nargs == OPTIONAL:\n            if action.option_strings:\n                value = action.const\n            else:\n                value = action.default\n            if isinstance(value, basestring):\n                value = self._get_value(action, value)\n                self._check_value(action, value)\n\n        elif (\n            not arg_strings and action.nargs == ZERO_OR_MORE and\n            not action.option_strings\n        ):\n            if action.default is not None:\n                value = action.default\n            else:\n                value = arg_strings\n            self._check_value(action, value)\n\n        elif len(arg_strings) == 1 and action.nargs in [None, OPTIONAL]:\n            arg_string, = arg_strings\n            value = self._get_value(action, arg_string)\n            self._check_value(action, value)\n\n        elif action.nargs == REMAINDER:\n            value = [self._get_value(action, v) for v in arg_strings]\n\n        elif action.nargs == PARSER:\n            value = [self._get_value(action, v) for v in arg_strings]\n            self._check_value(action, value[0])\n\n        else:\n            value = [self._get_value(action, v) for v in arg_strings]\n            for v in value:\n                self._check_value(action, v)\n\n        return value\n"
+    },
+    {
+      "id": "wting_autojump_106_1",
+      "input_code": "    def parse_known_args(self, args=None, namespace=None):\n        if args is None:\n            args = _sys.argv[1:]\n\n        if namespace is None:\n            namespace = Namespace()\n\n        for action in self._actions:\n            if action.dest is not SUPPRESS:\n                if not hasattr(namespace, action.dest):\n                    if action.default is not SUPPRESS:\n                        default = action.default\n                        if isinstance(action.default, basestring):\n                            default = self._get_value(action, default)\n                        setattr(namespace, action.dest, default)\n\n        for dest in self._defaults:\n            if not hasattr(namespace, dest):\n                setattr(namespace, dest, self._defaults[dest])\n\n        try:\n            namespace, args = self._parse_known_args(args, namespace)\n            if hasattr(namespace, _UNRECOGNIZED_ARGS_ATTR):\n                args.extend(getattr(namespace, _UNRECOGNIZED_ARGS_ATTR))\n                delattr(namespace, _UNRECOGNIZED_ARGS_ATTR)\n            return namespace, args\n        except ArgumentError:\n            err = _sys.exc_info()[1]\n            self.error(str(err))\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport argparse\n\n<testcase_1>\naction = argparse.Action(option_strings=['--name'], dest='name', nargs=None, const=None, default=None, type=str, choices=None, required=False, help=None, metavar=None)\narg_string = 'John Doe'\n\n<testcase_2>\naction = argparse.Action(option_strings=['--age'], dest='age', nargs=None, const=None, default=None, type=int, choices=None, required=False, help=None, metavar=None)\narg_string = '30'\n\n<testcase_3>\naction = argparse.Action(option_strings=['--height'], dest='height', nargs=None, const=None, default=None, type=float, choices=None, required=False, help=None, metavar=None)\narg_string = '5.9'\n\n<testcase_4>\naction = argparse.Action(option_strings=['--active'], dest='active', nargs=None, const=None, default=None, type=bool, choices=None, required=False, help=None, metavar=None)\narg_string = 'True'\n\n<testcase_5>\naction = argparse.Action(option_strings=['--list'], dest='list', nargs=None, const=None, default=None, type=lambda x: x.split(','), choices=None, required=False, help=None, metavar=None)\narg_string = 'apple,banana,cherry'\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport argparse\n\n<testcase_1>\naction = argparse.Action(option_strings=['--name'], dest='name', nargs=None, const=None, default=None, type=str, choices=None, required=False, help=None, metavar=None)\narg_string = 'John Doe'\n\n<testcase_2>\naction = argparse.Action(option_strings=['--age'], dest='age', nargs=None, const=None, default=None, type=int, choices=None, required=False, help=None, metavar=None)\narg_string = '30'\n\n<testcase_3>\naction = argparse.Action(option_strings=['--height'], dest='height', nargs=None, const=None, default=None, type=float, choices=None, required=False, help=None, metavar=None)\narg_string = '5.9'\n\n<testcase_4>\naction = argparse.Action(option_strings=['--active'], dest='active', nargs=None, const=None, default=None, type=bool, choices=None, required=False, help=None, metavar=None)\narg_string = 'True'\n\n<testcase_5>\naction = argparse.Action(option_strings=['--list'], dest='list', nargs=None, const=None, default=None, type=lambda x: x.split(','), choices=None, required=False, help=None, metavar=None)\narg_string = 'apple,banana,cherry'\n```",
+  "needimport": "import argparse\n\n",
+  "test_results": {
+    "ans1": "John Doe",
+    "ans2": 30,
+    "ans3": 5.9,
+    "ans4": true,
+    "ans5": [
+      "apple",
+      "banana",
+      "cherry"
+    ]
+  }
+}

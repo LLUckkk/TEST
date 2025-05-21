@@ -1,0 +1,95 @@
+{
+  "input_header": "def compute_overlap(a, b):",
+  "input_docstring": "Code originally from https://github.com/rbgirshick/py-faster-rcnn.\nParameters\n----------\na: (N, 4) ndarray of float\nb: (K, 4) ndarray of float\nReturns\n-------\noverlaps: (N, K) ndarray of overlap between boxes and query_boxes",
+  "output_code": "def compute_overlap(a, b):\n    \n    area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])\n\n    iw = np.minimum(np.expand_dims(a[:, 2], axis=1), b[:, 2]) - np.maximum(np.expand_dims(a[:, 0], 1), b[:, 0])\n    ih = np.minimum(np.expand_dims(a[:, 3], axis=1), b[:, 3]) - np.maximum(np.expand_dims(a[:, 1], 1), b[:, 1])\n\n    iw = np.maximum(iw, 0)\n    ih = np.maximum(ih, 0)\n\n    ua = np.expand_dims((a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1]), axis=1) + area - iw * ih\n\n    ua = np.maximum(ua, np.finfo(float).eps)\n\n    intersection = iw * ih\n\n    return intersection / ua  ",
+  "input_contexts": [
+    {
+      "id": "OlafenwaMoses_ImageAI_274_2",
+      "input_code": "def evaluate(\n    generator,\n    model,\n    iou_threshold=0.5,\n    score_threshold=0.05,\n    max_detections=100,\n    save_path=None\n):\n    \n    all_detections, all_inferences = _get_detections(generator, model, score_threshold=score_threshold, max_detections=max_detections, save_path=save_path)\n    all_annotations    = _get_annotations(generator)\n    average_precisions = {}\n\n\n    for label in range(generator.num_classes()):\n        if not generator.has_label(label):\n            continue\n\n        false_positives = np.zeros((0,))\n        true_positives  = np.zeros((0,))\n        scores          = np.zeros((0,))\n        num_annotations = 0.0\n\n        for i in range(generator.size()):\n            detections           = all_detections[i][label]\n            annotations          = all_annotations[i][label]\n            num_annotations     += annotations.shape[0]\n            detected_annotations = []\n\n            for d in detections:\n                scores = np.append(scores, d[4])\n\n                if annotations.shape[0] == 0:\n                    false_positives = np.append(false_positives, 1)\n                    true_positives  = np.append(true_positives, 0)\n                    continue\n\n                overlaps            = compute_overlap(np.expand_dims(d, axis=0), annotations)\n                assigned_annotation = np.argmax(overlaps, axis=1)\n                max_overlap         = overlaps[0, assigned_annotation]\n\n                if max_overlap >= iou_threshold and assigned_annotation not in detected_annotations:\n                    false_positives = np.append(false_positives, 0)\n                    true_positives  = np.append(true_positives, 1)\n                    detected_annotations.append(assigned_annotation)\n                else:\n                    false_positives = np.append(false_positives, 1)\n                    true_positives  = np.append(true_positives, 0)\n\n        if num_annotations == 0:\n            average_precisions[label] = 0, 0\n            continue\n\n        indices         = np.argsort(-scores)\n        false_positives = false_positives[indices]\n        true_positives  = true_positives[indices]\n\n        false_positives = np.cumsum(false_positives)\n        true_positives  = np.cumsum(true_positives)\n\n        recall    = true_positives / num_annotations\n        precision = true_positives / np.maximum(true_positives + false_positives, np.finfo(np.float64).eps)\n\n        average_precision  = _compute_ap(recall, precision)\n        average_precisions[label] = average_precision, num_annotations\n\n    inference_time = np.sum(all_inferences) / generator.size()\n\n    return average_precisions, inference_time\n"
+    },
+    {
+      "id": "OlafenwaMoses_ImageAI_274_1",
+      "input_code": "def evaluate(model,\n             generator, \n             iou_threshold,\n             obj_thresh,\n             nms_thresh,\n             net_h=416,\n             net_w=416,\n             save_path=None):\n        \n    all_detections     = [[None for i in range(generator.num_classes())] for j in range(generator.size())]\n    all_annotations    = [[None for i in range(generator.num_classes())] for j in range(generator.size())]\n\n    for i in range(generator.size()):\n        raw_image = [generator.load_image(i)]\n\n        pred_boxes = get_yolo_boxes(model, raw_image, net_h, net_w, generator.get_anchors(), obj_thresh, nms_thresh)[0]\n\n        score = np.array([box.get_score() for box in pred_boxes])\n        pred_labels = np.array([box.label for box in pred_boxes])        \n        \n        if len(pred_boxes) > 0:\n            pred_boxes = np.array([[box.xmin, box.ymin, box.xmax, box.ymax, box.get_score()] for box in pred_boxes]) \n        else:\n            pred_boxes = np.array([[]])  \n        \n        score_sort = np.argsort(-score)\n        pred_labels = pred_labels[score_sort]\n        pred_boxes  = pred_boxes[score_sort]\n        \n        for label in range(generator.num_classes()):\n            all_detections[i][label] = pred_boxes[pred_labels == label, :]\n\n        annotations = generator.load_annotation(i)\n        \n        for label in range(generator.num_classes()):\n            all_annotations[i][label] = annotations[annotations[:, 4] == label, :4].copy()\n\n    average_precisions = {}\n    \n    for label in range(generator.num_classes()):\n        false_positives = np.zeros((0,))\n        true_positives  = np.zeros((0,))\n        scores          = np.zeros((0,))\n        num_annotations = 0.0\n\n        for i in range(generator.size()):\n            detections           = all_detections[i][label]\n            annotations          = all_annotations[i][label]\n            num_annotations     += annotations.shape[0]\n            detected_annotations = []\n\n            for d in detections:\n                scores = np.append(scores, d[4])\n\n                if annotations.shape[0] == 0:\n                    false_positives = np.append(false_positives, 1)\n                    true_positives  = np.append(true_positives, 0)\n                    continue\n\n                overlaps            = compute_overlap(np.expand_dims(d, axis=0), annotations)\n                assigned_annotation = np.argmax(overlaps, axis=1)\n                max_overlap         = overlaps[0, assigned_annotation]\n\n                if max_overlap >= iou_threshold and assigned_annotation not in detected_annotations:\n                    false_positives = np.append(false_positives, 0)\n                    true_positives  = np.append(true_positives, 1)\n                    detected_annotations.append(assigned_annotation)\n                else:\n                    false_positives = np.append(false_positives, 1)\n                    true_positives  = np.append(true_positives, 0)\n\n        if num_annotations == 0:\n            average_precisions[label] = 0\n            continue\n\n        indices         = np.argsort(-scores)\n        false_positives = false_positives[indices]\n        true_positives  = true_positives[indices]\n\n        false_positives = np.cumsum(false_positives)\n        true_positives  = np.cumsum(true_positives)\n\n        recall    = true_positives / num_annotations\n        precision = true_positives / np.maximum(true_positives + false_positives, np.finfo(np.float64).eps)\n\n        average_precision  = compute_ap(recall, precision)  \n        average_precisions[label] = average_precision\n\n    return average_precisions    \n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\n\n<testcase_1>\na = np.array([[10, 20, 30, 40], [50, 60, 70, 80]])\nb = np.array([[15, 25, 35, 45], [55, 65, 75, 85]])\n\n<testcase_2>\na = np.array([[0, 0, 10, 10], [20, 20, 30, 30], [40, 40, 50, 50]])\nb = np.array([[5, 5, 15, 15], [25, 25, 35, 35]])\n\n<testcase_3>\na = np.array([[100, 100, 200, 200], [150, 150, 250, 250]])\nb = np.array([[110, 110, 210, 210], [160, 160, 260, 260], [170, 170, 270, 270]])\n\n<testcase_4>\na = np.array([[5, 5, 15, 15], [10, 10, 20, 20], [15, 15, 25, 25]])\nb = np.array([[0, 0, 10, 10], [20, 20, 30, 30], [30, 30, 40, 40]])\n\n<testcase_5>\na = np.array([[50, 50, 100, 100], [60, 60, 110, 110], [70, 70, 120, 120]])\nb = np.array([[55, 55, 105, 105], [65, 65, 115, 115], [75, 75, 125, 125], [85, 85, 135, 135]])"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\n\n<testcase_1>\na = np.array([[10, 20, 30, 40], [50, 60, 70, 80]])\nb = np.array([[15, 25, 35, 45], [55, 65, 75, 85]])\n\n<testcase_2>\na = np.array([[0, 0, 10, 10], [20, 20, 30, 30], [40, 40, 50, 50]])\nb = np.array([[5, 5, 15, 15], [25, 25, 35, 35]])\n\n<testcase_3>\na = np.array([[100, 100, 200, 200], [150, 150, 250, 250]])\nb = np.array([[110, 110, 210, 210], [160, 160, 260, 260], [170, 170, 270, 270]])\n\n<testcase_4>\na = np.array([[5, 5, 15, 15], [10, 10, 20, 20], [15, 15, 25, 25]])\nb = np.array([[0, 0, 10, 10], [20, 20, 30, 30], [30, 30, 40, 40]])\n\n<testcase_5>\na = np.array([[50, 50, 100, 100], [60, 60, 110, 110], [70, 70, 120, 120]])\nb = np.array([[55, 55, 105, 105], [65, 65, 115, 115], [75, 75, 125, 125], [85, 85, 135, 135]])",
+  "needimport": "import numpy as np\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        0.391304347826087,
+        0.0
+      ],
+      [
+        0.0,
+        0.391304347826087
+      ]
+    ],
+    "ans2": [
+      [
+        0.14285714285714285,
+        0.0
+      ],
+      [
+        0.0,
+        0.14285714285714285
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "ans3": [
+      [
+        0.680672268907563,
+        0.08695652173913043,
+        0.04712041884816754
+      ],
+      [
+        0.21951219512195122,
+        0.680672268907563,
+        0.47058823529411764
+      ]
+    ],
+    "ans4": [
+      [
+        0.14285714285714285,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.14285714285714285,
+        0.0
+      ]
+    ],
+    "ans5": [
+      [
+        0.680672268907563,
+        0.32450331125827814,
+        0.14285714285714285,
+        0.04712041884816754
+      ],
+      [
+        0.680672268907563,
+        0.680672268907563,
+        0.32450331125827814,
+        0.14285714285714285
+      ],
+      [
+        0.32450331125827814,
+        0.680672268907563,
+        0.680672268907563,
+        0.32450331125827814
+      ]
+    ]
+  }
+}

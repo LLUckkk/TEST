@@ -1,0 +1,27 @@
+{
+  "input_header": "def render(template, **kwargs):",
+  "input_docstring": null,
+  "output_code": "def render(template, **kwargs):\n    for key, value in kwargs.items():\n        template = template.replace(\"{{\" + key + \"}}\", str(value))\n    return template",
+  "input_contexts": [
+    {
+      "id": "microsoft_promptflow_6382_1",
+      "input_code": "def prompt_tpl_completion(connection: dict, prompt_tpl: str, stream: bool = False, **kwargs):\n    client = AzureOpenAI(**connection)\n    prompt = render(prompt_tpl, **kwargs)\n    response = client.completions.create(model=\"gpt-35-turbo-instruct\", prompt=prompt, stream=stream)\n\n    if stream:\n\n        def generator():\n            for chunk in response:\n                if chunk.choices:\n                    yield chunk.choices[0].text or \"\"\n\n        return \"\".join(generator())\n    return response.choices[0].text or \"\"\n"
+    },
+    {
+      "id": "microsoft_promptflow_6382_2",
+      "input_code": "def prompt_tpl_chat(connection: dict, prompt_tpl: str, stream: bool = False, **kwargs):\n    client = AzureOpenAI(**connection)\n    prompt = render(prompt_tpl, **kwargs)\n    messages = parse_chat(prompt)\n\n    response = client.chat.completions.create(model=\"gpt-35-turbo\", messages=messages, stream=stream)\n\n    if stream:\n\n        def generator():\n            for chunk in response:\n                if chunk.choices:\n                    yield chunk.choices[0].delta.content or \"\"\n\n        return \"\".join(generator())\n    return response.choices[0].message.content or \"\"\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport [No additional libraries needed]\n\n<testcase_1>\ntemplate = \"Hello, {{name}}! Welcome to {{place}}.\"\nkwargs = {\"name\": \"Alice\", \"place\": \"Wonderland\"}\n\n<testcase_2>\ntemplate = \"Your order {{order_id}} has been shipped and will arrive by {{date}}.\"\nkwargs = {\"order_id\": \"12345\", \"date\": \"2023-10-15\"}\n\n<testcase_3>\ntemplate = \"Dear {{title}} {{last_name}}, your appointment is scheduled for {{time}}.\"\nkwargs = {\"title\": \"Dr.\", \"last_name\": \"Smith\", \"time\": \"10:00 AM\"}\n\n<testcase_4>\ntemplate = \"The temperature in {{city}} is currently {{temperature}} degrees.\"\nkwargs = {\"city\": \"New York\", \"temperature\": \"22\"}\n\n<testcase_5>\ntemplate = \"Congratulations {{winner_name}}! You have won {{prize}}.\"\nkwargs = {\"winner_name\": \"John Doe\", \"prize\": \"$1000\"}"
+  ],
+  "gpt_output": "<needimport>\nimport [No additional libraries needed]\n\n<testcase_1>\ntemplate = \"Hello, {{name}}! Welcome to {{place}}.\"\nkwargs = {\"name\": \"Alice\", \"place\": \"Wonderland\"}\n\n<testcase_2>\ntemplate = \"Your order {{order_id}} has been shipped and will arrive by {{date}}.\"\nkwargs = {\"order_id\": \"12345\", \"date\": \"2023-10-15\"}\n\n<testcase_3>\ntemplate = \"Dear {{title}} {{last_name}}, your appointment is scheduled for {{time}}.\"\nkwargs = {\"title\": \"Dr.\", \"last_name\": \"Smith\", \"time\": \"10:00 AM\"}\n\n<testcase_4>\ntemplate = \"The temperature in {{city}} is currently {{temperature}} degrees.\"\nkwargs = {\"city\": \"New York\", \"temperature\": \"22\"}\n\n<testcase_5>\ntemplate = \"Congratulations {{winner_name}}! You have won {{prize}}.\"\nkwargs = {\"winner_name\": \"John Doe\", \"prize\": \"$1000\"}",
+  "needimport": "import [No additional libraries needed]\n\n",
+  "test_results": {
+    "ans1": "Hello, Alice! Welcome to Wonderland.",
+    "ans2": "Your order 12345 has been shipped and will arrive by 2023-10-15.",
+    "ans3": "Dear Dr. Smith, your appointment is scheduled for 10:00 AM.",
+    "ans4": "The temperature in New York is currently 22 degrees.",
+    "ans5": "Congratulations John Doe! You have won $1000."
+  }
+}

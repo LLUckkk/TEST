@@ -1,0 +1,66 @@
+{
+  "input_header": "def _view(self: _IndexT) -> _IndexT:",
+  "input_docstring": "fastpath to make a shallow copy, i.e. new object with same data.",
+  "output_code": "    def _view(self: _IndexT) -> _IndexT:\n        \n        result = self._simple_new(self._values, name=self._name, refs=self._references)\n\n        result._cache = self._cache\n        return result",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_56693_4",
+      "input_code": "    def _set_levels(\n        self,\n        levels,\n        *,\n        level=None,\n        copy: bool = False,\n        validate: bool = True,\n        verify_integrity: bool = False,\n    ) -> None:\n        if validate:\n            if len(levels) == 0:\n                raise ValueError(\"Must set non-zero number of levels.\")\n            if level is None and len(levels) != self.nlevels:\n                raise ValueError(\"Length of levels must match number of levels.\")\n            if level is not None and len(levels) != len(level):\n                raise ValueError(\"Length of levels must match length of level.\")\n\n        if level is None:\n            new_levels = FrozenList(\n                ensure_index(lev, copy=copy)._view() for lev in levels\n            )\n        else:\n            level_numbers = [self._get_level_number(lev) for lev in level]\n            new_levels_list = list(self._levels)\n            for lev_num, lev in zip(level_numbers, levels):\n                new_levels_list[lev_num] = ensure_index(lev, copy=copy)._view()\n            new_levels = FrozenList(new_levels_list)\n\n        if verify_integrity:\n            new_codes = self._verify_integrity(levels=new_levels)\n            self._codes = new_codes\n\n        names = self.names\n        self._levels = new_levels\n        if any(names):\n            self._set_names(names)\n\n        self._reset_cache()\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_56693_2",
+      "input_code": "    def view(self, cls=None):\n        if cls is not None and not hasattr(cls, \"_typ\"):\n            dtype = cls\n            if isinstance(cls, str):\n                dtype = pandas_dtype(cls)\n\n            if isinstance(dtype, (np.dtype, ExtensionDtype)) and needs_i8_conversion(\n                dtype\n            ):\n                if dtype.kind == \"m\" and dtype != \"m8[ns]\":\n                    return self._data.view(cls)\n\n                idx_cls = self._dtype_to_subclass(dtype)\n                arr_cls = idx_cls._data_cls\n                arr = arr_cls(self._data.view(\"i8\"), dtype=dtype)\n                return idx_cls._simple_new(arr, name=self.name, refs=self._references)\n\n            result = self._data.view(cls)\n        else:\n            result = self._view()\n        if isinstance(result, Index):\n            result._id = self._id\n        return result\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_56693_3",
+      "input_code": "    def join(\n        self,\n        other: Index,\n        *,\n        how: JoinHow = \"left\",\n        level: Level = None,\n        return_indexers: bool = False,\n        sort: bool = False,\n    ) -> Index | tuple[Index, npt.NDArray[np.intp] | None, npt.NDArray[np.intp] | None]:\n        \n        other = ensure_index(other)\n\n        if isinstance(self, ABCDatetimeIndex) and isinstance(other, ABCDatetimeIndex):\n            if (self.tz is None) ^ (other.tz is None):\n                raise TypeError(\"Cannot join tz-naive with tz-aware DatetimeIndex\")\n\n        if not self._is_multi and not other._is_multi:\n            pself, pother = self._maybe_promote(other)\n            if pself is not self or pother is not other:\n                return pself.join(\n                    pother, how=how, level=level, return_indexers=True, sort=sort\n                )\n\n        lindexer: np.ndarray | None\n        rindexer: np.ndarray | None\n\n        if level is None and (self._is_multi or other._is_multi):\n            if self.names == other.names:\n                pass\n            else:\n                return self._join_multi(other, how=how)\n\n        if level is not None and (self._is_multi or other._is_multi):\n            return self._join_level(other, level, how=how)\n\n        if len(other) == 0:\n            if how in (\"left\", \"outer\"):\n                join_index = self._view()\n                rindexer = np.broadcast_to(np.intp(-1), len(join_index))\n                return join_index, None, rindexer\n            elif how in (\"right\", \"inner\", \"cross\"):\n                join_index = other._view()\n                lindexer = np.array([])\n                return join_index, lindexer, None\n\n        if len(self) == 0:\n            if how in (\"right\", \"outer\"):\n                join_index = other._view()\n                lindexer = np.broadcast_to(np.intp(-1), len(join_index))\n                return join_index, lindexer, None\n            elif how in (\"left\", \"inner\", \"cross\"):\n                join_index = self._view()\n                rindexer = np.array([])\n                return join_index, None, rindexer\n\n        if self._join_precedence < other._join_precedence:\n            flip: dict[JoinHow, JoinHow] = {\"right\": \"left\", \"left\": \"right\"}\n            how = flip.get(how, how)\n            join_index, lidx, ridx = other.join(\n                self, how=how, level=level, return_indexers=True\n            )\n            lidx, ridx = ridx, lidx\n            return join_index, lidx, ridx\n\n        if not is_dtype_equal(self.dtype, other.dtype):\n            dtype = self._find_common_type_compat(other)\n            this = self.astype(dtype, copy=False)\n            other = other.astype(dtype, copy=False)\n            return this.join(other, how=how, return_indexers=True)\n\n        _validate_join_method(how)\n\n        if not self.is_unique and not other.is_unique:\n            return self._join_non_unique(other, how=how)\n        elif not self.is_unique or not other.is_unique:\n            if self.is_monotonic_increasing and other.is_monotonic_increasing:\n                if not is_interval_dtype(self.dtype):\n                    return self._join_monotonic(other, how=how)\n            else:\n                return self._join_non_unique(other, how=how)\n        elif (\n            self.is_monotonic_increasing\n            and other.is_monotonic_increasing\n            and self._can_use_libjoin\n            and not isinstance(self, ABCMultiIndex)\n            and not is_categorical_dtype(self.dtype)\n        ):\n            try:\n                return self._join_monotonic(other, how=how)\n            except TypeError:\n                pass\n\n        return self._join_via_get_indexer(other, how, sort)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_56693_1",
+      "input_code": "    def _rename(self: _IndexT, name: Hashable) -> _IndexT:\n        \n        result = self._view()\n        result._name = name\n        return result\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nimport numpy as np\n\n<testcase_1>\nself = pd.Index([1, 2, 3, 4, 5])\n\n<testcase_2>\nself = pd.MultiIndex.from_tuples([('a', 1), ('b', 2), ('c', 3)], names=['letter', 'number'])\n\n<testcase_3>\nself = pd.DatetimeIndex(['2023-01-01', '2023-01-02', '2023-01-03'], name='date')\n\n<testcase_4>\nself = pd.CategoricalIndex(['apple', 'banana', 'cherry'], categories=['apple', 'banana', 'cherry', 'date'], ordered=True)\n\n<testcase_5>\nself = pd.TimedeltaIndex(['1 days', '2 days', '3 days'], name='duration')"
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nimport numpy as np\n\n<testcase_1>\nself = pd.Index([1, 2, 3, 4, 5])\n\n<testcase_2>\nself = pd.MultiIndex.from_tuples([('a', 1), ('b', 2), ('c', 3)], names=['letter', 'number'])\n\n<testcase_3>\nself = pd.DatetimeIndex(['2023-01-01', '2023-01-02', '2023-01-03'], name='date')\n\n<testcase_4>\nself = pd.CategoricalIndex(['apple', 'banana', 'cherry'], categories=['apple', 'banana', 'cherry', 'date'], ordered=True)\n\n<testcase_5>\nself = pd.TimedeltaIndex(['1 days', '2 days', '3 days'], name='duration')",
+  "needimport": "import pandas as pd\nimport numpy as np\n\n",
+  "test_results": {
+    "ans1": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "ans2": [
+      [
+        "a",
+        1
+      ],
+      [
+        "b",
+        2
+      ],
+      [
+        "c",
+        3
+      ]
+    ],
+    "ans3": [
+      "2023-01-01",
+      "2023-01-02",
+      "2023-01-03"
+    ],
+    "ans4": [
+      "apple",
+      "banana",
+      "cherry"
+    ],
+    "ans5": [
+      "1 days",
+      "2 days",
+      "3 days"
+    ]
+  }
+}

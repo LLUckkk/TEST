@@ -1,0 +1,48 @@
+{
+  "input_header": "def _get_evaluator_properties(evaluator, evaluator_name):",
+  "input_docstring": "Get evaluator properties for telemetry.\n\n:param: evaluator: The evaluator object\n:param: evaluator_name: The alias for the evaluator\n:type: str\n:raises Exception: If the evaluator properties cannot be retrieved\n:return: A dictionary containing the evaluator properties, including\n    \"name\": A name for the evaluator\n    \"pf_type\": The promptflow type being used\n    \"type\": The evaluator type. Accepted values are \"built-in\", \"custom\", and \"content-safety\"\n    \"alias\": The alias for the evaluator. Defaults to an empty string.\n:rtype: Dict[str, str]",
+  "output_code": "def _get_evaluator_properties(evaluator, evaluator_name):\n    \n\n    try:\n        if isinstance(evaluator, (prompty_sdk, prompty_core, flex_flow)):\n            name = evaluator.name\n            pf_type = evaluator.__class__.__name__\n        elif isinstance(evaluator, dag_flow):\n            name = evaluator.name\n            pf_type = \"DagFlow\"\n        elif inspect.isfunction(evaluator):\n            name = evaluator.__name__\n            pf_type = flex_flow.__name__\n        elif hasattr(evaluator, \"__class__\") and callable(evaluator):\n            name = evaluator.__class__.__name__\n            pf_type = flex_flow.__name__\n        else:\n            name = str(evaluator)\n            pf_type = \"Unknown\"\n    except Exception as e:\n        LOGGER.debug(f\"Failed to get evaluator properties: {e}\")\n        name = str(evaluator)\n        pf_type = \"Unknown\"\n\n    return {\n        \"name\": name,\n        \"pf_type\": pf_type,\n        \"type\": _get_evaluator_type(evaluator),\n        \"alias\": evaluator_name if evaluator_name else \"\",\n    }",
+  "input_contexts": [
+    {
+      "id": "microsoft_promptflow_5161_1",
+      "input_code": "def log_evaluate_activity(func) -> None:\n    \n\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs) -> Callable:\n        from promptflow._sdk._telemetry import ActivityType, log_activity\n        from promptflow._sdk._telemetry.telemetry import get_telemetry_logger\n\n        evaluators = kwargs.get(\"evaluators\", [])\n        azure_ai_project = kwargs.get(\"azure_ai_project\", None)\n\n        pf_client = PFClient(\n            config={\"trace.destination\": _trace_destination_from_project_scope(azure_ai_project)}\n            if azure_ai_project\n            else None,\n            user_agent=USER_AGENT,\n        )\n\n        track_in_cloud = bool(pf_client._config.get_trace_destination())\n        evaluate_target = bool(kwargs.get(\"target\", None))\n        evaluator_config = bool(kwargs.get(\"evaluator_config\", None))\n        custom_dimensions = {\n            \"track_in_cloud\": track_in_cloud,\n            \"evaluate_target\": evaluate_target,\n            \"evaluator_config\": evaluator_config,\n        }\n\n        with log_activity(\n            get_telemetry_logger(),\n            \"pf.evals.evaluate\",\n            activity_type=ActivityType.PUBLICAPI,\n            user_agent=USER_AGENT,\n            custom_dimensions=custom_dimensions,\n        ):\n            result = func(*args, **kwargs)\n\n            try:\n                evaluators_info = []\n                for evaluator_name, evaluator in evaluators.items():\n                    evaluator_info = _get_evaluator_properties(evaluator, evaluator_name)\n                    try:\n                        evaluator_df = pd.DataFrame(result.get(\"rows\", [])).filter(\n                            like=f\"outputs.{evaluator_name}\", axis=1\n                        )\n\n                        failed_rows = (\n                            evaluator_df.shape[0] if evaluator_df.empty else int(evaluator_df.isna().any(axis=1).sum())\n                        )\n                        total_rows = evaluator_df.shape[0]\n\n                        evaluator_info[\"failed_rows\"] = failed_rows\n                        evaluator_info[\"total_rows\"] = total_rows\n                    except Exception as e:\n                        LOGGER.debug(f\"Failed to collect evaluate failed row info for {evaluator_name}: {e}\")\n                    evaluators_info.append(evaluator_info)\n\n                custom_dimensions = {\"evaluators_info\": json.dumps(evaluators_info)}\n                with log_activity(\n                    get_telemetry_logger(),\n                    \"pf.evals.evaluate_usage_info\",\n                    activity_type=ActivityType.PUBLICAPI,\n                    user_agent=USER_AGENT,\n                    custom_dimensions=custom_dimensions,\n                ):\n                    pass\n            except Exception as e:\n                LOGGER.debug(f\"Failed to collect evaluate usage info: {e}\")\n\n            return result\n\n    return wrapper\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport types\nimport inspect\n\n<testcase_1>\nevaluator = types.SimpleNamespace(name=\"Evaluator1\", __class__=types.SimpleNamespace(__name__=\"EvaluatorClass\"))\nevaluator_name = \"evaluator_alias_1\"\n\n<testcase_2>\nevaluator = types.SimpleNamespace(name=\"Evaluator2\", __class__=types.SimpleNamespace(__name__=\"CustomEvaluator\"))\nevaluator_name = \"custom_evaluator\"\n\n<testcase_3>\nevaluator = lambda x: x * 2\nevaluator_name = \"lambda_evaluator\"\n\n<testcase_4>\nevaluator = types.SimpleNamespace(name=\"ContentSafetyEvaluator\", __class__=types.SimpleNamespace(__name__=\"ContentSafety\"))\nevaluator_name = \"content_safety\"\n\n<testcase_5>\nevaluator = \"UnknownEvaluator\"\nevaluator_name = \"\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport types\nimport inspect\n\n<testcase_1>\nevaluator = types.SimpleNamespace(name=\"Evaluator1\", __class__=types.SimpleNamespace(__name__=\"EvaluatorClass\"))\nevaluator_name = \"evaluator_alias_1\"\n\n<testcase_2>\nevaluator = types.SimpleNamespace(name=\"Evaluator2\", __class__=types.SimpleNamespace(__name__=\"CustomEvaluator\"))\nevaluator_name = \"custom_evaluator\"\n\n<testcase_3>\nevaluator = lambda x: x * 2\nevaluator_name = \"lambda_evaluator\"\n\n<testcase_4>\nevaluator = types.SimpleNamespace(name=\"ContentSafetyEvaluator\", __class__=types.SimpleNamespace(__name__=\"ContentSafety\"))\nevaluator_name = \"content_safety\"\n\n<testcase_5>\nevaluator = \"UnknownEvaluator\"\nevaluator_name = \"\"\n```",
+  "needimport": "import types\nimport inspect\n\n",
+  "test_results": {
+    "ans1": {
+      "name": "namespace(name='Evaluator1', __class__=namespace(__name__='EvaluatorClass'))",
+      "pf_type": "Unknown",
+      "type": "callable",
+      "alias": "evaluator_alias_1"
+    },
+    "ans2": {
+      "name": "namespace(name='Evaluator2', __class__=namespace(__name__='CustomEvaluator'))",
+      "pf_type": "Unknown",
+      "type": "callable",
+      "alias": "custom_evaluator"
+    },
+    "ans3": {
+      "name": "<lambda>",
+      "pf_type": "flex_flow",
+      "type": "function",
+      "alias": "lambda_evaluator"
+    },
+    "ans4": {
+      "name": "namespace(name='ContentSafetyEvaluator', __class__=namespace(__name__='ContentSafety'))",
+      "pf_type": "Unknown",
+      "type": "callable",
+      "alias": "content_safety"
+    },
+    "ans5": {
+      "name": "UnknownEvaluator",
+      "pf_type": "Unknown",
+      "type": "callable",
+      "alias": ""
+    }
+  }
+}

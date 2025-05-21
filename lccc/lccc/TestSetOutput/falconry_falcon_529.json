@@ -1,0 +1,68 @@
+{
+  "input_header": "def _parse_etags(etag_str: str) -> Optional[List[Union[ETag, Literal['*']]]]:",
+  "input_docstring": "Parse a string containing one or more HTTP entity-tags.\n\nThe string is assumed to be formatted as defined for a precondition\nheader, and may contain either a single ETag, or multiple comma-separated\nETags. The string may also contain a '*' character, in order to indicate\nthat any ETag should match the precondition.\n\n(See also: RFC 7232, Section 3)\n\nArgs:\n    etag_str (str): An ASCII header value to parse ETags from. ETag values\n        within may be prefixed by ``W/`` to indicate that the weak comparison\n        function should be used.\n\nReturns:\n    list: A list of unquoted ETags or ``['*']`` if all ETags should be\n    matched. If the string to be parse is empty, or contains only\n    whitespace, ``None`` will be returned instead.",
+  "output_code": "def _parse_etags(etag_str: str) -> Optional[List[Union[ETag, Literal['*']]]]:\n    \n\n    etag_str = etag_str.strip()\n    if not etag_str:\n        return None\n\n    if etag_str == '*':\n        return ['*']\n\n    if ',' not in etag_str:\n        return [ETag.loads(etag_str)]\n\n    etags: List[Union[ETag, Literal['*']]] = []\n\n    for weak, value in _ENTITY_TAG_PATTERN.findall(etag_str):\n        t = ETag(value)\n        t.is_weak = bool(weak)\n        etags.append(t)\n\n    return etags or None",
+  "input_contexts": [
+    {
+      "id": "falconry_falcon_529_5",
+      "input_code": "    def test_etag_parsing_helper(self, asgi, header_value):\n\n        assert _parse_etags(header_value) is None\n"
+    },
+    {
+      "id": "falconry_falcon_529_2",
+      "input_code": "    def if_none_match(self) -> Optional[List[Union[ETag, Literal['*']]]]:\n        if self._cached_if_none_match is _UNSET:\n            header_value = self._asgi_headers.get(b'if-none-match')\n            if header_value:\n                self._cached_if_none_match = helpers._parse_etags(\n                    header_value.decode('latin1')\n                )\n            else:\n                self._cached_if_none_match = None\n\n        return self._cached_if_none_match\n"
+    },
+    {
+      "id": "falconry_falcon_529_4",
+      "input_code": "    def if_none_match(self) -> Optional[List[Union[ETag, Literal['*']]]]:\n        \n        if self._cached_if_none_match is _UNSET:\n            header_value = self.env.get('HTTP_IF_NONE_MATCH')\n            if header_value:\n                self._cached_if_none_match = helpers._parse_etags(header_value)\n            else:\n                self._cached_if_none_match = None\n\n        return self._cached_if_none_match\n"
+    },
+    {
+      "id": "falconry_falcon_529_3",
+      "input_code": "    def if_match(self) -> Optional[List[Union[ETag, Literal['*']]]]:\n        \n        if self._cached_if_match is _UNSET:\n            header_value = self.env.get('HTTP_IF_MATCH')\n            if header_value:\n                self._cached_if_match = helpers._parse_etags(header_value)\n            else:\n                self._cached_if_match = None\n\n        return self._cached_if_match\n"
+    },
+    {
+      "id": "falconry_falcon_529_1",
+      "input_code": "    def if_match(self) -> Optional[List[Union[ETag, Literal['*']]]]:\n        if self._cached_if_match is _UNSET:\n            header_value = self._asgi_headers.get(b'if-match')\n            if header_value:\n                self._cached_if_match = helpers._parse_etags(\n                    header_value.decode('latin1')\n                )\n            else:\n                self._cached_if_match = None\n\n        return self._cached_if_match\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport re\nfrom typing import Optional, List, Union, Literal\n\nclass ETag:\n    def __init__(self, value: str):\n        self.value = value\n        self.is_weak = False\n\n    @staticmethod\n    def loads(value: str):\n        return ETag(value)\n\n_ENTITY_TAG_PATTERN = re.compile(r'(W/)?\"([^\"]+)\"')\n\n<testcase_1>\netag_str = 'W/\"123456789\"'\n\n<testcase_2>\netag_str = '\"abcdef\", W/\"123456789\", \"ghijkl\"'\n\n<testcase_3>\netag_str = '*'\n\n<testcase_4>\netag_str = ''\n\n<testcase_5>\netag_str = 'W/\"weak-etag\", \"strong-etag\"'"
+  ],
+  "gpt_output": "<needimport>\nimport re\nfrom typing import Optional, List, Union, Literal\n\nclass ETag:\n    def __init__(self, value: str):\n        self.value = value\n        self.is_weak = False\n\n    @staticmethod\n    def loads(value: str):\n        return ETag(value)\n\n_ENTITY_TAG_PATTERN = re.compile(r'(W/)?\"([^\"]+)\"')\n\n<testcase_1>\netag_str = 'W/\"123456789\"'\n\n<testcase_2>\netag_str = '\"abcdef\", W/\"123456789\", \"ghijkl\"'\n\n<testcase_3>\netag_str = '*'\n\n<testcase_4>\netag_str = ''\n\n<testcase_5>\netag_str = 'W/\"weak-etag\", \"strong-etag\"'",
+  "needimport": "import re\nfrom typing import Optional, List, Union, Literal\n\nclass ETag:\n    def __init__(self, value: str):\n        self.value = value\n        self.is_weak = False\n\n    @staticmethod\n    def loads(value: str):\n        return ETag(value)\n\n_ENTITY_TAG_PATTERN = re.compile(r'(W/)?\"([^\"]+)\"')\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "value": "W/\"123456789\"",
+        "is_weak": false
+      }
+    ],
+    "ans2": [
+      {
+        "value": "abcdef",
+        "is_weak": false
+      },
+      {
+        "value": "123456789",
+        "is_weak": true
+      },
+      {
+        "value": "ghijkl",
+        "is_weak": false
+      }
+    ],
+    "ans3": [
+      "*"
+    ],
+    "ans4": null,
+    "ans5": [
+      {
+        "value": "weak-etag",
+        "is_weak": true
+      },
+      {
+        "value": "strong-etag",
+        "is_weak": false
+      }
+    ]
+  }
+}
