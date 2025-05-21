@@ -1,0 +1,131 @@
+{
+  "input_header": "def _string_to_bytes(text):",
+  "input_docstring": null,
+  "output_code": "    def _string_to_bytes(text):\n        if isinstance(text, bytes):\n            return text\n        return [ord(c) for c in text]",
+  "input_contexts": [
+    {
+      "id": "AlessandroZ_LaZagne_44_11",
+      "input_code": "    def encrypt(self, plaintext):\n        while len(self._remaining_counter) < len(plaintext):\n            self._remaining_counter += self._aes.encrypt(self._counter.value)\n            self._counter.increment()\n\n        plaintext = _string_to_bytes(plaintext)\n\n        encrypted = [ (p ^ c) for (p, c) in zip(plaintext, self._remaining_counter) ]\n        self._remaining_counter = self._remaining_counter[len(encrypted):]\n\n        return _bytes_to_string(encrypted)\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_2",
+      "input_code": "    def decrypt(self, ciphertext):\n        if len(ciphertext) != 16:\n            raise ValueError('ciphertext block must be 16 bytes')\n\n        ciphertext = _string_to_bytes(ciphertext)\n        return _bytes_to_string(self._aes.decrypt(ciphertext))\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_4",
+      "input_code": "    def encrypt(self, plaintext):\n        if len(plaintext) != 16:\n            raise ValueError('plaintext block must be 16 bytes')\n\n        plaintext = _string_to_bytes(plaintext)\n        precipherblock = [ (p ^ l) for (p, l) in zip(plaintext, self._last_cipherblock) ]\n        self._last_cipherblock = self._aes.encrypt(precipherblock)\n\n        return _bytes_to_string(self._last_cipherblock)\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_7",
+      "input_code": "    def encrypt(self, plaintext):\n        if len(plaintext) % self._segment_bytes != 0:\n            raise ValueError('plaintext block must be a multiple of segment_size')\n\n        plaintext = _string_to_bytes(plaintext)\n\n        encrypted = [ ]\n        for i in xrange(0, len(plaintext), self._segment_bytes):\n            plaintext_segment = plaintext[i: i + self._segment_bytes]\n            xor_segment = self._aes.encrypt(self._shift_register)[:len(plaintext_segment)]\n            cipher_segment = [ (p ^ x) for (p, x) in zip(plaintext_segment, xor_segment) ]\n\n            self._shift_register = _concat_list(self._shift_register[len(cipher_segment):], cipher_segment)\n\n            encrypted.extend(cipher_segment)\n\n        return _bytes_to_string(encrypted)\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_3",
+      "input_code": "    def __init__(self, key, iv = None):\n        if iv is None:\n            self._last_cipherblock = [ 0 ] * 16\n        elif len(iv) != 16:\n            raise ValueError('initialization vector must be 16 bytes')\n        else:\n            self._last_cipherblock = _string_to_bytes(iv)\n\n        AESBlockModeOfOperation.__init__(self, key)\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_1",
+      "input_code": "    def encrypt(self, plaintext):\n        if len(plaintext) != 16:\n            raise ValueError('plaintext block must be 16 bytes')\n\n        plaintext = _string_to_bytes(plaintext)\n        return _bytes_to_string(self._aes.encrypt(plaintext))\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_6",
+      "input_code": "    def __init__(self, key, iv, segment_size = 1):\n        if segment_size == 0: segment_size = 1\n\n        if iv is None:\n            self._shift_register = [ 0 ] * 16\n        elif len(iv) != 16:\n            raise ValueError('initialization vector must be 16 bytes')\n        else:\n          self._shift_register = _string_to_bytes(iv)\n\n        self._segment_bytes = segment_size\n\n        AESBlockModeOfOperation.__init__(self, key)\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_8",
+      "input_code": "    def decrypt(self, ciphertext):\n        if len(ciphertext) % self._segment_bytes != 0:\n            raise ValueError('ciphertext block must be a multiple of segment_size')\n\n        ciphertext = _string_to_bytes(ciphertext)\n\n        decrypted = [ ]\n        for i in xrange(0, len(ciphertext), self._segment_bytes):\n            cipher_segment = ciphertext[i: i + self._segment_bytes]\n            xor_segment = self._aes.encrypt(self._shift_register)[:len(cipher_segment)]\n            plaintext_segment = [ (p ^ x) for (p, x) in zip(cipher_segment, xor_segment) ]\n\n            self._shift_register = _concat_list(self._shift_register[len(cipher_segment):], cipher_segment)\n\n            decrypted.extend(plaintext_segment)\n\n        return _bytes_to_string(decrypted)\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_9",
+      "input_code": "    def __init__(self, key, iv = None):\n        if iv is None:\n            self._last_precipherblock = [ 0 ] * 16\n        elif len(iv) != 16:\n            raise ValueError('initialization vector must be 16 bytes')\n        else:\n          self._last_precipherblock = _string_to_bytes(iv)\n\n        self._remaining_block = [ ]\n\n        AESBlockModeOfOperation.__init__(self, key)\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_5",
+      "input_code": "    def decrypt(self, ciphertext):\n        if len(ciphertext) != 16:\n            raise ValueError('ciphertext block must be 16 bytes')\n\n        cipherblock = _string_to_bytes(ciphertext)\n        plaintext = [ (p ^ l) for (p, l) in zip(self._aes.decrypt(cipherblock), self._last_cipherblock) ]\n        self._last_cipherblock = cipherblock\n\n        return _bytes_to_string(plaintext)\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_44_10",
+      "input_code": "    def encrypt(self, plaintext):\n        encrypted = [ ]\n        for p in _string_to_bytes(plaintext):\n            if len(self._remaining_block) == 0:\n                self._remaining_block = self._aes.encrypt(self._last_precipherblock)\n                self._last_precipherblock = [ ]\n            precipherbyte = self._remaining_block.pop(0)\n            self._last_precipherblock.append(precipherbyte)\n            cipherbyte = p ^ precipherbyte\n            encrypted.append(cipherbyte)\n\n        return _bytes_to_string(encrypted)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport [libraries you think are needed for this function]\n\n<testcase_1>\ntext = \"Hello, World!\"\n\n<testcase_2>\ntext = b\"Already bytes\"\n\n<testcase_3>\ntext = \"1234567890\"\n\n<testcase_4>\ntext = \"Special chars: !@#$%^&*()\"\n\n<testcase_5>\ntext = \"Unicode: üñîçødë\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport [libraries you think are needed for this function]\n\n<testcase_1>\ntext = \"Hello, World!\"\n\n<testcase_2>\ntext = b\"Already bytes\"\n\n<testcase_3>\ntext = \"1234567890\"\n\n<testcase_4>\ntext = \"Special chars: !@#$%^&*()\"\n\n<testcase_5>\ntext = \"Unicode: üñîçødë\"\n```",
+  "needimport": "import [libraries you think are needed for this function]\n\n",
+  "test_results": {
+    "ans1": [
+      72,
+      101,
+      108,
+      108,
+      111,
+      44,
+      32,
+      87,
+      111,
+      114,
+      108,
+      100,
+      33
+    ],
+    "ans2": "QWxyZWFkeSBieXRlcw==",
+    "ans3": [
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      48
+    ],
+    "ans4": [
+      83,
+      112,
+      101,
+      99,
+      105,
+      97,
+      108,
+      32,
+      99,
+      104,
+      97,
+      114,
+      115,
+      58,
+      32,
+      33,
+      64,
+      35,
+      36,
+      37,
+      94,
+      38,
+      42,
+      40,
+      41
+    ],
+    "ans5": [
+      85,
+      110,
+      105,
+      99,
+      111,
+      100,
+      101,
+      58,
+      32,
+      252,
+      241,
+      238,
+      231,
+      248,
+      100,
+      235
+    ]
+  }
+}

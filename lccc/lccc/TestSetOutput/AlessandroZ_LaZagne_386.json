@@ -1,0 +1,27 @@
+{
+  "input_header": "def getPadMode(self):",
+  "input_docstring": "getPadMode() -> pyDes.PAD_NORMAL or pyDes.PAD_PKCS5",
+  "output_code": "    def getPadMode(self):\n        \n        return self._padmode",
+  "input_contexts": [
+    {
+      "id": "AlessandroZ_LaZagne_386_2",
+      "input_code": "    def _unpadData(self, data, pad, padmode):\n        if not data:\n            return data\n        if pad and padmode == PAD_PKCS5:\n            raise ValueError(\"Cannot use a pad character with PAD_PKCS5\")\n        if padmode is None:\n            padmode = self.getPadMode()\n\n        if padmode == PAD_NORMAL:\n            if not pad:\n                pad = self.getPadding()\n            if pad:\n                data = data[:-self.block_size] + \\\n                       data[-self.block_size:].rstrip(pad)\n\n        elif padmode == PAD_PKCS5:\n            if _pythonMajorVersion < 3:\n                pad_len = ord(data[-1])\n            else:\n                pad_len = data[-1]\n            data = data[:-pad_len]\n\n        return data\n"
+    },
+    {
+      "id": "AlessandroZ_LaZagne_386_1",
+      "input_code": "    def _padData(self, data, pad, padmode):\n        if padmode is None:\n            padmode = self.getPadMode()\n        if pad and padmode == PAD_PKCS5:\n            raise ValueError(\"Cannot use a pad character with PAD_PKCS5\")\n\n        if padmode == PAD_NORMAL:\n            if len(data) % self.block_size == 0:\n                return data\n\n            if not pad:\n                pad = self.getPadding()\n            if not pad:\n                raise ValueError(\"Data must be a multiple of \" + str(\n                    self.block_size) + \" bytes in length. Use padmode=PAD_PKCS5 or set the pad character.\")\n            data += (self.block_size - (len(data) % self.block_size)) * pad\n\n        elif padmode == PAD_PKCS5:\n            pad_len = 8 - (len(data) % self.block_size)\n            if _pythonMajorVersion < 3:\n                data += pad_len * chr(pad_len)\n            else:\n                data += bytes([pad_len] * pad_len)\n\n        return data\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pyDes\n\n<testcase_1>\nself._padmode = pyDes.PAD_NORMAL\n\n<testcase_2>\nself._padmode = pyDes.PAD_PKCS5\n\n<testcase_3>\nself._padmode = pyDes.PAD_NORMAL\n\n<testcase_4>\nself._padmode = pyDes.PAD_PKCS5\n\n<testcase_5>\nself._padmode = pyDes.PAD_NORMAL"
+  ],
+  "gpt_output": "<needimport>\nimport pyDes\n\n<testcase_1>\nself._padmode = pyDes.PAD_NORMAL\n\n<testcase_2>\nself._padmode = pyDes.PAD_PKCS5\n\n<testcase_3>\nself._padmode = pyDes.PAD_NORMAL\n\n<testcase_4>\nself._padmode = pyDes.PAD_PKCS5\n\n<testcase_5>\nself._padmode = pyDes.PAD_NORMAL",
+  "needimport": "import pyDes\n\n",
+  "test_results": {
+    "ans1": 1,
+    "ans2": 2,
+    "ans3": 1,
+    "ans4": 2,
+    "ans5": 1
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "input_header": "def validate_unet_number(self, unet_number = None):",
+  "input_docstring": null,
+  "output_code": "    def validate_unet_number(self, unet_number = None):\n        if self.num_unets == 1:\n            unet_number = default(unet_number, 1)\n\n        assert 0 < unet_number <= self.num_unets, f'unet number should be in between 1 and {self.num_unets}'\n        return unet_number",
+  "input_contexts": [
+    {
+      "id": "lucidrains_imagen-pytorch_302_6",
+      "input_code": "    def forward(\n        self,\n        *args,\n        unet_number = None,\n        max_batch_size = None,\n        **kwargs\n    ):\n        unet_number = self.validate_unet_number(unet_number)\n        self.validate_and_set_unet_being_trained(unet_number)\n        self.set_accelerator_scaler(unet_number)\n\n        assert not exists(self.only_train_unet_number) or self.only_train_unet_number == unet_number, f'you can only train unet #{self.only_train_unet_number}'\n\n        total_loss = 0.\n\n        for chunk_size_frac, (chunked_args, chunked_kwargs) in split_args_and_kwargs(*args, split_size = max_batch_size, **kwargs):\n            with self.accelerator.autocast():\n                loss = self.imagen(*chunked_args, unet = self.unet_being_trained, unet_number = unet_number, **chunked_kwargs)\n                loss = loss * chunk_size_frac\n\n            total_loss += loss.item()\n\n            if self.training:\n                self.accelerator.backward(loss)\n\n        return total_loss\n"
+    },
+    {
+      "id": "lucidrains_imagen-pytorch_302_4",
+      "input_code": "    def get_ema_unet(self, unet_number = None):\n        if not self.use_ema:\n            return\n\n        unet_number = self.validate_unet_number(unet_number)\n        index = unet_number - 1\n\n        if isinstance(self.unets, nn.ModuleList):\n            unets_list = [unet for unet in self.ema_unets]\n            delattr(self, 'ema_unets')\n            self.ema_unets = unets_list\n\n        if index != self.ema_unet_being_trained_index:\n            for unet_index, unet in enumerate(self.ema_unets):\n                unet.to(self.device if unet_index == index else 'cpu')\n\n        self.ema_unet_being_trained_index = index\n        return self.ema_unets[index]\n"
+    },
+    {
+      "id": "lucidrains_imagen-pytorch_302_2",
+      "input_code": "    def validate_and_set_unet_being_trained(self, unet_number = None):\n        if exists(unet_number):\n            self.validate_unet_number(unet_number)\n\n        assert not exists(self.only_train_unet_number) or self.only_train_unet_number == unet_number, 'you cannot only train on one unet at a time. you will need to save the trainer into a checkpoint, and resume training on a new unet'\n\n        self.only_train_unet_number = unet_number\n        self.imagen.only_train_unet_number = unet_number\n\n        if not exists(unet_number):\n            return\n\n        self.wrap_unet(unet_number)\n"
+    },
+    {
+      "id": "lucidrains_imagen-pytorch_302_5",
+      "input_code": "    def update(self, unet_number = None):\n        unet_number = self.validate_unet_number(unet_number)\n        self.validate_and_set_unet_being_trained(unet_number)\n        self.set_accelerator_scaler(unet_number)\n\n        index = unet_number - 1\n        unet = self.unet_being_trained\n\n        optimizer = getattr(self, f'optim{index}')\n        scaler = getattr(self, f'scaler{index}')\n        scheduler = getattr(self, f'scheduler{index}')\n        warmup_scheduler = getattr(self, f'warmup{index}')\n\n\n        if exists(self.max_grad_norm):\n            self.accelerator.clip_grad_norm_(unet.parameters(), self.max_grad_norm)\n\n        optimizer.step()\n        optimizer.zero_grad()\n\n        if self.use_ema:\n            ema_unet = self.get_ema_unet(unet_number)\n            ema_unet.update()\n\n\n        maybe_warmup_context = nullcontext() if not exists(warmup_scheduler) else warmup_scheduler.dampening()\n\n        with maybe_warmup_context:\n            if exists(scheduler) and not self.accelerator.optimizer_step_was_skipped:\n                scheduler.step()\n\n        self.steps += F.one_hot(torch.tensor(unet_number - 1, device = self.steps.device), num_classes = len(self.steps))\n\n        if not exists(self.checkpoint_path):\n            return\n\n        total_steps = int(self.steps.sum().item())\n\n        if total_steps % self.checkpoint_every:\n            return\n\n        self.save_to_checkpoint_folder()\n"
+    },
+    {
+      "id": "lucidrains_imagen-pytorch_302_3",
+      "input_code": "    def set_accelerator_scaler(self, unet_number):\n        def patch_optimizer_step(accelerated_optimizer, method):\n            def patched_step(*args, **kwargs):\n                accelerated_optimizer._accelerate_step_called = True\n                return method(*args, **kwargs)\n            return patched_step\n\n        unet_number = self.validate_unet_number(unet_number)\n        scaler = getattr(self, f'scaler{unet_number - 1}')\n\n        self.accelerator.scaler = scaler\n        for optimizer in self.accelerator._optimizers:\n            optimizer.scaler = scaler\n            optimizer._accelerate_step_called = False\n            optimizer._optimizer_original_step_method = optimizer.optimizer.step\n            optimizer._optimizer_patched_step_method = patch_optimizer_step(optimizer, optimizer.optimizer.step)\n"
+    },
+    {
+      "id": "lucidrains_imagen-pytorch_302_1",
+      "input_code": "    def get_lr(self, unet_number):\n        self.validate_unet_number(unet_number)\n        unet_index = unet_number - 1\n\n        optim = getattr(self, f'optim{unet_index}')\n\n        return optim.param_groups[0]['lr']\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport random\n\n<testcase_1>\nunet_number = 1\n\n<testcase_2>\nunet_number = 2\n\n<testcase_3>\nunet_number = 3\n\n<testcase_4>\nunet_number = random.randint(1, 5)\n\n<testcase_5>\nunet_number = None"
+  ],
+  "gpt_output": "<needimport>\nimport random\n\n<testcase_1>\nunet_number = 1\n\n<testcase_2>\nunet_number = 2\n\n<testcase_3>\nunet_number = 3\n\n<testcase_4>\nunet_number = random.randint(1, 5)\n\n<testcase_5>\nunet_number = None",
+  "needimport": "import random\n\n",
+  "test_results": {
+    "ans1": 1,
+    "ans2": 2,
+    "ans3": null,
+    "ans4": 5,
+    "ans5": 1
+  }
+}
