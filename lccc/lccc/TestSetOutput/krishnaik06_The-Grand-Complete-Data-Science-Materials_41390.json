@@ -1,0 +1,27 @@
+{
+  "input_header": "def root_semrep(syntree, semkey=\"SEM\"):",
+  "input_docstring": "Find the semantic representation at the root of a tree.\n\n:param syntree: a parse ``Tree``\n:param semkey: the feature label to use for the root semantics in the tree\n:return: the semantic representation at the root of a ``Tree``\n:rtype: sem.Expression",
+  "output_code": "def root_semrep(syntree, semkey=\"SEM\"):\n    \n    from nltk.grammar import FeatStructNonterminal\n\n    node = syntree.label()\n    assert isinstance(node, FeatStructNonterminal)\n    try:\n        return node[semkey]\n    except KeyError:\n        print(node, end=\" \")\n        print(\"has no specification for the feature %s\" % semkey)\n    raise",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_41390_2",
+      "input_code": "def interpret_sents(inputs, grammar, semkey=\"SEM\", trace=0):\n    \n    return [\n        [(syn, root_semrep(syn, semkey)) for syn in syntrees]\n        for syntrees in parse_sents(inputs, grammar, trace=trace)\n    ]\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_41390_1",
+      "input_code": "    def parse_to_readings(self, sentence):\n        \n        from nltk.sem import root_semrep\n\n        tokens = sentence.split()\n        trees = self._parser.parse(tokens)\n        return [root_semrep(tree) for tree in trees]\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport nltk\nfrom nltk import Tree\nfrom nltk.grammar import FeatStructNonterminal\n\n<testcase_1>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem'}), [])\nsemkey = \"SEM\"\n\n<testcase_2>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem', 'POS': 'NN'}), [Tree(FeatStructNonterminal({'SEM': 'child_sem'}), [])])\nsemkey = \"SEM\"\n\n<testcase_3>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem', 'POS': 'VB'}), [Tree(FeatStructNonterminal({'SEM': 'child_sem'}), []), Tree(FeatStructNonterminal({'SEM': 'child_sem2'}), [])])\nsemkey = \"SEM\"\n\n<testcase_4>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem', 'POS': 'JJ'}), [Tree(FeatStructNonterminal({'SEM': 'child_sem'}), [Tree(FeatStructNonterminal({'SEM': 'grandchild_sem'}), [])])])\nsemkey = \"SEM\"\n\n<testcase_5>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem', 'POS': 'DT'}), [Tree(FeatStructNonterminal({'SEM': 'child_sem'}), [Tree(FeatStructNonterminal({'SEM': 'grandchild_sem'}), [Tree(FeatStructNonterminal({'SEM': 'great_grandchild_sem'}), [])])])])\nsemkey = \"SEM\""
+  ],
+  "gpt_output": "<needimport>\nimport nltk\nfrom nltk import Tree\nfrom nltk.grammar import FeatStructNonterminal\n\n<testcase_1>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem'}), [])\nsemkey = \"SEM\"\n\n<testcase_2>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem', 'POS': 'NN'}), [Tree(FeatStructNonterminal({'SEM': 'child_sem'}), [])])\nsemkey = \"SEM\"\n\n<testcase_3>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem', 'POS': 'VB'}), [Tree(FeatStructNonterminal({'SEM': 'child_sem'}), []), Tree(FeatStructNonterminal({'SEM': 'child_sem2'}), [])])\nsemkey = \"SEM\"\n\n<testcase_4>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem', 'POS': 'JJ'}), [Tree(FeatStructNonterminal({'SEM': 'child_sem'}), [Tree(FeatStructNonterminal({'SEM': 'grandchild_sem'}), [])])])\nsemkey = \"SEM\"\n\n<testcase_5>\nsyntree = Tree(FeatStructNonterminal({'SEM': 'root_sem', 'POS': 'DT'}), [Tree(FeatStructNonterminal({'SEM': 'child_sem'}), [Tree(FeatStructNonterminal({'SEM': 'grandchild_sem'}), [Tree(FeatStructNonterminal({'SEM': 'great_grandchild_sem'}), [])])])])\nsemkey = \"SEM\"",
+  "needimport": "import nltk\nfrom nltk import Tree\nfrom nltk.grammar import FeatStructNonterminal\n\n",
+  "test_results": {
+    "ans1": "root_sem1",
+    "ans2": "root_sem2",
+    "ans3": "root_sem3",
+    "ans4": "root_sem4",
+    "ans5": "root_sem5"
+  }
+}

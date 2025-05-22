@@ -1,0 +1,63 @@
+{
+  "input_header": "def _comparison(self, other, compare):",
+  "input_docstring": "Compare self with other using operator.eq or operator.ne.\n\nWhen either of the elements is masked, the result is masked as well,\nbut the underlying boolean data are still set, with self and other\nconsidered equal if both are masked, and unequal otherwise.\n\nFor structured arrays, all fields are combined, with masked values\nignored. The result is masked if all fields were masked, with self\nand other considered equal only if both were fully masked.",
+  "output_code": "    def _comparison(self, other, compare):\n        \n        omask = getmask(other)\n        smask = self.mask\n        mask = mask_or(smask, omask, copy=True)\n\n        odata = getdata(other)\n        if mask.dtype.names is not None:\n            if compare not in (operator.eq, operator.ne):\n                return NotImplemented\n            broadcast_shape = np.broadcast(self, odata).shape\n            sbroadcast = np.broadcast_to(self, broadcast_shape, subok=True)\n            sbroadcast._mask = mask\n            sdata = sbroadcast.filled(odata)\n            mask = (mask == np.ones((), mask.dtype))\n\n        else:\n            sdata = self.data\n\n        check = compare(sdata, odata)\n\n        if isinstance(check, (np.bool_, bool)):\n            return masked if mask else check\n\n        if mask is not nomask and compare in (operator.eq, operator.ne):\n            check = np.where(mask, compare(smask, omask), check)\n            if mask.shape != check.shape:\n                mask = np.broadcast_to(mask, check.shape).copy()\n\n        check = check.view(type(self))\n        check._update_from(self)\n        check._mask = mask\n\n        if check._fill_value is not None:\n            try:\n                fill = _check_fill_value(check._fill_value, np.bool_)\n            except (TypeError, ValueError):\n                fill = _check_fill_value(None, np.bool_)\n            check._fill_value = fill\n\n        return check",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_51284_1",
+      "input_code": "    def __eq__(self, other):\n        \n        return self._comparison(other, operator.eq)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_51284_3",
+      "input_code": "    def __le__(self, other):\n        return self._comparison(other, operator.le)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_51284_4",
+      "input_code": "    def __lt__(self, other):\n        return self._comparison(other, operator.lt)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_51284_2",
+      "input_code": "    def __ne__(self, other):\n        \n        return self._comparison(other, operator.ne)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_51284_6",
+      "input_code": "    def __gt__(self, other):\n        return self._comparison(other, operator.gt)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_51284_5",
+      "input_code": "    def __ge__(self, other):\n        return self._comparison(other, operator.ge)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\nimport operator\nfrom numpy.ma import MaskedArray, mask_or, getmask, getdata, masked, nomask\n\n<testcase_1>\nself = MaskedArray(data=[1, 2, 3], mask=[False, True, False])\nother = MaskedArray(data=[1, 2, 4], mask=[False, True, False])\ncompare = operator.eq\n\n<testcase_2>\nself = MaskedArray(data=[1.0, 2.0, 3.0], mask=[False, False, True])\nother = MaskedArray(data=[1.0, 2.0, 3.0], mask=[False, False, True])\ncompare = operator.ne\n\n<testcase_3>\nself = MaskedArray(data=[1, 2, 3], mask=[False, False, False])\nother = MaskedArray(data=[4, 5, 6], mask=[False, False, False])\ncompare = operator.le\n\n<testcase_4>\nself = MaskedArray(data=[1, 2, 3], mask=[True, True, True])\nother = MaskedArray(data=[1, 2, 3], mask=[True, True, True])\ncompare = operator.lt\n\n<testcase_5>\nself = MaskedArray(data=[1, 2, 3], mask=[False, False, False])\nother = MaskedArray(data=[1, 2, 3], mask=[False, False, False])\ncompare = operator.ge"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\nimport operator\nfrom numpy.ma import MaskedArray, mask_or, getmask, getdata, masked, nomask\n\n<testcase_1>\nself = MaskedArray(data=[1, 2, 3], mask=[False, True, False])\nother = MaskedArray(data=[1, 2, 4], mask=[False, True, False])\ncompare = operator.eq\n\n<testcase_2>\nself = MaskedArray(data=[1.0, 2.0, 3.0], mask=[False, False, True])\nother = MaskedArray(data=[1.0, 2.0, 3.0], mask=[False, False, True])\ncompare = operator.ne\n\n<testcase_3>\nself = MaskedArray(data=[1, 2, 3], mask=[False, False, False])\nother = MaskedArray(data=[4, 5, 6], mask=[False, False, False])\ncompare = operator.le\n\n<testcase_4>\nself = MaskedArray(data=[1, 2, 3], mask=[True, True, True])\nother = MaskedArray(data=[1, 2, 3], mask=[True, True, True])\ncompare = operator.lt\n\n<testcase_5>\nself = MaskedArray(data=[1, 2, 3], mask=[False, False, False])\nother = MaskedArray(data=[1, 2, 3], mask=[False, False, False])\ncompare = operator.ge",
+  "needimport": "import numpy as np\nimport operator\nfrom numpy.ma import MaskedArray, mask_or, getmask, getdata, masked, nomask\n\n",
+  "test_results": {
+    "ans1": [
+      true,
+      null,
+      false
+    ],
+    "ans2": [
+      false,
+      false,
+      null
+    ],
+    "ans3": [
+      true,
+      true,
+      true
+    ],
+    "ans4": [
+      null,
+      null,
+      null
+    ],
+    "ans5": [
+      true,
+      true,
+      true
+    ]
+  }
+}

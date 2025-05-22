@@ -1,0 +1,70 @@
+{
+  "input_header": "def check_bool_indexer(index: Index, key) -> np.ndarray:",
+  "input_docstring": "Check if key is a valid boolean indexer for an object with such index and\nperform reindexing or conversion if needed.\n\nThis function assumes that is_bool_indexer(key) == True.\n\nParameters\n----------\nindex : Index\n    Index of the object on which the indexing is done.\nkey : list-like\n    Boolean indexer to check.\n\nReturns\n-------\nnp.array\n    Resulting key.\n\nRaises\n------\nIndexError\n    If the key does not have the same length as index.\nIndexingError\n    If the index of the key is unalignable to index.",
+  "output_code": "def check_bool_indexer(index: Index, key) -> np.ndarray:\n    \n    result = key\n    if isinstance(key, ABCSeries) and not key.index.equals(index):\n        indexer = result.index.get_indexer_for(index)\n        if -1 in indexer:\n            raise IndexingError(\n                \"Unalignable boolean Series provided as \"\n                \"indexer (index of the boolean Series and of \"\n                \"the indexed object do not match).\"\n            )\n\n        result = result.take(indexer)\n\n        if not is_extension_array_dtype(result.dtype):\n            return result.astype(bool)._values\n\n    if is_object_dtype(key):\n        result = np.asarray(result, dtype=bool)\n    elif not is_array_like(result):\n        result = pd_array(result, dtype=bool)\n    return check_array_indexer(index, result)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_57327_5",
+      "input_code": "    def __getitem__(self, key):\n        check_dict_or_set_indexers(key)\n        key = com.apply_if_callable(key, self)\n\n        if key is Ellipsis:\n            return self\n\n        key_is_scalar = is_scalar(key)\n        if isinstance(key, (list, tuple)):\n            key = unpack_1tuple(key)\n\n        if is_integer(key) and self.index._should_fallback_to_positional:\n            return self._values[key]\n\n        elif key_is_scalar:\n            return self._get_value(key)\n\n        if is_hashable(key):\n            try:\n                result = self._get_value(key)\n\n                return result\n\n            except (KeyError, TypeError, InvalidIndexError):\n                if isinstance(key, tuple) and isinstance(self.index, MultiIndex):\n                    return self._get_values_tuple(key)\n\n        if is_iterator(key):\n            key = list(key)\n\n        if com.is_bool_indexer(key):\n            key = check_bool_indexer(self.index, key)\n            key = np.asarray(key, dtype=bool)\n            return self._get_values(key)\n\n        return self._get_with(key)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_57327_1",
+      "input_code": "    def _getitem_bool_array(self, key):\n        if isinstance(key, Series) and not key.index.equals(self.index):\n            warnings.warn(\n                \"Boolean Series key will be reindexed to match DataFrame index.\",\n                UserWarning,\n                stacklevel=find_stack_level(),\n            )\n        elif len(key) != len(self.index):\n            raise ValueError(\n                f\"Item wrong length {len(key)} instead of {len(self.index)}.\"\n            )\n\n        key = check_bool_indexer(self.index, key)\n\n        if key.all():\n            return self.copy(deep=None)\n\n        indexer = key.nonzero()[0]\n        return self._take_with_is_copy(indexer, axis=0)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_57327_4",
+      "input_code": "    def _convert_to_indexer(self, key, axis: AxisInt):\n        \n        labels = self.obj._get_axis(axis)\n\n        if isinstance(key, slice):\n            return labels._convert_slice_indexer(key, kind=\"loc\")\n\n        if (\n            isinstance(key, tuple)\n            and not isinstance(labels, MultiIndex)\n            and self.ndim < 2\n            and len(key) > 1\n        ):\n            raise IndexingError(\"Too many indexers\")\n\n        if is_scalar(key) or (isinstance(labels, MultiIndex) and is_hashable(key)):\n\n            try:\n                return labels.get_loc(key)\n            except LookupError:\n                if isinstance(key, tuple) and isinstance(labels, MultiIndex):\n                    if len(key) == labels.nlevels:\n                        return {\"key\": key}\n                    raise\n            except InvalidIndexError:\n                if not isinstance(labels, MultiIndex):\n                    raise\n            except ValueError:\n                if not is_integer(key):\n                    raise\n                return {\"key\": key}\n\n        if is_nested_tuple(key, labels):\n            if self.ndim == 1 and any(isinstance(k, tuple) for k in key):\n                raise IndexingError(\"Too many indexers\")\n            return labels.get_locs(key)\n\n        elif is_list_like_indexer(key):\n            if is_iterator(key):\n                key = list(key)\n\n            if com.is_bool_indexer(key):\n                key = check_bool_indexer(labels, key)\n                return key\n            else:\n                return self._get_listlike_indexer(key, axis)[1]\n        else:\n            try:\n                return labels.get_loc(key)\n            except LookupError:\n                if not is_list_like_indexer(key):\n                    return {\"key\": key}\n                raise\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_57327_2",
+      "input_code": "    def _setitem_array(self, key, value):\n        if com.is_bool_indexer(key):\n            if len(key) != len(self.index):\n                raise ValueError(\n                    f\"Item wrong length {len(key)} instead of {len(self.index)}!\"\n                )\n            key = check_bool_indexer(self.index, key)\n            indexer = key.nonzero()[0]\n            self._check_setitem_copy()\n            if isinstance(value, DataFrame):\n                value = value.reindex(self.index.take(indexer))\n            self.iloc[indexer] = value\n\n        else:\n\n            if isinstance(value, DataFrame):\n                check_key_length(self.columns, key, value)\n                for k1, k2 in zip(key, value.columns):\n                    self[k1] = value[k2]\n\n            elif not is_list_like(value):\n                for col in key:\n                    self[col] = value\n\n            elif isinstance(value, np.ndarray) and value.ndim == 2:\n                self._iset_not_inplace(key, value)\n\n            elif np.ndim(value) > 1:\n                value = DataFrame(value).values\n                return self._setitem_array(key, value)\n\n            else:\n                self._iset_not_inplace(key, value)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_57327_3",
+      "input_code": "    def _getbool_axis(self, key, axis: AxisInt):\n        labels = self.obj._get_axis(axis)\n        key = check_bool_indexer(labels, key)\n        inds = key.nonzero()[0]\n        return self.obj._take_with_is_copy(inds, axis=axis)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_57327_6",
+      "input_code": "    def __setitem__(self, key, value) -> None:\n        if not PYPY and using_copy_on_write():\n            if sys.getrefcount(self) <= 3:\n                warnings.warn(\n                    _chained_assignment_msg, ChainedAssignmentError, stacklevel=2\n                )\n\n        check_dict_or_set_indexers(key)\n        key = com.apply_if_callable(key, self)\n        cacher_needs_updating = self._check_is_chained_assignment_possible()\n\n        if key is Ellipsis:\n            key = slice(None)\n\n        if isinstance(key, slice):\n            indexer = self.index._convert_slice_indexer(key, kind=\"getitem\")\n            return self._set_values(indexer, value)\n\n        try:\n            self._set_with_engine(key, value)\n        except KeyError:\n            if is_integer(key):\n                if not self.index._should_fallback_to_positional:\n                    self.loc[key] = value\n                else:\n                    self._set_values(key, value)\n            else:\n                self.loc[key] = value\n\n        except (TypeError, ValueError, LossySetitemError):\n            indexer = self.index.get_loc(key)\n            self._set_values(indexer, value)\n\n        except InvalidIndexError as err:\n            if isinstance(key, tuple) and not isinstance(self.index, MultiIndex):\n                raise KeyError(\n                    \"key of type tuple not found and not a MultiIndex\"\n                ) from err\n\n            if com.is_bool_indexer(key):\n                key = check_bool_indexer(self.index, key)\n                key = np.asarray(key, dtype=bool)\n\n                if (\n                    is_list_like(value)\n                    and len(value) != len(self)\n                    and not isinstance(value, Series)\n                    and not is_object_dtype(self.dtype)\n                ):\n                    indexer = key.nonzero()[0]\n                    self._set_values(indexer, value)\n                    return\n\n                try:\n                    self._where(~key, value, inplace=True)\n                except InvalidIndexError:\n                    self.iloc[key] = value\n                return\n\n            else:\n                self._set_with(key, value)\n\n        if cacher_needs_updating:\n            self._maybe_update_cacher(inplace=True)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\nimport pandas as pd\nfrom pandas.core.indexes.base import Index\nfrom pandas.core.series import Series\n\n<testcase_1>\nindex = pd.Index([1, 2, 3, 4, 5])\nkey = [True, False, True, False, True]\n\n<testcase_2>\nindex = pd.Index(['a', 'b', 'c', 'd'])\nkey = pd.Series([True, False, True, False], index=['a', 'b', 'c', 'd'])\n\n<testcase_3>\nindex = pd.Index([10, 20, 30, 40, 50])\nkey = np.array([True, True, False, False, True])\n\n<testcase_4>\nindex = pd.Index([100, 200, 300, 400, 500])\nkey = pd.Series([False, True, True, False, True], index=[100, 200, 300, 400, 500])\n\n<testcase_5>\nindex = pd.Index(['x', 'y', 'z'])\nkey = [True, False, True]"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\nimport pandas as pd\nfrom pandas.core.indexes.base import Index\nfrom pandas.core.series import Series\n\n<testcase_1>\nindex = pd.Index([1, 2, 3, 4, 5])\nkey = [True, False, True, False, True]\n\n<testcase_2>\nindex = pd.Index(['a', 'b', 'c', 'd'])\nkey = pd.Series([True, False, True, False], index=['a', 'b', 'c', 'd'])\n\n<testcase_3>\nindex = pd.Index([10, 20, 30, 40, 50])\nkey = np.array([True, True, False, False, True])\n\n<testcase_4>\nindex = pd.Index([100, 200, 300, 400, 500])\nkey = pd.Series([False, True, True, False, True], index=[100, 200, 300, 400, 500])\n\n<testcase_5>\nindex = pd.Index(['x', 'y', 'z'])\nkey = [True, False, True]",
+  "needimport": "import numpy as np\nimport pandas as pd\nfrom pandas.core.indexes.base import Index\nfrom pandas.core.series import Series\n\n",
+  "test_results": {
+    "ans1": [
+      true,
+      false,
+      true,
+      false,
+      true
+    ],
+    "ans2": [
+      true,
+      false,
+      true,
+      false
+    ],
+    "ans3": [
+      true,
+      true,
+      false,
+      false,
+      true
+    ],
+    "ans4": [
+      false,
+      true,
+      true,
+      false,
+      true
+    ],
+    "ans5": [
+      true,
+      false,
+      true
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "input_header": "def get_func(self):",
+  "input_docstring": null,
+  "output_code": "    def get_func(self):\n        func_name = getattr(self._f, '__name__', self.__class__.__name__)\n        if inspect.isclass(self._f):\n            func = getattr(self._f, '__call__', self._f.__init__)\n        else:\n            func = self._f\n        return func, func_name",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_94058_2",
+      "input_code": "    def __init__(self, func, role='func', doc=None, config={}):\n        self._f = func\n        self._role = role\n\n        if doc is None:\n            if func is None:\n                raise ValueError(\"No function or docstring given\")\n            doc = inspect.getdoc(func) or ''\n        NumpyDocString.__init__(self, doc, config)\n\n        if not self['Signature'] and func is not None:\n            func, func_name = self.get_func()\n            try:\n                try:\n                    signature = str(inspect.signature(func))\n                except (AttributeError, ValueError):\n                    if sys.version_info[0] >= 3:\n                        argspec = inspect.getfullargspec(func)\n                    else:\n                        argspec = inspect.getargspec(func)\n                    signature = inspect.formatargspec(*argspec)\n                signature = f'{func_name}{signature}'\n            except TypeError:\n                signature = f'{func_name}()'\n            self['Signature'] = signature\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_94058_3",
+      "input_code": "    def __str__(self):\n        out = ''\n\n        func, func_name = self.get_func()\n\n        roles = {'func': 'function',\n                 'meth': 'method'}\n\n        if self._role:\n            if self._role not in roles:\n                print(f\"Warning: invalid role {self._role}\")\n            out += f\".. {roles.get(self._role, '')}:: {func_name}\\n    \\n\\n\"\n\n        out += super().__str__(func_role=self._role)\n        return out\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_94058_1",
+      "input_code": "    def __call__(self, renderer):\n        get_func = self._get_func_map[self._direction]\n        vl = [get_func(ax.get_tightbbox(renderer, call_axes_locator=False),\n                       ax.bbox)\n              for ax in self._ax_list]\n        return max(vl)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport inspect\n\n<testcase_1>\nself._f = lambda x: x + 1\nself.__class__.__name__ = \"LambdaFunction\"\n\n<testcase_2>\nself._f = str.upper\nself.__class__.__name__ = \"StringFunction\"\n\n<testcase_3>\nclass MyClass:\n    def __call__(self, x):\n        return x * 2\nself._f = MyClass()\nself.__class__.__name__ = \"MyClass\"\n\n<testcase_4>\ndef sample_func(x):\n    return x - 1\nself._f = sample_func\nself.__class__.__name__ = \"SampleFunction\"\n\n<testcase_5>\nclass AnotherClass:\n    def __init__(self, y):\n        self.y = y\nself._f = AnotherClass\nself.__class__.__name__ = \"AnotherClass\""
+  ],
+  "gpt_output": "<needimport>\nimport inspect\n\n<testcase_1>\nself._f = lambda x: x + 1\nself.__class__.__name__ = \"LambdaFunction\"\n\n<testcase_2>\nself._f = str.upper\nself.__class__.__name__ = \"StringFunction\"\n\n<testcase_3>\nclass MyClass:\n    def __call__(self, x):\n        return x * 2\nself._f = MyClass()\nself.__class__.__name__ = \"MyClass\"\n\n<testcase_4>\ndef sample_func(x):\n    return x - 1\nself._f = sample_func\nself.__class__.__name__ = \"SampleFunction\"\n\n<testcase_5>\nclass AnotherClass:\n    def __init__(self, y):\n        self.y = y\nself._f = AnotherClass\nself.__class__.__name__ = \"AnotherClass\"",
+  "needimport": "import inspect\n\n",
+  "test_results": {
+    "ans1": {
+      "fun_name": "<lambda>"
+    },
+    "ans2": {
+      "fun_name": "upper"
+    },
+    "ans3": {
+      "fun_name": "MyClass"
+    },
+    "ans4": {
+      "fun_name": "sample_func"
+    },
+    "ans5": {
+      "fun_name": "AnotherClass"
+    }
+  }
+}

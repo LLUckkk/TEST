@@ -1,0 +1,27 @@
+{
+  "input_header": "def get_msg(self, block=True, timeout=None):",
+  "input_docstring": "Gets a message if there is one that is ready.",
+  "output_code": "    def get_msg(self, block=True, timeout=None):\n        \n        if timeout is None:\n            timeout = 604800\n        return self._in_queue.get(block, timeout)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_19550_1",
+      "input_code": "    def get_msgs(self):\n        \n        msgs = []\n        while True:\n            try:\n                msgs.append(self.get_msg(block=False))\n            except Empty:\n                break\n        return msgs\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_19550_2",
+      "input_code": "    def wait_for_ready(self):\n        \n        while True:\n            self.kernel_info()\n            try:\n                msg = self.shell_channel.get_msg(block=True, timeout=1)\n            except Empty:\n                pass\n            else:\n                if msg[\"msg_type\"] == \"kernel_info_reply\":\n                    try:\n                        self.iopub_channel.get_msg(block=True, timeout=0.2)\n                    except Empty:\n                        pass\n                    else:\n                        self._handle_kernel_info_reply(msg)\n                        break\n\n        while True:\n            try:\n                msg = self.iopub_channel.get_msg(block=True, timeout=0.2)\n                print(msg[\"msg_type\"])\n            except Empty:\n                break\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport queue\n\n<testcase_1>\nblock = True\ntimeout = None\n\n<testcase_2>\nblock = False\ntimeout = 5\n\n<testcase_3>\nblock = True\ntimeout = 10\n\n<testcase_4>\nblock = False\ntimeout = 0.1\n\n<testcase_5>\nblock = True\ntimeout = 3600\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport queue\n\n<testcase_1>\nblock = True\ntimeout = None\n\n<testcase_2>\nblock = False\ntimeout = 5\n\n<testcase_3>\nblock = True\ntimeout = 10\n\n<testcase_4>\nblock = False\ntimeout = 0.1\n\n<testcase_5>\nblock = True\ntimeout = 3600\n```",
+  "needimport": "import queue\n\n",
+  "test_results": {
+    "ans1": "message from testcase_1",
+    "ans2": "message from testcase_2",
+    "ans3": "message from testcase_3",
+    "ans4": "queue.Empty",
+    "ans5": "message from testcase_5"
+  }
+}

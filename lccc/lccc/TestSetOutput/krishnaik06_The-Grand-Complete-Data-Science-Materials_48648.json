@@ -1,0 +1,43 @@
+{
+  "input_header": "def colour_text(s, fg=None, bg=None):",
+  "input_docstring": null,
+  "output_code": "    def colour_text(s, fg=None, bg=None):\n        return s",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_48648_4",
+      "input_code": "def yellow_text(s):\n    return colour_text(s, 'yellow')\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_48648_1",
+      "input_code": "def default_text(s):\n    return colour_text(s, 'default')\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_48648_5",
+      "input_code": "def cyan_text(s):\n    return colour_text(s, 'cyan')\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_48648_2",
+      "input_code": "def red_text(s):\n    return colour_text(s, 'red')\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_48648_6",
+      "input_code": "def blue_text(s):\n    return colour_text(s, 'blue')\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_48648_3",
+      "input_code": "def green_text(s):\n    return colour_text(s, 'green')\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport None\n\n<testcase_1>\ns = \"Hello, World!\"\nfg = \"red\"\nbg = \"white\"\n\n<testcase_2>\ns = \"Data Science\"\nfg = \"blue\"\nbg = None\n\n<testcase_3>\ns = \"Python Programming\"\nfg = None\nbg = \"black\"\n\n<testcase_4>\ns = \"Machine Learning\"\nfg = \"green\"\nbg = \"yellow\"\n\n<testcase_5>\ns = \"Artificial Intelligence\"\nfg = None\nbg = None\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport None\n\n<testcase_1>\ns = \"Hello, World!\"\nfg = \"red\"\nbg = \"white\"\n\n<testcase_2>\ns = \"Data Science\"\nfg = \"blue\"\nbg = None\n\n<testcase_3>\ns = \"Python Programming\"\nfg = None\nbg = \"black\"\n\n<testcase_4>\ns = \"Machine Learning\"\nfg = \"green\"\nbg = \"yellow\"\n\n<testcase_5>\ns = \"Artificial Intelligence\"\nfg = None\nbg = None\n```",
+  "needimport": "import None\n\n",
+  "test_results": {
+    "ans1": "Hello, World!",
+    "ans2": "Data Science",
+    "ans3": "Python Programming",
+    "ans4": "Machine Learning",
+    "ans5": "Artificial Intelligence"
+  }
+}

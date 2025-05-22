@@ -1,0 +1,47 @@
+{
+  "input_header": "def readValue(self, typecode, staticSize):",
+  "input_docstring": null,
+  "output_code": "    def readValue(self, typecode, staticSize):\n        pos = self.pos\n        newpos = pos + staticSize\n        (value,) = struct.unpack(f\">{typecode}\", self.data[pos:newpos])\n        self.pos = newpos\n        return value",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_17749_3",
+      "input_code": "    def readLong(self):\n        return self.readValue(\"i\", staticSize=4)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_17749_5",
+      "input_code": "    def readUShort(self):\n        return self.readValue(\"H\", staticSize=2)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_17749_4",
+      "input_code": "    def readUInt8(self):\n        return self.readValue(\"B\", staticSize=1)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_17749_7",
+      "input_code": "    def read(self, reader, font, tableDict):\n        return font.getGlyphName(reader.readValue(self.typecode, self.staticSize))\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_17749_6",
+      "input_code": "    def readULong(self):\n        return self.readValue(\"I\", staticSize=4)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_17749_2",
+      "input_code": "    def readShort(self):\n        return self.readValue(\"h\", staticSize=2)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_17749_1",
+      "input_code": "    def readInt8(self):\n        return self.readValue(\"b\", staticSize=1)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport struct\n\n<testcase_1>\ntypecode = \"i\"\nstaticSize = 4\n\n<testcase_2>\ntypecode = \"H\"\nstaticSize = 2\n\n<testcase_3>\ntypecode = \"B\"\nstaticSize = 1\n\n<testcase_4>\ntypecode = \"I\"\nstaticSize = 4\n\n<testcase_5>\ntypecode = \"h\"\nstaticSize = 2"
+  ],
+  "gpt_output": "<needimport>\nimport struct\n\n<testcase_1>\ntypecode = \"i\"\nstaticSize = 4\n\n<testcase_2>\ntypecode = \"H\"\nstaticSize = 2\n\n<testcase_3>\ntypecode = \"B\"\nstaticSize = 1\n\n<testcase_4>\ntypecode = \"I\"\nstaticSize = 4\n\n<testcase_5>\ntypecode = \"h\"\nstaticSize = 2",
+  "needimport": "import struct\n\n",
+  "test_results": {
+    "ans1": 123456,
+    "ans2": 65535,
+    "ans3": 255,
+    "ans4": 4294967295,
+    "ans5": -32768
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "input_header": "def barh( y, width, height=0.8, left=None, *, align='center', data=None, **kwargs):",
+  "input_docstring": null,
+  "output_code": "def barh(\n        y, width, height=0.8, left=None, *, align='center',\n        data=None, **kwargs):\n    return gca().barh(\n        y, width, height=height, left=left, align=align,\n        **({\"data\": data} if data is not None else {}), **kwargs)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_9",
+      "input_code": "def test_bar_label_location_center():\n    ax = plt.gca()\n    ys, widths = [1, 2], [3, -4]\n    rects = ax.barh(ys, widths)\n    labels = ax.bar_label(rects, label_type='center')\n    assert labels[0].xy == (0.5, 0.5)\n    assert labels[0].get_ha() == 'center'\n    assert labels[0].get_va() == 'center'\n    assert labels[1].xy == (0.5, 0.5)\n    assert labels[1].get_ha() == 'center'\n    assert labels[1].get_va() == 'center'\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_3",
+      "input_code": "def test_axes_margins():\n    fig, ax = plt.subplots()\n    ax.plot([0, 1, 2, 3])\n    assert ax.get_ybound()[0] != 0\n\n    fig, ax = plt.subplots()\n    ax.bar([0, 1, 2, 3], [1, 1, 1, 1])\n    assert ax.get_ybound()[0] == 0\n\n    fig, ax = plt.subplots()\n    ax.barh([0, 1, 2, 3], [1, 1, 1, 1])\n    assert ax.get_xbound()[0] == 0\n\n    fig, ax = plt.subplots()\n    ax.pcolor(np.zeros((10, 10)))\n    assert ax.get_xbound() == (0, 10)\n    assert ax.get_ybound() == (0, 10)\n\n    fig, ax = plt.subplots()\n    ax.pcolorfast(np.zeros((10, 10)))\n    assert ax.get_xbound() == (0, 10)\n    assert ax.get_ybound() == (0, 10)\n\n    fig, ax = plt.subplots()\n    ax.hist(np.arange(10))\n    assert ax.get_ybound()[0] == 0\n\n    fig, ax = plt.subplots()\n    ax.imshow(np.zeros((10, 10)))\n    assert ax.get_xbound() == (-0.5, 9.5)\n    assert ax.get_ybound() == (-0.5, 9.5)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_6",
+      "input_code": "def test_bar_label_location_horizontal_yinverted():\n    ax = plt.gca()\n    ax.invert_yaxis()\n    ys, widths = [1, 2], [3, -4]\n    rects = ax.barh(ys, widths)\n    labels = ax.bar_label(rects)\n    assert labels[0].xy == (widths[0], ys[0])\n    assert labels[0].get_ha() == 'left'\n    assert labels[0].get_va() == 'center'\n    assert labels[1].xy == (widths[1], ys[1])\n    assert labels[1].get_ha() == 'right'\n    assert labels[1].get_va() == 'center'\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_7",
+      "input_code": "def test_bar_label_location_horizontal_xinverted():\n    ax = plt.gca()\n    ax.invert_xaxis()\n    ys, widths = [1, 2], [3, -4]\n    rects = ax.barh(ys, widths)\n    labels = ax.bar_label(rects)\n    assert labels[0].xy == (widths[0], ys[0])\n    assert labels[0].get_ha() == 'right'\n    assert labels[0].get_va() == 'center'\n    assert labels[1].xy == (widths[1], ys[1])\n    assert labels[1].get_ha() == 'left'\n    assert labels[1].get_va() == 'center'\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_2",
+      "input_code": "def test_bar_timedelta():\n    \n    fig, ax = plt.subplots()\n    ax.bar(datetime.datetime(2018, 1, 1), 1.,\n           width=datetime.timedelta(hours=3))\n    ax.bar(datetime.datetime(2018, 1, 1), 1.,\n           xerr=datetime.timedelta(hours=2),\n           width=datetime.timedelta(hours=3))\n    fig, ax = plt.subplots()\n    ax.barh(datetime.datetime(2018, 1, 1), 1,\n            height=datetime.timedelta(hours=3))\n    ax.barh(datetime.datetime(2018, 1, 1), 1,\n            height=datetime.timedelta(hours=3),\n            yerr=datetime.timedelta(hours=2))\n    fig, ax = plt.subplots()\n    ax.barh([datetime.datetime(2018, 1, 1), datetime.datetime(2018, 1, 1)],\n            np.array([1, 1.5]),\n            height=datetime.timedelta(hours=3))\n    ax.barh([datetime.datetime(2018, 1, 1), datetime.datetime(2018, 1, 1)],\n            np.array([1, 1.5]),\n            height=[datetime.timedelta(hours=t) for t in [1, 2]])\n    ax.broken_barh([(datetime.datetime(2018, 1, 1),\n                     datetime.timedelta(hours=1))],\n                   (10, 20))\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_11",
+      "input_code": "def test_bar_leading_nan():\n\n    barx = np.arange(3, dtype=float)\n    barheights = np.array([0.5, 1.5, 2.0])\n    barstarts = np.array([0.77]*3)\n\n    barx[0] = np.NaN\n\n    fig, ax = plt.subplots()\n\n    bars = ax.bar(barx, barheights, bottom=barstarts)\n\n    hbars = ax.barh(barx, barheights, left=barstarts)\n\n    for bar_set in (bars, hbars):\n        nanful, *rest = bar_set\n        assert (~np.isfinite(nanful.xy)).any()\n        assert np.isfinite(nanful.get_width())\n        for b in rest:\n            assert np.isfinite(b.xy).all()\n            assert np.isfinite(b.get_width())\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_4",
+      "input_code": "def test_bar_broadcast_args():\n    fig, ax = plt.subplots()\n    ax.bar(range(4), 1)\n    ax.barh(0, 1, left=range(4), height=1)\n    rect1, rect2 = ax.bar([0, 1], [0, 1], edgecolor=(.1, .2, .3, .4))\n    assert rect1.get_edgecolor() == rect2.get_edgecolor() == (.1, .2, .3, .4)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_1",
+      "input_code": "def test_barh_tick_label():\n    ax = plt.gca()\n    ax.barh([1, 2.5], [1, 2], height=[0.2, 0.5], tick_label=['a', 'b'],\n            align='center')\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_5",
+      "input_code": "def test_bar_label_location_horizontal():\n    ax = plt.gca()\n    ys, widths = [1, 2], [3, -4]\n    rects = ax.barh(ys, widths)\n    labels = ax.bar_label(rects)\n    assert labels[0].xy == (widths[0], ys[0])\n    assert labels[0].get_ha() == 'left'\n    assert labels[0].get_va() == 'center'\n    assert labels[1].xy == (widths[1], ys[1])\n    assert labels[1].get_ha() == 'right'\n    assert labels[1].get_va() == 'center'\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_12",
+      "input_code": "def test_jpl_barh_units():\n    import matplotlib.testing.jpl_units as units\n    units.register()\n\n    day = units.Duration(\"ET\", 24.0 * 60.0 * 60.0)\n    x = [0 * units.km, 1 * units.km, 2 * units.km]\n    w = [1 * day, 2 * day, 3 * day]\n    b = units.Epoch(\"ET\", dt=datetime(2009, 4, 25))\n\n    fig, ax = plt.subplots()\n    ax.barh(x, w, left=b)\n    ax.set_xlim([b - 1 * day, b + w[-1] + (1.001) * day])\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_10",
+      "input_code": "def test_centered_bar_label_nonlinear():\n    _, ax = plt.subplots()\n    bar_container = ax.barh(['c', 'b', 'a'], [1_000, 5_000, 7_000])\n    ax.set_xscale('log')\n    ax.set_xlim(1, None)\n    ax.bar_label(bar_container, label_type='center')\n    ax.set_axis_off()\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_30419_8",
+      "input_code": "def test_bar_label_location_horizontal_xyinverted():\n    ax = plt.gca()\n    ax.invert_xaxis()\n    ax.invert_yaxis()\n    ys, widths = [1, 2], [3, -4]\n    rects = ax.barh(ys, widths)\n    labels = ax.bar_label(rects)\n    assert labels[0].xy == (widths[0], ys[0])\n    assert labels[0].get_ha() == 'right'\n    assert labels[0].get_va() == 'center'\n    assert labels[1].xy == (widths[1], ys[1])\n    assert labels[1].get_ha() == 'left'\n    assert labels[1].get_va() == 'center'\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport matplotlib.pyplot as plt\nimport numpy as np\nimport datetime\n\n<testcase_1>\ny = [1, 2, 3]\nwidth = [4, 5, 6]\nheight = 0.5\nleft = [0, 1, 2]\nalign = 'center'\ndata = None\nkwargs = {'color': 'blue'}\n\n<testcase_2>\ny = [10, 20, 30]\nwidth = [7, 8, 9]\nheight = 1.0\nleft = [5, 5, 5]\nalign = 'edge'\ndata = None\nkwargs = {'edgecolor': 'red'}\n\n<testcase_3>\ny = [datetime.datetime(2023, 1, 1), datetime.datetime(2023, 1, 2)]\nwidth = [1, 2]\nheight = datetime.timedelta(days=1)\nleft = [datetime.datetime(2023, 1, 1)]\nalign = 'center'\ndata = None\nkwargs = {'alpha': 0.7}\n\n<testcase_4>\ny = np.array([0.1, 0.2, 0.3])\nwidth = np.array([0.4, 0.5, 0.6])\nheight = 0.3\nleft = np.array([0.05, 0.05, 0.05])\nalign = 'center'\ndata = None\nkwargs = {'linewidth': 2}\n\n<testcase_5>\ny = ['a', 'b', 'c']\nwidth = [10, 20, 30]\nheight = 0.8\nleft = [1, 2, 3]\nalign = 'center'\ndata = None\nkwargs = {'label': 'Test Bars'}"
+  ],
+  "gpt_output": "<needimport>\nimport matplotlib.pyplot as plt\nimport numpy as np\nimport datetime\n\n<testcase_1>\ny = [1, 2, 3]\nwidth = [4, 5, 6]\nheight = 0.5\nleft = [0, 1, 2]\nalign = 'center'\ndata = None\nkwargs = {'color': 'blue'}\n\n<testcase_2>\ny = [10, 20, 30]\nwidth = [7, 8, 9]\nheight = 1.0\nleft = [5, 5, 5]\nalign = 'edge'\ndata = None\nkwargs = {'edgecolor': 'red'}\n\n<testcase_3>\ny = [datetime.datetime(2023, 1, 1), datetime.datetime(2023, 1, 2)]\nwidth = [1, 2]\nheight = datetime.timedelta(days=1)\nleft = [datetime.datetime(2023, 1, 1)]\nalign = 'center'\ndata = None\nkwargs = {'alpha': 0.7}\n\n<testcase_4>\ny = np.array([0.1, 0.2, 0.3])\nwidth = np.array([0.4, 0.5, 0.6])\nheight = 0.3\nleft = np.array([0.05, 0.05, 0.05])\nalign = 'center'\ndata = None\nkwargs = {'linewidth': 2}\n\n<testcase_5>\ny = ['a', 'b', 'c']\nwidth = [10, 20, 30]\nheight = 0.8\nleft = [1, 2, 3]\nalign = 'center'\ndata = None\nkwargs = {'label': 'Test Bars'}",
+  "needimport": "import matplotlib.pyplot as plt\nimport numpy as np\nimport datetime\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "x": 0,
+        "y": 0.75,
+        "width": 4,
+        "height": 0.5
+      },
+      {
+        "x": 1,
+        "y": 1.75,
+        "width": 5,
+        "height": 0.5
+      },
+      {
+        "x": 2,
+        "y": 2.75,
+        "width": 6,
+        "height": 0.5
+      }
+    ],
+    "ans2": [
+      {
+        "x": 5,
+        "y": 9.5,
+        "width": 7,
+        "height": 1.0
+      },
+      {
+        "x": 5,
+        "y": 19.5,
+        "width": 8,
+        "height": 1.0
+      },
+      {
+        "x": 5,
+        "y": 29.5,
+        "width": 9,
+        "height": 1.0
+      }
+    ],
+    "ans3": [
+      {
+        "x": 19358.0,
+        "y": 19357.5,
+        "width": 1,
+        "height": 1.0
+      },
+      {
+        "x": 19358.0,
+        "y": 19358.5,
+        "width": 2,
+        "height": 1.0
+      }
+    ],
+    "ans4": [
+      {
+        "x": 0.05,
+        "y": -0.05000000000000002,
+        "width": 0.4,
+        "height": 0.30000000000000004
+      },
+      {
+        "x": 0.05,
+        "y": 0.04999999999999999,
+        "width": 0.5,
+        "height": 0.30000000000000004
+      },
+      {
+        "x": 0.05,
+        "y": 0.14999999999999997,
+        "width": 0.6,
+        "height": 0.30000000000000004
+      }
+    ],
+    "ans5": null
+  }
+}

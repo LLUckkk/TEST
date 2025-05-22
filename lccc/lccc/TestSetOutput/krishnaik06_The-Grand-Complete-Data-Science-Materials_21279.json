@@ -1,0 +1,67 @@
+{
+  "input_header": "def _create_access_path(self, obj):",
+  "input_docstring": null,
+  "output_code": "    def _create_access_path(self, obj):\n        return create_access_path(self._inference_state, obj)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_9",
+      "input_code": "    def get_annotation_name_and_args(self):\n        \n        name = None\n        args = ()\n        if safe_getattr(self._obj, '__module__', default='') == 'typing':\n            m = re.match(r'typing.(\\w+)\\[', repr(self._obj))\n            if m is not None:\n                name = m.group(1)\n\n                import typing\n                if sys.version_info >= (3, 8):\n                    args = typing.get_args(self._obj)\n                else:\n                    args = safe_getattr(self._obj, '__args__', default=None)\n        return name, tuple(self._create_access_path(arg) for arg in args)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_10",
+      "input_code": "    def get_signature_params(self):\n        return [\n            SignatureParam(\n                name=p.name,\n                has_default=p.default is not p.empty,\n                default=self._create_access_path(p.default),\n                default_string=repr(p.default),\n                has_annotation=p.annotation is not p.empty,\n                annotation=self._create_access_path(p.annotation),\n                annotation_string=self._annotation_to_str(p.annotation),\n                kind_name=str(p.kind)\n            ) for p in self._get_signature().parameters.values()\n        ]\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_5",
+      "input_code": "    def py__class__(self):\n        return self._create_access_path(self._obj.__class__)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_2",
+      "input_code": "    def py__getitem__all_values(self):\n        if isinstance(self._obj, dict):\n            return [self._create_access_path(v) for v in self._obj.values()]\n        if isinstance(self._obj, (list, tuple)):\n            return [self._create_access_path(v) for v in self._obj]\n\n        if self.is_instance():\n            cls = DirectObjectAccess(self._inference_state, self._obj.__class__)\n            return cls.py__getitem__all_values()\n\n        try:\n            getitem = self._obj.__getitem__\n        except AttributeError:\n            pass\n        else:\n            annotation = DirectObjectAccess(self._inference_state, getitem).get_return_annotation()\n            if annotation is not None:\n                return [annotation]\n        return None\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_6",
+      "input_code": "    def py__bases__(self):\n        return [self._create_access_path(base) for base in self._obj.__bases__]\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_11",
+      "input_code": "    def get_return_annotation(self):\n        try:\n            o = self._obj.__annotations__.get('return')\n        except AttributeError:\n            return None\n\n        if o is None:\n            return None\n\n        try:\n            o = typing.get_type_hints(self._obj).get('return')\n        except Exception:\n            pass\n\n        return self._create_access_path(o)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_3",
+      "input_code": "    def py__simple_getitem__(self, index):\n        if type(self._obj) not in ALLOWED_GETITEM_TYPES:\n            return None\n\n        return self._create_access_path(self._obj[index])\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_12",
+      "input_code": "    def negate(self):\n        return self._create_access_path(-self._obj)\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_1",
+      "input_code": "    def py__mro__accesses(self):\n        return tuple(self._create_access_path(cls) for cls in self._obj.__mro__[1:])\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_7",
+      "input_code": "    def get_key_paths(self):\n        def iter_partial_keys():\n            for (i, k) in enumerate(self._obj.keys()):\n                if i > 50:\n                    break\n                yield k\n\n        return [self._create_access_path(k) for k in iter_partial_keys()]\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_8",
+      "input_code": "    def execute_operation(self, other_access_handle, operator):\n        other_access = other_access_handle.access\n        op = _OPERATORS[operator]\n        return self._create_access_path(op(self._obj, other_access._obj))\n"
+    },
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_21279_4",
+      "input_code": "    def py__iter__list(self):\n        try:\n            iter_method = self._obj.__iter__\n        except AttributeError:\n            return None\n        else:\n            p = DirectObjectAccess(self._inference_state, iter_method).get_return_annotation()\n            if p is not None:\n                return [p]\n\n        if type(self._obj) not in ALLOWED_GETITEM_TYPES:\n            return []\n\n        lst = []\n        for i, part in enumerate(self._obj):\n            if i > 20:\n                break\n            lst.append(self._create_access_path(part))\n        return lst\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport typing\n\n<testcase_1>\nobj = [1, 2, 3, 4, 5]\n\n<testcase_2>\nobj = {'key1': 'value1', 'key2': 'value2'}\n\n<testcase_3>\nobj = (10, 20, 30)\n\n<testcase_4>\nobj = typing.List[int]\n\n<testcase_5>\nobj = -42\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport typing\n\n<testcase_1>\nobj = [1, 2, 3, 4, 5]\n\n<testcase_2>\nobj = {'key1': 'value1', 'key2': 'value2'}\n\n<testcase_3>\nobj = (10, 20, 30)\n\n<testcase_4>\nobj = typing.List[int]\n\n<testcase_5>\nobj = -42\n```",
+  "needimport": "import typing\n\n",
+  "test_results": {
+    "ans1": "[1, 2, 3, 4, 5]",
+    "ans2": "{'key1': 'value1', 'key2': 'value2'}",
+    "ans3": "(10, 20, 30)",
+    "ans4": "typing.List",
+    "ans5": "-42"
+  }
+}
