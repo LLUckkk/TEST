@@ -1,0 +1,57 @@
+{
+  "input_header": "def tag(self, unlabeled_sequence):",
+  "input_docstring": "Tags the sequence with the highest probability state sequence. This\nuses the best_path method to find the Viterbi path.\n\n:return: a labelled sequence of symbols\n:rtype: list\n:param unlabeled_sequence: the sequence of unlabeled symbols\n:type unlabeled_sequence: list",
+  "output_code": "    def tag(self, unlabeled_sequence):\n        \n        unlabeled_sequence = self._transform(unlabeled_sequence)\n        return self._tag(unlabeled_sequence)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_41643_1",
+      "input_code": "def demo():\n\n    print()\n    print(\"HMM probability calculation demo\")\n    print()\n\n    model, states, symbols = _market_hmm_example()\n\n    print(\"Testing\", model)\n\n    for test in [\n        [\"up\", \"up\"],\n        [\"up\", \"down\", \"up\"],\n        [\"down\"] * 5,\n        [\"unchanged\"] * 5 + [\"up\"],\n    ]:\n\n        sequence = [(t, None) for t in test]\n\n        print(\"Testing with state sequence\", test)\n        print(\"probability =\", model.probability(sequence))\n        print(\"tagging =    \", model.tag([word for (word, tag) in sequence]))\n        print(\"p(tagged) =  \", model.probability(sequence))\n        print(\"H =          \", model.entropy(sequence))\n        print(\"H_exh =      \", model._exhaustive_entropy(sequence))\n        print(\"H(point) =   \", model.point_entropy(sequence))\n        print(\"H_exh(point)=\", model._exhaustive_point_entropy(sequence))\n        print()\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport random\n\n<testcase_1>\nunlabeled_sequence = [\"up\", \"down\", \"unchanged\", \"up\", \"down\"]\n\n<testcase_2>\nunlabeled_sequence = [\"unchanged\", \"unchanged\", \"up\", \"down\", \"down\", \"up\"]\n\n<testcase_3>\nunlabeled_sequence = [\"down\", \"up\", \"up\", \"unchanged\", \"down\", \"unchanged\"]\n\n<testcase_4>\nunlabeled_sequence = [\"up\", \"up\", \"up\", \"down\", \"unchanged\"]\n\n<testcase_5>\nunlabeled_sequence = [\"unchanged\", \"down\", \"up\", \"up\", \"unchanged\", \"down\", \"up\"]\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport random\n\n<testcase_1>\nunlabeled_sequence = [\"up\", \"down\", \"unchanged\", \"up\", \"down\"]\n\n<testcase_2>\nunlabeled_sequence = [\"unchanged\", \"unchanged\", \"up\", \"down\", \"down\", \"up\"]\n\n<testcase_3>\nunlabeled_sequence = [\"down\", \"up\", \"up\", \"unchanged\", \"down\", \"unchanged\"]\n\n<testcase_4>\nunlabeled_sequence = [\"up\", \"up\", \"up\", \"down\", \"unchanged\"]\n\n<testcase_5>\nunlabeled_sequence = [\"unchanged\", \"down\", \"up\", \"up\", \"unchanged\", \"down\", \"up\"]\n```",
+  "needimport": "import random\n\n",
+  "test_results": {
+    "ans1": [
+      "label0: up",
+      "label1: down",
+      "label2: unchanged",
+      "label3: up",
+      "label4: down"
+    ],
+    "ans2": [
+      "label0: unchanged",
+      "label1: unchanged",
+      "label2: up",
+      "label3: down",
+      "label4: down",
+      "label5: up"
+    ],
+    "ans3": [
+      "label0: down",
+      "label1: up",
+      "label2: up",
+      "label3: unchanged",
+      "label4: down",
+      "label5: unchanged"
+    ],
+    "ans4": [
+      "label0: up",
+      "label1: up",
+      "label2: up",
+      "label3: down",
+      "label4: unchanged"
+    ],
+    "ans5": [
+      "label0: unchanged",
+      "label1: down",
+      "label2: up",
+      "label3: up",
+      "label4: unchanged",
+      "label5: down",
+      "label6: up"
+    ]
+  }
+}

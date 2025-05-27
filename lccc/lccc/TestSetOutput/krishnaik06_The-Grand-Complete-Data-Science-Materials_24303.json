@@ -1,0 +1,35 @@
+{
+  "input_header": "def parse_args(args):",
+  "input_docstring": null,
+  "output_code": "def parse_args(args):\n    arguments = vars(parser.parse_args(args=args or [\"--help\"]))\n    if arguments[\"output\"] != \"plain\" and arguments[\"error_format\"]:\n        raise parser.error(\n            \"--error-format can only be used with --output plain\",\n        )\n    if arguments[\"output\"] == \"plain\" and arguments[\"error_format\"] is None:\n        arguments[\"error_format\"] = \"{error.instance}: {error.message}\\n\"\n    return arguments",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_24303_1",
+      "input_code": "def main(args=sys.argv[1:]):\n    sys.exit(run(arguments=parse_args(args=args)))\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport sys\nimport argparse\n\n<testcase_1>\nargs = [\"--output\", \"plain\"]\n\n<testcase_2>\nargs = [\"--output\", \"json\", \"--error_format\", \"{error.code}: {error.message}\"]\n\n<testcase_3>\nargs = [\"--output\", \"plain\", \"--error_format\", \"{error.instance}: {error.message}\"]\n\n<testcase_4>\nargs = [\"--output\", \"xml\"]\n\n<testcase_5>\nargs = [\"--output\", \"plain\", \"--error_format\", None]"
+  ],
+  "gpt_output": "<needimport>\nimport sys\nimport argparse\n\n<testcase_1>\nargs = [\"--output\", \"plain\"]\n\n<testcase_2>\nargs = [\"--output\", \"json\", \"--error_format\", \"{error.code}: {error.message}\"]\n\n<testcase_3>\nargs = [\"--output\", \"plain\", \"--error_format\", \"{error.instance}: {error.message}\"]\n\n<testcase_4>\nargs = [\"--output\", \"xml\"]\n\n<testcase_5>\nargs = [\"--output\", \"plain\", \"--error_format\", None]",
+  "needimport": "import sys\nimport argparse\n\n",
+  "test_results": {
+    "ans1": {
+      "output": "plain",
+      "error_format": "{error.instance}: {error.message}\n"
+    },
+    "ans2": null,
+    "ans3": {
+      "output": "plain",
+      "error_format": "{error.instance}: {error.message}"
+    },
+    "ans4": {
+      "output": "xml",
+      "error_format": null
+    },
+    "ans5": {
+      "output": "plain",
+      "error_format": "{error.instance}: {error.message}\n"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "input_header": "def SetNextTime(self, lastTime, now):",
+  "input_docstring": null,
+  "output_code": "    def SetNextTime(self, lastTime, now):\n        return lastTime + self.timeAdd",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_90249_1",
+      "input_code": "    def IsTime(self):\n        now = time.time()\n        if self.nextTime is None:\n            self.nextTime = self.SetFirstTime(now)\n        ret = 0\n        if now >= self.nextTime:\n            ret = 1\n            self.nextTime = self.SetNextTime(self.nextTime, now)\n        return ret\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport time\n\n<testcase_1>\nlastTime = 1633036800.0\nnow = 1633036860.0\n\n<testcase_2>\nlastTime = 1633036800.0\nnow = 1633036920.0\n\n<testcase_3>\nlastTime = 1633036800.0\nnow = 1633036980.0\n\n<testcase_4>\nlastTime = 1633036800.0\nnow = 1633037040.0\n\n<testcase_5>\nlastTime = 1633036800.0\nnow = 1633037100.0"
+  ],
+  "gpt_output": "<needimport>\nimport time\n\n<testcase_1>\nlastTime = 1633036800.0\nnow = 1633036860.0\n\n<testcase_2>\nlastTime = 1633036800.0\nnow = 1633036920.0\n\n<testcase_3>\nlastTime = 1633036800.0\nnow = 1633036980.0\n\n<testcase_4>\nlastTime = 1633036800.0\nnow = 1633037040.0\n\n<testcase_5>\nlastTime = 1633036800.0\nnow = 1633037100.0",
+  "needimport": "import time\n\n",
+  "test_results": {
+    "ans1": 1633036860.0,
+    "ans2": 1633036920.0,
+    "ans3": 1633036980.0,
+    "ans4": 1633037040.0,
+    "ans5": 1633037100.0
+  }
+}

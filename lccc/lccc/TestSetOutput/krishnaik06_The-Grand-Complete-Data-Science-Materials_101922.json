@@ -1,0 +1,35 @@
+{
+  "input_header": "def get_sockaddr( host: str, port: int, family: socket.AddressFamily ) -> t.Union[t.Tuple[str, int], str]:",
+  "input_docstring": "Return a fully qualified socket address that can be passed to\n:func:`socket.bind`.",
+  "output_code": "def get_sockaddr(\n    host: str, port: int, family: socket.AddressFamily\n) -> t.Union[t.Tuple[str, int], str]:\n    \n    if family == af_unix:\n        return host.split(\"://\", 1)[1]\n    try:\n        res = socket.getaddrinfo(\n            host, port, family, socket.SOCK_STREAM, socket.IPPROTO_TCP\n        )\n    except socket.gaierror:\n        return host, port\n    return res[0][4]",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_101922_1",
+      "input_code": "    def __init__(\n        self,\n        host: str,\n        port: int,\n        app: \"WSGIApplication\",\n        handler: t.Optional[t.Type[WSGIRequestHandler]] = None,\n        passthrough_errors: bool = False,\n        ssl_context: t.Optional[_TSSLContextArg] = None,\n        fd: t.Optional[int] = None,\n    ) -> None:\n        if handler is None:\n            handler = WSGIRequestHandler\n\n        if \"protocol_version\" not in vars(handler) and (\n            self.multithread or self.multiprocess\n        ):\n            handler.protocol_version = \"HTTP/1.1\"\n\n        self.host = host\n        self.port = port\n        self.app = app\n        self.passthrough_errors = passthrough_errors\n\n        self.address_family = address_family = select_address_family(host, port)\n        server_address = get_sockaddr(host, int(port), address_family)\n\n        if address_family == af_unix and fd is None:\n            server_address = t.cast(str, server_address)\n\n            if os.path.exists(server_address):\n                os.unlink(server_address)\n\n        super().__init__(\n            server_address,            handler,\n            bind_and_activate=False,\n        )\n\n        if fd is None:\n            try:\n                self.server_bind()\n                self.server_activate()\n            except OSError as e:\n                self.server_close()\n                print(e.strerror, file=sys.stderr)\n\n                if e.errno == errno.EADDRINUSE:\n                    print(\n                        f\"Port {port} is in use by another program. Either identify and\"\n                        \" stop that program, or start the server with a different\"\n                        \" port.\",\n                        file=sys.stderr,\n                    )\n\n                    if sys.platform == \"darwin\" and port == 5000:\n                        print(\n                            \"On macOS, try disabling the 'AirPlay Receiver' service\"\n                            \" from System Preferences -> Sharing.\",\n                            file=sys.stderr,\n                        )\n\n                sys.exit(1)\n            except BaseException:\n                self.server_close()\n                raise\n        else:\n            self.server_close()\n\n            self.socket = socket.fromfd(fd, address_family, socket.SOCK_STREAM)\n            self.server_address = self.socket.getsockname()\n\n        if address_family != af_unix:\n            self.port = self.server_address[1]\n\n        if ssl_context is not None:\n            if isinstance(ssl_context, tuple):\n                ssl_context = load_ssl_context(*ssl_context)\n            elif ssl_context == \"adhoc\":\n                ssl_context = generate_adhoc_ssl_context()\n\n            self.socket = ssl_context.wrap_socket(self.socket, server_side=True)\n            self.ssl_context: t.Optional[\"ssl.SSLContext\"] = ssl_context\n        else:\n            self.ssl_context = None\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport socket\nimport typing as t\n\n<testcase_1>\nhost = \"localhost\"\nport = 8080\nfamily = socket.AF_INET\n\n<testcase_2>\nhost = \"127.0.0.1\"\nport = 80\nfamily = socket.AF_INET\n\n<testcase_3>\nhost = \"example.com\"\nport = 443\nfamily = socket.AF_INET\n\n<testcase_4>\nhost = \"unix://tmp/socket\"\nport = 0\nfamily = socket.AF_UNIX\n\n<testcase_5>\nhost = \"192.168.1.1\"\nport = 22\nfamily = socket.AF_INET\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport socket\nimport typing as t\n\n<testcase_1>\nhost = \"localhost\"\nport = 8080\nfamily = socket.AF_INET\n\n<testcase_2>\nhost = \"127.0.0.1\"\nport = 80\nfamily = socket.AF_INET\n\n<testcase_3>\nhost = \"example.com\"\nport = 443\nfamily = socket.AF_INET\n\n<testcase_4>\nhost = \"unix://tmp/socket\"\nport = 0\nfamily = socket.AF_UNIX\n\n<testcase_5>\nhost = \"192.168.1.1\"\nport = 22\nfamily = socket.AF_INET\n```",
+  "needimport": "import socket\nimport typing as t\n\n",
+  "test_results": {
+    "ans1": [
+      "127.0.0.1",
+      8080
+    ],
+    "ans2": [
+      "127.0.0.1",
+      80
+    ],
+    "ans3": [
+      "23.192.228.84",
+      443
+    ],
+    "ans4": null,
+    "ans5": [
+      "192.168.1.1",
+      22
+    ]
+  }
+}

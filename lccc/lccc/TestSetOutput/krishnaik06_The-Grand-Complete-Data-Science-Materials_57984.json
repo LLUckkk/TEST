@@ -1,0 +1,47 @@
+{
+  "input_header": "def _get_comb_axis(self, i: AxisInt) -> Index:",
+  "input_docstring": null,
+  "output_code": "    def _get_comb_axis(self, i: AxisInt) -> Index:\n        data_axis = self.objs[0]._get_block_manager_axis(i)\n        return get_objs_combined_axis(\n            self.objs,\n            axis=data_axis,\n            intersect=self.intersect,\n            sort=self.sort,\n            copy=self.copy,\n        )",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_57984_1",
+      "input_code": "    def _get_new_axes(self) -> list[Index]:\n        ndim = self._get_result_dim()\n        return [\n            self._get_concat_axis if i == self.bm_axis else self._get_comb_axis(i)\n            for i in range(ndim)\n        ]\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pandas as pd\nfrom pandas import Index\n\n<testcase_1>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'A': [1, 2], 'B': [3, 4]}), pd.DataFrame({'A': [5, 6], 'B': [7, 8]})],\n    'intersect': False,\n    'sort': True,\n    'copy': False,\n    'bm_axis': 0,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 0\n\n<testcase_2>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'A': [1, 2], 'B': [3, 4]}), pd.DataFrame({'A': [5, 6], 'B': [7, 8]})],\n    'intersect': True,\n    'sort': False,\n    'copy': True,\n    'bm_axis': 1,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 1\n\n<testcase_3>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'A': [1, 2], 'C': [3, 4]}), pd.DataFrame({'B': [5, 6], 'C': [7, 8]})],\n    'intersect': True,\n    'sort': True,\n    'copy': False,\n    'bm_axis': 0,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 0\n\n<testcase_4>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'X': [1, 2], 'Y': [3, 4]}), pd.DataFrame({'X': [5, 6], 'Y': [7, 8]})],\n    'intersect': False,\n    'sort': False,\n    'copy': True,\n    'bm_axis': 1,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 1\n\n<testcase_5>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'M': [1, 2], 'N': [3, 4]}), pd.DataFrame({'M': [5, 6], 'N': [7, 8]})],\n    'intersect': False,\n    'sort': True,\n    'copy': False,\n    'bm_axis': 0,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 0"
+  ],
+  "gpt_output": "<needimport>\nimport pandas as pd\nfrom pandas import Index\n\n<testcase_1>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'A': [1, 2], 'B': [3, 4]}), pd.DataFrame({'A': [5, 6], 'B': [7, 8]})],\n    'intersect': False,\n    'sort': True,\n    'copy': False,\n    'bm_axis': 0,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 0\n\n<testcase_2>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'A': [1, 2], 'B': [3, 4]}), pd.DataFrame({'A': [5, 6], 'B': [7, 8]})],\n    'intersect': True,\n    'sort': False,\n    'copy': True,\n    'bm_axis': 1,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 1\n\n<testcase_3>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'A': [1, 2], 'C': [3, 4]}), pd.DataFrame({'B': [5, 6], 'C': [7, 8]})],\n    'intersect': True,\n    'sort': True,\n    'copy': False,\n    'bm_axis': 0,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 0\n\n<testcase_4>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'X': [1, 2], 'Y': [3, 4]}), pd.DataFrame({'X': [5, 6], 'Y': [7, 8]})],\n    'intersect': False,\n    'sort': False,\n    'copy': True,\n    'bm_axis': 1,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 1\n\n<testcase_5>\nself = type('TestObj', (object,), {\n    'objs': [pd.DataFrame({'M': [1, 2], 'N': [3, 4]}), pd.DataFrame({'M': [5, 6], 'N': [7, 8]})],\n    'intersect': False,\n    'sort': True,\n    'copy': False,\n    'bm_axis': 0,\n    '_get_block_manager_axis': lambda self, i: i\n})()\ni = 0",
+  "needimport": "import pandas as pd\nfrom pandas import Index\n\n",
+  "test_results": {
+    "ans1": {
+      "values": [
+        "A",
+        "B"
+      ]
+    },
+    "ans2": {
+      "values": [
+        0,
+        1
+      ]
+    },
+    "ans3": {
+      "values": [
+        "C"
+      ]
+    },
+    "ans4": {
+      "values": [
+        0,
+        1
+      ]
+    },
+    "ans5": {
+      "values": [
+        "M",
+        "N"
+      ]
+    }
+  }
+}

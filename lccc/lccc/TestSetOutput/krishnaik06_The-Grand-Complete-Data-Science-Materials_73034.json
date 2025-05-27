@@ -1,0 +1,38 @@
+{
+  "input_header": "def _get_axes_layout(self, axes):",
+  "input_docstring": null,
+  "output_code": "    def _get_axes_layout(self, axes):\n        x_set = set()\n        y_set = set()\n        for ax in axes:\n            points = ax.get_position().get_points()\n            x_set.add(points[0][0])\n            y_set.add(points[0][1])\n        return (len(y_set), len(x_set))",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_73034_1",
+      "input_code": "    def _check_axes_shape(self, axes, axes_num=None, layout=None, figsize=None):\n        \n        from pandas.plotting._matplotlib.tools import flatten_axes\n\n        if figsize is None:\n            figsize = (6.4, 4.8)\n        visible_axes = self._flatten_visible(axes)\n\n        if axes_num is not None:\n            assert len(visible_axes) == axes_num\n            for ax in visible_axes:\n                assert len(ax.get_children()) > 0\n\n        if layout is not None:\n            result = self._get_axes_layout(flatten_axes(axes))\n            assert result == layout\n\n        tm.assert_numpy_array_equal(\n            visible_axes[0].figure.get_size_inches(),\n            np.array(figsize, dtype=np.float64),\n        )\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport matplotlib.pyplot as plt\n\n<testcase_1>\nfig, axes = plt.subplots(2, 2)\naxes = [ax for row in axes for ax in row]\n\n<testcase_2>\nfig, axes = plt.subplots(3, 1)\naxes = [ax for ax in axes]\n\n<testcase_3>\nfig, axes = plt.subplots(1, 3)\naxes = [ax for ax in axes]\n\n<testcase_4>\nfig, axes = plt.subplots(4, 4)\naxes = [ax for row in axes for ax in row]\n\n<testcase_5>\nfig, axes = plt.subplots(2, 3)\naxes = [ax for row in axes for ax in row]"
+  ],
+  "gpt_output": "<needimport>\nimport matplotlib.pyplot as plt\n\n<testcase_1>\nfig, axes = plt.subplots(2, 2)\naxes = [ax for row in axes for ax in row]\n\n<testcase_2>\nfig, axes = plt.subplots(3, 1)\naxes = [ax for ax in axes]\n\n<testcase_3>\nfig, axes = plt.subplots(1, 3)\naxes = [ax for ax in axes]\n\n<testcase_4>\nfig, axes = plt.subplots(4, 4)\naxes = [ax for row in axes for ax in row]\n\n<testcase_5>\nfig, axes = plt.subplots(2, 3)\naxes = [ax for row in axes for ax in row]",
+  "needimport": "import matplotlib.pyplot as plt\n\n",
+  "test_results": {
+    "ans1": [
+      2,
+      2
+    ],
+    "ans2": [
+      3,
+      1
+    ],
+    "ans3": [
+      1,
+      3
+    ],
+    "ans4": [
+      4,
+      4
+    ],
+    "ans5": [
+      2,
+      3
+    ]
+  }
+}

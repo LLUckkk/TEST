@@ -1,0 +1,23 @@
+{
+  "input_header": "def is_char_in_string(self, text_index):",
+  "input_docstring": null,
+  "output_code": "    def is_char_in_string(self, text_index):\n        text_index = self.text._getoffset(text_index)\n        c = self.text.edit._GetColorizer()\n        if c and c.GetStringStyle(text_index) is None:\n            return 0\n        return 1",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_91420_1",
+      "input_code": "    def find_good_parse_start(self, use_ps1, is_char_in_string=None):\n        str, pos = self.str, None\n        if use_ps1:\n            ps1 = \"\\n\" + sys.ps1\n            i = str.rfind(ps1)\n            if i >= 0:\n                pos = i + len(ps1)\n                self.str = str[: pos - 1] + \"\\n\" + str[pos:]\n            return pos\n\n        if not is_char_in_string:\n            return None\n\n        limit = len(str)\n        for tries in range(5):\n            i = str.rfind(\":\\n\", 0, limit)\n            if i < 0:\n                break\n            i = str.rfind(\"\\n\", 0, i) + 1\n            m = _synchre(str, i, limit)\n            if m and not is_char_in_string(m.start()):\n                pos = m.start()\n                break\n            limit = i\n        if pos is None:\n            m = _synchre(str)\n            if m and not is_char_in_string(m.start()):\n                pos = m.start()\n            return pos\n\n        i = pos + 1\n        while 1:\n            m = _synchre(str, i)\n            if m:\n                s, i = m.span()\n                if not is_char_in_string(s):\n                    pos = s\n            else:\n                break\n        return pos\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport sys\n\n<testcase_1>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: None})()})()})()})\ntext_index = 5\n\n<testcase_2>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: 'style'})()})()})()})\ntext_index = 10\n\n<testcase_3>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: None})()})()})()})\ntext_index = 0\n\n<testcase_4>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: 'style'})()})()})()})\ntext_index = 15\n\n<testcase_5>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: None})()})()})()})\ntext_index = 25"
+  ],
+  "gpt_output": "<needimport>\nimport sys\n\n<testcase_1>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: None})()})()})()})\ntext_index = 5\n\n<testcase_2>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: 'style'})()})()})()})\ntext_index = 10\n\n<testcase_3>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: None})()})()})()})\ntext_index = 0\n\n<testcase_4>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: 'style'})()})()})()})\ntext_index = 15\n\n<testcase_5>\nself = type('test', (object,), {'text': type('text', (object,), {'_getoffset': lambda x: x, 'edit': type('edit', (object,), {'_GetColorizer': lambda: type('colorizer', (object,), {'GetStringStyle': lambda x: None})()})()})()})\ntext_index = 25",
+  "needimport": "import sys\n\n",
+  "test_results": {
+    "ans1": 0,
+    "ans2": 1,
+    "ans3": 0,
+    "ans4": 1,
+    "ans5": 0
+  }
+}

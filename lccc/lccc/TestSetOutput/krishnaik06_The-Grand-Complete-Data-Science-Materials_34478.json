@@ -1,0 +1,166 @@
+{
+  "input_header": "def splitx(self, *args):",
+  "input_docstring": "Return a list of new `Bbox` objects formed by splitting the original\none with vertical lines at fractional positions given by *args*.",
+  "output_code": "    def splitx(self, *args):\n        \n        xf = [0, *args, 1]\n        x0, y0, x1, y1 = self.extents\n        w = x1 - x0\n        return [Bbox([[x0 + xf0 * w, y0], [x0 + xf1 * w, y1]])\n                for xf0, xf1 in zip(xf[:-1], xf[1:])]",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_34478_1",
+      "input_code": "def make_axes(parents, location=None, orientation=None, fraction=0.15,\n              shrink=1.0, aspect=20, **kwargs):\n    \n    loc_settings = _normalize_location_orientation(location, orientation)\n    kwargs['orientation'] = loc_settings['orientation']\n    location = kwargs['ticklocation'] = loc_settings['location']\n\n    anchor = kwargs.pop('anchor', loc_settings['anchor'])\n    panchor = kwargs.pop('panchor', loc_settings['panchor'])\n    aspect0 = aspect\n    if isinstance(parents, np.ndarray):\n        parents = list(parents.flat)\n    elif np.iterable(parents):\n        parents = list(parents)\n    else:\n        parents = [parents]\n\n    fig = parents[0].get_figure()\n\n    pad0 = 0.05 if fig.get_constrained_layout() else loc_settings['pad']\n    pad = kwargs.pop('pad', pad0)\n\n    if not all(fig is ax.get_figure() for ax in parents):\n        raise ValueError('Unable to create a colorbar axes as not all '\n                         'parents share the same figure.')\n\n    parents_bbox = mtransforms.Bbox.union(\n        [ax.get_position(original=True).frozen() for ax in parents])\n\n    pb = parents_bbox\n    if location in ('left', 'right'):\n        if location == 'left':\n            pbcb, _, pb1 = pb.splitx(fraction, fraction + pad)\n        else:\n            pb1, _, pbcb = pb.splitx(1 - fraction - pad, 1 - fraction)\n        pbcb = pbcb.shrunk(1.0, shrink).anchored(anchor, pbcb)\n    else:\n        if location == 'bottom':\n            pbcb, _, pb1 = pb.splity(fraction, fraction + pad)\n        else:\n            pb1, _, pbcb = pb.splity(1 - fraction - pad, 1 - fraction)\n        pbcb = pbcb.shrunk(shrink, 1.0).anchored(anchor, pbcb)\n\n        aspect = 1.0 / aspect\n\n    shrinking_trans = mtransforms.BboxTransform(parents_bbox, pb1)\n\n    for ax in parents:\n        new_posn = shrinking_trans.transform(ax.get_position(original=True))\n        new_posn = mtransforms.Bbox(new_posn)\n        ax._set_position(new_posn)\n        if panchor is not False:\n            ax.set_anchor(panchor)\n\n    cax = fig.add_axes(pbcb, label=\"<colorbar>\")\n    for a in parents:\n        a._colorbars += [cax]\n    cax._colorbar_info = dict(\n        parents=parents,\n        location=location,\n        shrink=shrink,\n        anchor=anchor,\n        panchor=panchor,\n        fraction=fraction,\n        aspect=aspect0,\n        pad=pad)\n    cax.set_anchor(anchor)\n    cax.set_box_aspect(aspect)\n    cax.set_aspect('auto')\n\n    return cax, kwargs\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport matplotlib.transforms as mtransforms\n\n<testcase_1>\nbbox = mtransforms.Bbox.from_extents(0, 0, 10, 10)\nargs = (0.25, 0.5, 0.75)\n\n<testcase_2>\nbbox = mtransforms.Bbox.from_extents(0, 0, 5, 5)\nargs = (0.1, 0.3, 0.6, 0.9)\n\n<testcase_3>\nbbox = mtransforms.Bbox.from_extents(0, 0, 20, 20)\nargs = (0.2, 0.4, 0.6, 0.8)\n\n<testcase_4>\nbbox = mtransforms.Bbox.from_extents(-5, -5, 5, 5)\nargs = (0.33, 0.66)\n\n<testcase_5>\nbbox = mtransforms.Bbox.from_extents(0, 0, 15, 15)\nargs = (0.1, 0.2, 0.3, 0.4, 0.5)\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport matplotlib.transforms as mtransforms\n\n<testcase_1>\nbbox = mtransforms.Bbox.from_extents(0, 0, 10, 10)\nargs = (0.25, 0.5, 0.75)\n\n<testcase_2>\nbbox = mtransforms.Bbox.from_extents(0, 0, 5, 5)\nargs = (0.1, 0.3, 0.6, 0.9)\n\n<testcase_3>\nbbox = mtransforms.Bbox.from_extents(0, 0, 20, 20)\nargs = (0.2, 0.4, 0.6, 0.8)\n\n<testcase_4>\nbbox = mtransforms.Bbox.from_extents(-5, -5, 5, 5)\nargs = (0.33, 0.66)\n\n<testcase_5>\nbbox = mtransforms.Bbox.from_extents(0, 0, 15, 15)\nargs = (0.1, 0.2, 0.3, 0.4, 0.5)\n```",
+  "needimport": "import matplotlib.transforms as mtransforms\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "x0": 0.0,
+        "y0": 0.0,
+        "x1": 2.5,
+        "y1": 10.0
+      },
+      {
+        "x0": 2.5,
+        "y0": 0.0,
+        "x1": 5.0,
+        "y1": 10.0
+      },
+      {
+        "x0": 5.0,
+        "y0": 0.0,
+        "x1": 7.5,
+        "y1": 10.0
+      },
+      {
+        "x0": 7.5,
+        "y0": 0.0,
+        "x1": 10.0,
+        "y1": 10.0
+      }
+    ],
+    "ans2": [
+      {
+        "x0": 0.0,
+        "y0": 0.0,
+        "x1": 0.5,
+        "y1": 5.0
+      },
+      {
+        "x0": 0.5,
+        "y0": 0.0,
+        "x1": 1.5,
+        "y1": 5.0
+      },
+      {
+        "x0": 1.5,
+        "y0": 0.0,
+        "x1": 3.0,
+        "y1": 5.0
+      },
+      {
+        "x0": 3.0,
+        "y0": 0.0,
+        "x1": 4.5,
+        "y1": 5.0
+      },
+      {
+        "x0": 4.5,
+        "y0": 0.0,
+        "x1": 5.0,
+        "y1": 5.0
+      }
+    ],
+    "ans3": [
+      {
+        "x0": 0.0,
+        "y0": 0.0,
+        "x1": 4.0,
+        "y1": 20.0
+      },
+      {
+        "x0": 4.0,
+        "y0": 0.0,
+        "x1": 8.0,
+        "y1": 20.0
+      },
+      {
+        "x0": 8.0,
+        "y0": 0.0,
+        "x1": 12.0,
+        "y1": 20.0
+      },
+      {
+        "x0": 12.0,
+        "y0": 0.0,
+        "x1": 16.0,
+        "y1": 20.0
+      },
+      {
+        "x0": 16.0,
+        "y0": 0.0,
+        "x1": 20.0,
+        "y1": 20.0
+      }
+    ],
+    "ans4": [
+      {
+        "x0": -5.0,
+        "y0": -5.0,
+        "x1": -1.6999999999999997,
+        "y1": 5.0
+      },
+      {
+        "x0": -1.6999999999999997,
+        "y0": -5.0,
+        "x1": 1.6000000000000005,
+        "y1": 5.0
+      },
+      {
+        "x0": 1.6000000000000005,
+        "y0": -5.0,
+        "x1": 5.0,
+        "y1": 5.0
+      }
+    ],
+    "ans5": [
+      {
+        "x0": 0.0,
+        "y0": 0.0,
+        "x1": 1.5,
+        "y1": 15.0
+      },
+      {
+        "x0": 1.5,
+        "y0": 0.0,
+        "x1": 3.0,
+        "y1": 15.0
+      },
+      {
+        "x0": 3.0,
+        "y0": 0.0,
+        "x1": 4.5,
+        "y1": 15.0
+      },
+      {
+        "x0": 4.5,
+        "y0": 0.0,
+        "x1": 6.0,
+        "y1": 15.0
+      },
+      {
+        "x0": 6.0,
+        "y0": 0.0,
+        "x1": 7.5,
+        "y1": 15.0
+      },
+      {
+        "x0": 7.5,
+        "y0": 0.0,
+        "x1": 15.0,
+        "y1": 15.0
+      }
+    ]
+  }
+}

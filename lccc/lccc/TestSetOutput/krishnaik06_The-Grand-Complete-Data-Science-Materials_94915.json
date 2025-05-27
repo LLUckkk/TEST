@@ -1,0 +1,100 @@
+{
+  "input_header": "def _pad_version(left, right):",
+  "input_docstring": null,
+  "output_code": "def _pad_version(left, right):\n    left_split, right_split = [], []\n\n    left_split.append(list(itertools.takewhile(lambda x: x.isdigit(), left)))\n    right_split.append(list(itertools.takewhile(lambda x: x.isdigit(), right)))\n\n    left_split.append(left[len(left_split[0]) :])\n    right_split.append(right[len(right_split[0]) :])\n\n    left_split.insert(1, [\"0\"] * max(0, len(right_split[0]) - len(left_split[0])))\n    right_split.insert(1, [\"0\"] * max(0, len(left_split[0]) - len(right_split[0])))\n\n    return (list(itertools.chain(*left_split)), list(itertools.chain(*right_split)))",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_94915_1",
+      "input_code": "    def _compare_equal(self, prospective, spec):\n        if spec.endswith(\".*\"):\n            prospective = Version(prospective.public)\n            spec = _version_split(spec[:-2])\n\n            prospective = _version_split(str(prospective))\n\n            prospective = prospective[: len(spec)]\n\n            spec, prospective = _pad_version(spec, prospective)\n        else:\n            spec = Version(spec)\n\n            if not spec.local:\n                prospective = Version(prospective.public)\n\n        return prospective == spec\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport itertools\n\n<testcase_1>\nleft = \"1.2.3\"\nright = \"1.2\"\n\n<testcase_2>\nleft = \"2.0\"\nright = \"2.0.1\"\n\n<testcase_3>\nleft = \"3.4.5.6\"\nright = \"3.4.5\"\n\n<testcase_4>\nleft = \"10.0.0\"\nright = \"10\"\n\n<testcase_5>\nleft = \"1.0.0-alpha\"\nright = \"1.0.0\""
+  ],
+  "gpt_output": "<needimport>\nimport itertools\n\n<testcase_1>\nleft = \"1.2.3\"\nright = \"1.2\"\n\n<testcase_2>\nleft = \"2.0\"\nright = \"2.0.1\"\n\n<testcase_3>\nleft = \"3.4.5.6\"\nright = \"3.4.5\"\n\n<testcase_4>\nleft = \"10.0.0\"\nright = \"10\"\n\n<testcase_5>\nleft = \"1.0.0-alpha\"\nright = \"1.0.0\"",
+  "needimport": "import itertools\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        "1",
+        ".",
+        "2",
+        ".",
+        "3"
+      ],
+      [
+        "1",
+        ".",
+        "2"
+      ]
+    ],
+    "ans2": [
+      [
+        "2",
+        ".",
+        "0"
+      ],
+      [
+        "2",
+        ".",
+        "0",
+        ".",
+        "1"
+      ]
+    ],
+    "ans3": [
+      [
+        "3",
+        ".",
+        "4",
+        ".",
+        "5",
+        ".",
+        "6"
+      ],
+      [
+        "3",
+        ".",
+        "4",
+        ".",
+        "5"
+      ]
+    ],
+    "ans4": [
+      [
+        "1",
+        "0",
+        ".",
+        "0",
+        ".",
+        "0"
+      ],
+      [
+        "1",
+        "0"
+      ]
+    ],
+    "ans5": [
+      [
+        "1",
+        ".",
+        "0",
+        ".",
+        "0",
+        "-",
+        "a",
+        "l",
+        "p",
+        "h",
+        "a"
+      ],
+      [
+        "1",
+        ".",
+        "0",
+        ".",
+        "0"
+      ]
+    ]
+  }
+}

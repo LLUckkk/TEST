@@ -1,0 +1,53 @@
+{
+  "input_header": "def copy_with(self, params):",
+  "input_docstring": null,
+  "output_code": "        def copy_with(self, params):\n            assert len(params) == 1\n            new_type = params[0]\n            return _AnnotatedAlias(new_type, self.__metadata__)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_100406_1",
+      "input_code": "    def _strip_extras(t):\n        \n        if isinstance(t, _AnnotatedAlias):\n            return _strip_extras(t.__origin__)\n        if hasattr(t, \"__origin__\") and t.__origin__ in (Required, NotRequired):\n            return _strip_extras(t.__args__[0])\n        if isinstance(t, typing._GenericAlias):\n            stripped_args = tuple(_strip_extras(a) for a in t.__args__)\n            if stripped_args == t.__args__:\n                return t\n            return t.copy_with(stripped_args)\n        if hasattr(types, \"GenericAlias\") and isinstance(t, types.GenericAlias):\n            stripped_args = tuple(_strip_extras(a) for a in t.__args__)\n            if stripped_args == t.__args__:\n                return t\n            return types.GenericAlias(t.__origin__, stripped_args)\n        if hasattr(types, \"UnionType\") and isinstance(t, types.UnionType):\n            stripped_args = tuple(_strip_extras(a) for a in t.__args__)\n            if stripped_args == t.__args__:\n                return t\n            return functools.reduce(operator.or_, stripped_args)\n\n        return t\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport typing\nimport types\n\n<testcase_1>\nself = _AnnotatedAlias(int, {\"metadata\": \"example\"})\nparams = [str]\n\n<testcase_2>\nself = _AnnotatedAlias(list, {\"metadata\": \"example\"})\nparams = [dict]\n\n<testcase_3>\nself = _AnnotatedAlias(tuple, {\"metadata\": \"example\"})\nparams = [set]\n\n<testcase_4>\nself = _AnnotatedAlias(float, {\"metadata\": \"example\"})\nparams = [complex]\n\n<testcase_5>\nself = _AnnotatedAlias(bool, {\"metadata\": \"example\"})\nparams = [bytes]"
+  ],
+  "gpt_output": "<needimport>\nimport typing\nimport types\n\n<testcase_1>\nself = _AnnotatedAlias(int, {\"metadata\": \"example\"})\nparams = [str]\n\n<testcase_2>\nself = _AnnotatedAlias(list, {\"metadata\": \"example\"})\nparams = [dict]\n\n<testcase_3>\nself = _AnnotatedAlias(tuple, {\"metadata\": \"example\"})\nparams = [set]\n\n<testcase_4>\nself = _AnnotatedAlias(float, {\"metadata\": \"example\"})\nparams = [complex]\n\n<testcase_5>\nself = _AnnotatedAlias(bool, {\"metadata\": \"example\"})\nparams = [bytes]",
+  "needimport": "import typing\nimport types\n\n",
+  "test_results": {
+    "ans1": {
+      "_type": "_AnnotatedAlias",
+      "origin": "<class 'str'>",
+      "metadata": {
+        "metadata": "example1"
+      }
+    },
+    "ans2": {
+      "_type": "_AnnotatedAlias",
+      "origin": "<class 'dict'>",
+      "metadata": {
+        "metadata": "example2"
+      }
+    },
+    "ans3": {
+      "_type": "_AnnotatedAlias",
+      "origin": "<class 'set'>",
+      "metadata": {
+        "metadata": "example3"
+      }
+    },
+    "ans4": {
+      "_type": "_AnnotatedAlias",
+      "origin": "<class 'complex'>",
+      "metadata": {
+        "metadata": "example4"
+      }
+    },
+    "ans5": {
+      "_type": "_AnnotatedAlias",
+      "origin": "<class 'bytes'>",
+      "metadata": {
+        "metadata": "example5"
+      }
+    }
+  }
+}

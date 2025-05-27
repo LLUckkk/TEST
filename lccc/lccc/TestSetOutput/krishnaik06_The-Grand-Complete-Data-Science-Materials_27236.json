@@ -1,0 +1,375 @@
+{
+  "input_header": "def get_default_bbox_extra_artists(self):",
+  "input_docstring": "Return a default list of artists that are used for the bounding box\ncalculation.\n\nArtists are excluded either by not being visible or\n``artist.set_in_layout(False)``.",
+  "output_code": "    def get_default_bbox_extra_artists(self):\n        \n\n        artists = self.get_children()\n\n        for axis in self._axis_map.values():\n            artists.remove(axis)\n        if not (self.axison and self._frameon):\n            for spine in self.spines.values():\n                artists.remove(spine)\n\n        artists.remove(self.title)\n        artists.remove(self._left_title)\n        artists.remove(self._right_title)\n\n        noclip = (_AxesBase, maxis.Axis,\n                  offsetbox.AnnotationBbox, offsetbox.OffsetBox)\n        return [a for a in artists if a.get_visible() and a.get_in_layout()\n                and (isinstance(a, noclip) or not a._fully_clipped_to_axes())]",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_27236_1",
+      "input_code": "    def get_tightbbox(self, renderer=None, call_axes_locator=True,\n                      bbox_extra_artists=None, *, for_layout_only=False):\n        \n\n        bb = []\n        if renderer is None:\n            renderer = self.figure._get_renderer()\n\n        if not self.get_visible():\n            return None\n\n        locator = self.get_axes_locator()\n        self.apply_aspect(\n            locator(self, renderer) if locator and call_axes_locator else None)\n\n        for axis in self._axis_map.values():\n            if self.axison and axis.get_visible():\n                ba = martist._get_tightbbox_for_layout_only(axis, renderer)\n                if ba:\n                    bb.append(ba)\n        self._update_title_position(renderer)\n        axbbox = self.get_window_extent(renderer)\n        bb.append(axbbox)\n\n        for title in [self.title, self._left_title, self._right_title]:\n            if title.get_visible():\n                bt = title.get_window_extent(renderer)\n                if for_layout_only and bt.width > 0:\n                    bt.x0 = (bt.x0 + bt.x1) / 2 - 0.5\n                    bt.x1 = bt.x0 + 1.0\n                bb.append(bt)\n\n        bbox_artists = bbox_extra_artists\n        if bbox_artists is None:\n            bbox_artists = self.get_default_bbox_extra_artists()\n\n        for a in bbox_artists:\n            bbox = a.get_tightbbox(renderer)\n            if (bbox is not None\n                    and 0 < bbox.width < np.inf\n                    and 0 < bbox.height < np.inf):\n                bb.append(bbox)\n        return mtransforms.Bbox.union(\n            [b for b in bb if b.width != 0 or b.height != 0])\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport matplotlib.pyplot as plt\nimport numpy as np\nfrom matplotlib.offsetbox import AnnotationBbox, OffsetBox\nfrom matplotlib.axes import _AxesBase\nfrom matplotlib.axis import Axis\n\n<testcase_1>\nfig, ax = plt.subplots()\nax.plot([0, 1], [0, 1])\nself = ax\n\n<testcase_2>\nfig, ax = plt.subplots()\nax.scatter([0, 1, 2], [2, 1, 0])\nself = ax\n\n<testcase_3>\nfig, ax = plt.subplots()\nax.bar([0, 1, 2], [2, 1, 0])\nself = ax\n\n<testcase_4>\nfig, ax = plt.subplots()\nax.hist([0, 1, 2, 1, 0])\nself = ax\n\n<testcase_5>\nfig, ax = plt.subplots()\nax.pie([10, 20, 30])\nself = ax"
+  ],
+  "gpt_output": "<needimport>\nimport matplotlib.pyplot as plt\nimport numpy as np\nfrom matplotlib.offsetbox import AnnotationBbox, OffsetBox\nfrom matplotlib.axes import _AxesBase\nfrom matplotlib.axis import Axis\n\n<testcase_1>\nfig, ax = plt.subplots()\nax.plot([0, 1], [0, 1])\nself = ax\n\n<testcase_2>\nfig, ax = plt.subplots()\nax.scatter([0, 1, 2], [2, 1, 0])\nself = ax\n\n<testcase_3>\nfig, ax = plt.subplots()\nax.bar([0, 1, 2], [2, 1, 0])\nself = ax\n\n<testcase_4>\nfig, ax = plt.subplots()\nax.hist([0, 1, 2, 1, 0])\nself = ax\n\n<testcase_5>\nfig, ax = plt.subplots()\nax.pie([10, 20, 30])\nself = ax",
+  "needimport": "import matplotlib.pyplot as plt\nimport numpy as np\nfrom matplotlib.offsetbox import AnnotationBbox, OffsetBox\nfrom matplotlib.axes import _AxesBase\nfrom matplotlib.axis import Axis\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "spine_type": "left",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.0,
+            0.999
+          ],
+          [
+            0.0,
+            0.999
+          ]
+        ]
+      },
+      {
+        "spine_type": "right",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            1.0,
+            0.999
+          ],
+          [
+            1.0,
+            0.999
+          ]
+        ]
+      },
+      {
+        "spine_type": "bottom",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.999,
+            0.0
+          ],
+          [
+            0.999,
+            0.0
+          ]
+        ]
+      },
+      {
+        "spine_type": "top",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.999,
+            1.0
+          ],
+          [
+            0.999,
+            1.0
+          ]
+        ]
+      },
+      "Rectangle(xy=(0, 0), width=1, height=1, angle=0)"
+    ],
+    "ans2": [
+      {
+        "spine_type": "left",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.0,
+            0.999
+          ],
+          [
+            0.0,
+            0.999
+          ]
+        ]
+      },
+      {
+        "spine_type": "right",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            1.0,
+            0.999
+          ],
+          [
+            1.0,
+            0.999
+          ]
+        ]
+      },
+      {
+        "spine_type": "bottom",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.999,
+            0.0
+          ],
+          [
+            0.999,
+            0.0
+          ]
+        ]
+      },
+      {
+        "spine_type": "top",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.999,
+            1.0
+          ],
+          [
+            0.999,
+            1.0
+          ]
+        ]
+      },
+      "Rectangle(xy=(0, 0), width=1, height=1, angle=0)"
+    ],
+    "ans3": [
+      {
+        "spine_type": "left",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.0,
+            0.999
+          ],
+          [
+            0.0,
+            0.999
+          ]
+        ]
+      },
+      {
+        "spine_type": "right",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            1.0,
+            0.999
+          ],
+          [
+            1.0,
+            0.999
+          ]
+        ]
+      },
+      {
+        "spine_type": "bottom",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.999,
+            0.0
+          ],
+          [
+            0.999,
+            0.0
+          ]
+        ]
+      },
+      {
+        "spine_type": "top",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.999,
+            1.0
+          ],
+          [
+            0.999,
+            1.0
+          ]
+        ]
+      },
+      "Rectangle(xy=(0, 0), width=1, height=1, angle=0)"
+    ],
+    "ans4": [
+      {
+        "spine_type": "left",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.0,
+            0.999
+          ],
+          [
+            0.0,
+            0.999
+          ]
+        ]
+      },
+      {
+        "spine_type": "right",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            1.0,
+            0.999
+          ],
+          [
+            1.0,
+            0.999
+          ]
+        ]
+      },
+      {
+        "spine_type": "bottom",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.999,
+            0.0
+          ],
+          [
+            0.999,
+            0.0
+          ]
+        ]
+      },
+      {
+        "spine_type": "top",
+        "visible": true,
+        "edgecolor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "linewidth": 0.8,
+        "path_vertices": [
+          [
+            0.999,
+            1.0
+          ],
+          [
+            0.999,
+            1.0
+          ]
+        ]
+      },
+      "Rectangle(xy=(0, 0), width=1, height=1, angle=0)"
+    ],
+    "ans5": [
+      "Wedge(center=(0, 0), r=1, theta1=0, theta2=60, width=None)",
+      "Text(0.9526279355804298, 0.5500000148652441, '')",
+      "Wedge(center=(0, 0), r=1, theta1=60, theta2=180, width=None)",
+      "Text(-0.5500000594609755, 0.9526279098330699, '')",
+      "Wedge(center=(0, 0), r=1, theta1=180, theta2=360, width=None)",
+      "Text(1.0298943251329445e-07, -1.0999999999999954, '')",
+      "Rectangle(xy=(0, 0), width=1, height=1, angle=0)"
+    ]
+  }
+}

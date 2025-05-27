@@ -1,0 +1,97 @@
+{
+  "input_header": "def _read_sent_block(self, stream):",
+  "input_docstring": null,
+  "output_code": "    def _read_sent_block(self, stream):\n        sents = []\n        for i in range(20):\n            line = stream.readline()\n            if not line:\n                continue\n            if self._sent_tokenizer:\n                sents.extend(\n                    [\n                        self._word_tokenizer.tokenize(sent)\n                        for sent in self._sent_tokenizer.tokenize(line)\n                    ]\n                )\n            else:\n                sents.append(self._word_tokenizer.tokenize(line))\n        return sents",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_39384_1",
+      "input_code": "    def _read_word_block(self, stream):\n        words = []\n        for sent in self._read_sent_block(stream):\n            words.extend(sent)\n        return words\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport io\n\n<testcase_1>\nstream = io.StringIO(\"This is the first sentence.\\nThis is the second sentence.\\n\")\n\n<testcase_2>\nstream = io.StringIO(\"Sentence one.\\nSentence two.\\nSentence three.\\n\")\n\n<testcase_3>\nstream = io.StringIO(\"Hello world!\\nPython is great.\\nLet's test this function.\\n\")\n\n<testcase_4>\nstream = io.StringIO(\"Data science is fascinating.\\nMachine learning is powerful.\\n\")\n\n<testcase_5>\nstream = io.StringIO(\"The quick brown fox jumps over the lazy dog.\\nAnother example sentence.\\n\")\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport io\n\n<testcase_1>\nstream = io.StringIO(\"This is the first sentence.\\nThis is the second sentence.\\n\")\n\n<testcase_2>\nstream = io.StringIO(\"Sentence one.\\nSentence two.\\nSentence three.\\n\")\n\n<testcase_3>\nstream = io.StringIO(\"Hello world!\\nPython is great.\\nLet's test this function.\\n\")\n\n<testcase_4>\nstream = io.StringIO(\"Data science is fascinating.\\nMachine learning is powerful.\\n\")\n\n<testcase_5>\nstream = io.StringIO(\"The quick brown fox jumps over the lazy dog.\\nAnother example sentence.\\n\")\n```",
+  "needimport": "import io\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        "This",
+        "is",
+        "the",
+        "first",
+        "sentence"
+      ],
+      [
+        "This",
+        "is",
+        "the",
+        "second",
+        "sentence"
+      ]
+    ],
+    "ans2": [
+      [
+        "Sentence",
+        "one"
+      ],
+      [
+        "Sentence",
+        "two"
+      ],
+      [
+        "Sentence",
+        "three"
+      ]
+    ],
+    "ans3": [
+      [
+        "Hello",
+        "world"
+      ],
+      [
+        "Python",
+        "is",
+        "great"
+      ],
+      [
+        "Let's",
+        "test",
+        "this",
+        "function"
+      ]
+    ],
+    "ans4": [
+      [
+        "Data",
+        "science",
+        "is",
+        "fascinating"
+      ],
+      [
+        "Machine",
+        "learning",
+        "is",
+        "powerful"
+      ]
+    ],
+    "ans5": [
+      [
+        "The",
+        "quick",
+        "brown",
+        "fox",
+        "jumps",
+        "over",
+        "the",
+        "lazy",
+        "dog"
+      ],
+      [
+        "Another",
+        "example",
+        "sentence"
+      ]
+    ]
+  }
+}

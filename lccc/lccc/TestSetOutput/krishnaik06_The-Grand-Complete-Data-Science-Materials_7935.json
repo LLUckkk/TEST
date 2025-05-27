@@ -1,0 +1,23 @@
+{
+  "input_header": "def format_pos(self) -> str:",
+  "input_docstring": null,
+  "output_code": "    def format_pos(self) -> str:\n        pos = str(self.pos)\n        if self.length is not None:\n            pos += f\"/{self.length}\"\n        return pos",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_7935_1",
+      "input_code": "    def format_progress_line(self) -> str:\n        show_percent = self.show_percent\n\n        info_bits = []\n        if self.length is not None and show_percent is None:\n            show_percent = not self.show_pos\n\n        if self.show_pos:\n            info_bits.append(self.format_pos())\n        if show_percent:\n            info_bits.append(self.format_pct())\n        if self.show_eta and self.eta_known and not self.finished:\n            info_bits.append(self.format_eta())\n        if self.item_show_func is not None:\n            item_info = self.item_show_func(self.current_item)\n            if item_info is not None:\n                info_bits.append(item_info)\n\n        return (\n            self.bar_template\n            % {\n                \"label\": self.label,\n                \"bar\": self.format_bar(),\n                \"info\": self.info_sep.join(info_bits),\n            }\n        ).rstrip()\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport [libraries you think are needed for this function]\nimport random\n\n<testcase_1>\nself.pos = 5\nself.length = 10\n\n<testcase_2>\nself.pos = 0\nself.length = 100\n\n<testcase_3>\nself.pos = 50\nself.length = None\n\n<testcase_4>\nself.pos = 999\nself.length = 1000\n\n<testcase_5>\nself.pos = random.randint(1, 100)\nself.length = random.randint(101, 200)"
+  ],
+  "gpt_output": "<needimport>\nimport [libraries you think are needed for this function]\nimport random\n\n<testcase_1>\nself.pos = 5\nself.length = 10\n\n<testcase_2>\nself.pos = 0\nself.length = 100\n\n<testcase_3>\nself.pos = 50\nself.length = None\n\n<testcase_4>\nself.pos = 999\nself.length = 1000\n\n<testcase_5>\nself.pos = random.randint(1, 100)\nself.length = random.randint(101, 200)",
+  "needimport": "import [libraries you think are needed for this function]\nimport random\n\n",
+  "test_results": {
+    "ans1": "5/10",
+    "ans2": "0/100",
+    "ans3": "50",
+    "ans4": "999/1000",
+    "ans5": "92/140"
+  }
+}

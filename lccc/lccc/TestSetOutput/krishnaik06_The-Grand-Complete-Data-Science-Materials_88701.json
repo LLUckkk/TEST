@@ -1,0 +1,23 @@
+{
+  "input_header": "def webify(color):",
+  "input_docstring": null,
+  "output_code": "def webify(color):\n    if color.startswith('calc') or color.startswith('var'):\n        return color\n    else:\n        return '#' + color",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_88701_1",
+      "input_code": "    def _create_stylesheet(self):\n        t2c = self.ttype2class = {Token: ''}\n        c2s = self.class2style = {}\n        for ttype, ndef in self.style:\n            name = self._get_css_class(ttype)\n            style = ''\n            if ndef['color']:\n                style += 'color: %s; ' % webify(ndef['color'])\n            if ndef['bold']:\n                style += 'font-weight: bold; '\n            if ndef['italic']:\n                style += 'font-style: italic; '\n            if ndef['underline']:\n                style += 'text-decoration: underline; '\n            if ndef['bgcolor']:\n                style += 'background-color: %s; ' % webify(ndef['bgcolor'])\n            if ndef['border']:\n                style += 'border: 1px solid %s; ' % webify(ndef['border'])\n            if style:\n                t2c[ttype] = name\n                c2s[name] = (style[:-2], ttype, len(ttype))\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport None\n\n<testcase_1>\ncolor = \"ff5733\"\n\n<testcase_2>\ncolor = \"calc(100% - 50px)\"\n\n<testcase_3>\ncolor = \"var(--main-bg-color)\"\n\n<testcase_4>\ncolor = \"00ff00\"\n\n<testcase_5>\ncolor = \"123abc\""
+  ],
+  "gpt_output": "<needimport>\nimport None\n\n<testcase_1>\ncolor = \"ff5733\"\n\n<testcase_2>\ncolor = \"calc(100% - 50px)\"\n\n<testcase_3>\ncolor = \"var(--main-bg-color)\"\n\n<testcase_4>\ncolor = \"00ff00\"\n\n<testcase_5>\ncolor = \"123abc\"",
+  "needimport": "import None\n\n",
+  "test_results": {
+    "ans1": "#ff5733",
+    "ans2": "calc(100% - 50px)",
+    "ans3": "var(--main-bg-color)",
+    "ans4": "#00ff00",
+    "ans5": "#123abc"
+  }
+}

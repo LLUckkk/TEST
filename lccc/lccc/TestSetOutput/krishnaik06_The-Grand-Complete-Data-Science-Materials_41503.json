@@ -1,0 +1,23 @@
+{
+  "input_header": "def __applyRule(self, word, remove_total, append_string):",
+  "input_docstring": "Apply the stemming rule to the word",
+  "output_code": "    def __applyRule(self, word, remove_total, append_string):\n        \n        new_word_length = len(word) - remove_total\n        word = word[0:new_word_length]\n\n        if append_string:\n            word += append_string\n        return word",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_41503_1",
+      "input_code": "    def __doStemming(self, word, intact_word):\n        \n\n        valid_rule = re.compile(r\"^([a-z]+)(\\*?)(\\d)([a-z]*)([>\\.]?)$\")\n\n        proceed = True\n\n        while proceed:\n\n            last_letter_position = self.__getLastLetter(word)\n\n            if (\n                last_letter_position < 0\n                or word[last_letter_position] not in self.rule_dictionary\n            ):\n                proceed = False\n\n            else:\n                rule_was_applied = False\n\n                for rule in self.rule_dictionary[word[last_letter_position]]:\n                    rule_match = valid_rule.match(rule)\n                    if rule_match:\n                        (\n                            ending_string,\n                            intact_flag,\n                            remove_total,\n                            append_string,\n                            cont_flag,\n                        ) = rule_match.groups()\n\n                        remove_total = int(remove_total)\n\n                        if word.endswith(ending_string[::-1]):\n                            if intact_flag:\n                                if word == intact_word and self.__isAcceptable(\n                                    word, remove_total\n                                ):\n                                    word = self.__applyRule(\n                                        word, remove_total, append_string\n                                    )\n                                    rule_was_applied = True\n                                    if cont_flag == \".\":\n                                        proceed = False\n                                    break\n                            elif self.__isAcceptable(word, remove_total):\n                                word = self.__applyRule(\n                                    word, remove_total, append_string\n                                )\n                                rule_was_applied = True\n                                if cont_flag == \".\":\n                                    proceed = False\n                                break\n                if rule_was_applied == False:\n                    proceed = False\n        return word\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport re\n\n<testcase_1>\nword = \"running\"\nremove_total = 3\nappend_string = \"run\"\n\n<testcase_2>\nword = \"happiness\"\nremove_total = 4\nappend_string = \"happy\"\n\n<testcase_3>\nword = \"unbelievable\"\nremove_total = 2\nappend_string = \"believe\"\n\n<testcase_4>\nword = \"playing\"\nremove_total = 3\nappend_string = \"play\"\n\n<testcase_5>\nword = \"jumping\"\nremove_total = 3\nappend_string = \"jump\""
+  ],
+  "gpt_output": "<needimport>\nimport re\n\n<testcase_1>\nword = \"running\"\nremove_total = 3\nappend_string = \"run\"\n\n<testcase_2>\nword = \"happiness\"\nremove_total = 4\nappend_string = \"happy\"\n\n<testcase_3>\nword = \"unbelievable\"\nremove_total = 2\nappend_string = \"believe\"\n\n<testcase_4>\nword = \"playing\"\nremove_total = 3\nappend_string = \"play\"\n\n<testcase_5>\nword = \"jumping\"\nremove_total = 3\nappend_string = \"jump\"",
+  "needimport": "import re\n\n",
+  "test_results": {
+    "ans1": "runnrun",
+    "ans2": "happihappy",
+    "ans3": "unbelievabbelieve",
+    "ans4": "playplay",
+    "ans5": "jumpjump"
+  }
+}
