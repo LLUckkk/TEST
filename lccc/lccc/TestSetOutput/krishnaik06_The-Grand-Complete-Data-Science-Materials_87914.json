@@ -1,0 +1,23 @@
+{
+  "input_header": "def ast_name(node):",
+  "input_docstring": null,
+  "output_code": "def ast_name(node):\n    if isinstance(node, ast.Name):\n        return node.id\n    elif isinstance(node, ast.Attribute):\n        return node.attr\n    else:\n        return None",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_87914_1",
+      "input_code": "def has_ast_name(value, node):\n    value_name = safe_name(value)\n    if type(value_name) is not str:\n        return False\n    return eq_checking_types(ast_name(node), value_name)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport ast\n\n<testcase_1>\nnode = ast.parse(\"x\").body[0].targets[0]\n\n<testcase_2>\nnode = ast.parse(\"obj.attr\").body[0].value\n\n<testcase_3>\nnode = ast.parse(\"y = 10\").body[0].targets[0]\n\n<testcase_4>\nnode = ast.parse(\"self.attribute\").body[0].value\n\n<testcase_5>\nnode = ast.parse(\"function_call()\").body[0].value\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport ast\n\n<testcase_1>\nnode = ast.parse(\"x\").body[0].targets[0]\n\n<testcase_2>\nnode = ast.parse(\"obj.attr\").body[0].value\n\n<testcase_3>\nnode = ast.parse(\"y = 10\").body[0].targets[0]\n\n<testcase_4>\nnode = ast.parse(\"self.attribute\").body[0].value\n\n<testcase_5>\nnode = ast.parse(\"function_call()\").body[0].value\n```",
+  "needimport": "import ast\n\n",
+  "test_results": {
+    "ans1": "x",
+    "ans2": "attr",
+    "ans3": "y",
+    "ans4": "attribute",
+    "ans5": "function_call"
+  }
+}

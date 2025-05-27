@@ -1,0 +1,23 @@
+{
+  "input_header": "def is_label_like(key) -> bool:",
+  "input_docstring": "Returns\n-------\nbool",
+  "output_code": "def is_label_like(key) -> bool:\n    \n    return (\n        not isinstance(key, slice)\n        and not is_list_like_indexer(key)\n        and key is not Ellipsis\n    )",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_57332_1",
+      "input_code": "    def _getitem_lowerdim(self, tup: tuple):\n        if self.axis is not None:\n            axis = self.obj._get_axis_number(self.axis)\n            return self._getitem_axis(tup, axis=axis)\n\n        if self._is_nested_tuple_indexer(tup):\n            return self._getitem_nested_tuple(tup)\n\n        ax0 = self.obj._get_axis(0)\n        if (\n            isinstance(ax0, MultiIndex)\n            and self.name != \"iloc\"\n            and not any(isinstance(x, slice) for x in tup)\n        ):\n            with suppress(IndexingError):\n                return cast(_LocIndexer, self)._handle_lowerdim_multi_index_axis0(tup)\n\n        tup = self._validate_key_length(tup)\n\n        for i, key in enumerate(tup):\n            if is_label_like(key):\n                section = self._getitem_axis(key, axis=i)\n\n                if section.ndim == self.ndim:\n                    new_key = tup[:i] + (_NS,) + tup[i + 1 :]\n\n                else:\n                    new_key = tup[:i] + tup[i + 1 :]\n\n                    if len(new_key) == 1:\n                        new_key = new_key[0]\n\n                if com.is_null_slice(new_key):\n                    return section\n                return getattr(section, self.name)[new_key]\n\n        raise IndexingError(\"not applicable\")\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport numpy as np\nfrom pandas import Series\n\n<testcase_1>\nkey = \"column_name\"\n\n<testcase_2>\nkey = 42\n\n<testcase_3>\nkey = np.array([1, 2, 3])\n\n<testcase_4>\nkey = Series([1, 2, 3])\n\n<testcase_5>\nkey = (1, 2, 3)\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport numpy as np\nfrom pandas import Series\n\n<testcase_1>\nkey = \"column_name\"\n\n<testcase_2>\nkey = 42\n\n<testcase_3>\nkey = np.array([1, 2, 3])\n\n<testcase_4>\nkey = Series([1, 2, 3])\n\n<testcase_5>\nkey = (1, 2, 3)\n```",
+  "needimport": "import numpy as np\nfrom pandas import Series\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": false,
+    "ans4": false,
+    "ans5": false
+  }
+}

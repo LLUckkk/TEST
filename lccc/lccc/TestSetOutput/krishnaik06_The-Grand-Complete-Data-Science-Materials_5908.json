@@ -1,0 +1,23 @@
+{
+  "input_header": "def refactor(source, fixer_names, ignore=None, filename=''):",
+  "input_docstring": "Return refactored code using lib2to3.\n\nSkip if ignore string is produced in the refactored code.",
+  "output_code": "def refactor(source, fixer_names, ignore=None, filename=''):\n    \n    not_found_end_of_file_newline = source and source.rstrip(\"\\r\\n\") == source\n    if not_found_end_of_file_newline:\n        input_source = source + \"\\n\"\n    else:\n        input_source = source\n\n    from lib2to3 import pgen2\n    try:\n        new_text = refactor_with_2to3(input_source,\n                                      fixer_names=fixer_names,\n                                      filename=filename)\n    except (pgen2.parse.ParseError,\n            SyntaxError,\n            UnicodeDecodeError,\n            UnicodeEncodeError):\n        return source\n\n    if ignore:\n        if ignore in new_text and ignore not in source:\n            return source\n\n    if not_found_end_of_file_newline:\n        return new_text.rstrip(\"\\r\\n\")\n\n    return new_text",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_5908_1",
+      "input_code": "def fix_2to3(source,\n             aggressive=True, select=None, ignore=None, filename='',\n             where='global', verbose=False):\n    \n    if not aggressive:\n        return source\n\n    select = select or []\n    ignore = ignore or []\n\n    return refactor(source,\n                    code_to_2to3(select=select,\n                                 ignore=ignore,\n                                 where=where,\n                                 verbose=verbose),\n                    filename=filename)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport lib2to3\n\n<testcase_1>\nsource = \"print 'Hello, world!'\"\nfixer_names = [\"print\"]\nignore = None\nfilename = \"example.py\"\n\n<testcase_2>\nsource = \"xrange(10)\"\nfixer_names = [\"xrange\"]\nignore = \"xrange\"\nfilename = \"test.py\"\n\n<testcase_3>\nsource = \"import StringIO\"\nfixer_names = [\"imports\"]\nignore = None\nfilename = \"script.py\"\n\n<testcase_4>\nsource = \"def foo():\\n    pass\"\nfixer_names = [\"functions\"]\nignore = None\nfilename = \"foo.py\"\n\n<testcase_5>\nsource = \"print 'Hello, world!'\\nimport StringIO\"\nfixer_names = [\"print\", \"imports\"]\nignore = \"StringIO\"\nfilename = \"combined.py\""
+  ],
+  "gpt_output": "<needimport>\nimport lib2to3\n\n<testcase_1>\nsource = \"print 'Hello, world!'\"\nfixer_names = [\"print\"]\nignore = None\nfilename = \"example.py\"\n\n<testcase_2>\nsource = \"xrange(10)\"\nfixer_names = [\"xrange\"]\nignore = \"xrange\"\nfilename = \"test.py\"\n\n<testcase_3>\nsource = \"import StringIO\"\nfixer_names = [\"imports\"]\nignore = None\nfilename = \"script.py\"\n\n<testcase_4>\nsource = \"def foo():\\n    pass\"\nfixer_names = [\"functions\"]\nignore = None\nfilename = \"foo.py\"\n\n<testcase_5>\nsource = \"print 'Hello, world!'\\nimport StringIO\"\nfixer_names = [\"print\", \"imports\"]\nignore = \"StringIO\"\nfilename = \"combined.py\"",
+  "needimport": "import lib2to3\n\n",
+  "test_results": {
+    "ans1": "print('Hello, world!')",
+    "ans2": "range(10)",
+    "ans3": "import io",
+    "ans4": "def foo():\n    pass",
+    "ans5": "print('Hello, world!')\nimport io"
+  }
+}

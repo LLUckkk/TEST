@@ -1,0 +1,48 @@
+{
+  "input_header": "def unicode_name_matches(text: str) -> Tuple[str, List[str]]:",
+  "input_docstring": "Match Latex-like syntax for unicode characters base\non the name of the character.\n\nThis does  ``\\GREEK SMALL LETTER ETA`` -> ``η``\n\nWorks only on valid python 3 identifier, or on combining characters that\nwill combine to form a valid identifier.",
+  "output_code": "    def unicode_name_matches(text: str) -> Tuple[str, List[str]]:\n        \n        slashpos = text.rfind('\\\\')\n        if slashpos > -1:\n            s = text[slashpos+1:]\n            try :\n                unic = unicodedata.lookup(s)\n                if ('a'+unic).isidentifier():\n                    return '\\\\'+s,[unic]\n            except KeyError:\n                pass\n        return '', []",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_460_1",
+      "input_code": "    def unicode_name_matcher(self, context: CompletionContext):\n        \n        fragment, matches = self.unicode_name_matches(context.text_until_cursor)\n        return _convert_matcher_v1_result_to_v2(\n            matches, type=\"unicode\", fragment=fragment, suppress_if_matches=True\n        )\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport unicodedata\nfrom typing import Tuple, List\n\n<testcase_1>\ntext = \"\\\\GREEK SMALL LETTER ETA\"\n\n<testcase_2>\ntext = \"\\\\LATIN SMALL LETTER A\"\n\n<testcase_3>\ntext = \"\\\\LATIN CAPITAL LETTER Z\"\n\n<testcase_4>\ntext = \"\\\\ARABIC LETTER ALEF\"\n\n<testcase_5>\ntext = \"\\\\CYRILLIC SMALL LETTER YA\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport unicodedata\nfrom typing import Tuple, List\n\n<testcase_1>\ntext = \"\\\\GREEK SMALL LETTER ETA\"\n\n<testcase_2>\ntext = \"\\\\LATIN SMALL LETTER A\"\n\n<testcase_3>\ntext = \"\\\\LATIN CAPITAL LETTER Z\"\n\n<testcase_4>\ntext = \"\\\\ARABIC LETTER ALEF\"\n\n<testcase_5>\ntext = \"\\\\CYRILLIC SMALL LETTER YA\"\n```",
+  "needimport": "import unicodedata\nfrom typing import Tuple, List\n\n",
+  "test_results": {
+    "ans1": [
+      "\\GREEK SMALL LETTER ETA",
+      [
+        "η"
+      ]
+    ],
+    "ans2": [
+      "\\LATIN SMALL LETTER A",
+      [
+        "a"
+      ]
+    ],
+    "ans3": [
+      "\\LATIN CAPITAL LETTER Z",
+      [
+        "Z"
+      ]
+    ],
+    "ans4": [
+      "\\ARABIC LETTER ALEF",
+      [
+        "ا"
+      ]
+    ],
+    "ans5": [
+      "\\CYRILLIC SMALL LETTER YA",
+      [
+        "я"
+      ]
+    ]
+  }
+}

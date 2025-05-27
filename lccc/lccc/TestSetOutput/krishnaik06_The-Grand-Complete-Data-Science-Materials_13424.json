@@ -1,0 +1,87 @@
+{
+  "input_header": "def _iternodes(self, nodelist):",
+  "input_docstring": null,
+  "output_code": "    def _iternodes(self, nodelist):\n        for node in nodelist:\n            yield node\n\n            try:\n                children = node.child_nodelists\n            except:\n                pass\n            else:\n                for attr in children:\n                    nodelist = getattr(node, attr, None)\n                    if nodelist:\n                        for node in self._iternodes(nodelist):\n                            yield node",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_13424_1",
+      "input_code": "    def _collect_valid_lines_in_template_uncached(self, template):\n        lines = set()\n        for node in self._iternodes(template.nodelist):\n            if node.__class__.__name__ in _IGNORE_RENDER_OF_CLASSES:\n                continue\n            lineno = self._get_lineno(node)\n            if lineno is not None:\n                lines.add(lineno)\n        return lines\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport collections\n\n<testcase_1>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')([])\n]\n\n<testcase_2>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')(['sub_children']),\n    collections.namedtuple('Node', 'child_nodelists')([])\n]\n\n<testcase_3>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')([]),\n    collections.namedtuple('Node', 'child_nodelists')([]),\n    collections.namedtuple('Node', 'child_nodelists')([])\n]\n\n<testcase_4>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')(['children', 'sub_children'])\n]\n\n<testcase_5>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')(['sub_children']),\n    collections.namedtuple('Node', 'child_nodelists')([])\n]"
+  ],
+  "gpt_output": "<needimport>\nimport collections\n\n<testcase_1>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')([])\n]\n\n<testcase_2>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')(['sub_children']),\n    collections.namedtuple('Node', 'child_nodelists')([])\n]\n\n<testcase_3>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')([]),\n    collections.namedtuple('Node', 'child_nodelists')([]),\n    collections.namedtuple('Node', 'child_nodelists')([])\n]\n\n<testcase_4>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')(['children', 'sub_children'])\n]\n\n<testcase_5>\nnodelist = [\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')(['children']),\n    collections.namedtuple('Node', 'child_nodelists')(['sub_children']),\n    collections.namedtuple('Node', 'child_nodelists')([])\n]",
+  "needimport": "import collections\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        [
+          "children"
+        ]
+      ],
+      [
+        []
+      ]
+    ],
+    "ans2": [
+      [
+        [
+          "children"
+        ]
+      ],
+      [
+        [
+          "sub_children"
+        ]
+      ],
+      [
+        []
+      ]
+    ],
+    "ans3": [
+      [
+        []
+      ],
+      [
+        []
+      ],
+      [
+        []
+      ]
+    ],
+    "ans4": [
+      [
+        [
+          "children"
+        ]
+      ],
+      [
+        [
+          "children",
+          "sub_children"
+        ]
+      ]
+    ],
+    "ans5": [
+      [
+        [
+          "children"
+        ]
+      ],
+      [
+        [
+          "children"
+        ]
+      ],
+      [
+        [
+          "sub_children"
+        ]
+      ],
+      [
+        []
+      ]
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "input_header": "def _rotate_buffer(self):",
+  "input_docstring": "Returns the current buffer and replaces it with an empty buffer.",
+  "output_code": "    def _rotate_buffer(self):\n        \n        with self._buffer_lock:\n            old_buffer = self._buffer\n            self._buffer = StringIO()\n        return old_buffer",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_19677_1",
+      "input_code": "    def _flush_buffer(self):\n        \n        buf = self._rotate_buffer()\n        data = buf.getvalue()\n        buf.close()\n        return data\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport threading\nfrom io import StringIO\n\n<testcase_1>\nself._buffer = StringIO(\"Initial buffer content\")\nself._buffer_lock = threading.Lock()\n\n<testcase_2>\nself._buffer = StringIO(\"Another buffer content\")\nself._buffer_lock = threading.Lock()\n\n<testcase_3>\nself._buffer = StringIO(\"Yet another buffer content\")\nself._buffer_lock = threading.Lock()\n\n<testcase_4>\nself._buffer = StringIO(\"Buffer with some data\")\nself._buffer_lock = threading.Lock()\n\n<testcase_5>\nself._buffer = StringIO(\"Final buffer content\")\nself._buffer_lock = threading.Lock()"
+  ],
+  "gpt_output": "<needimport>\nimport threading\nfrom io import StringIO\n\n<testcase_1>\nself._buffer = StringIO(\"Initial buffer content\")\nself._buffer_lock = threading.Lock()\n\n<testcase_2>\nself._buffer = StringIO(\"Another buffer content\")\nself._buffer_lock = threading.Lock()\n\n<testcase_3>\nself._buffer = StringIO(\"Yet another buffer content\")\nself._buffer_lock = threading.Lock()\n\n<testcase_4>\nself._buffer = StringIO(\"Buffer with some data\")\nself._buffer_lock = threading.Lock()\n\n<testcase_5>\nself._buffer = StringIO(\"Final buffer content\")\nself._buffer_lock = threading.Lock()",
+  "needimport": "import threading\nfrom io import StringIO\n\n",
+  "test_results": {
+    "ans1": {
+      "value": "Initial buffer content"
+    },
+    "ans2": {
+      "value": "Another buffer content"
+    },
+    "ans3": {
+      "value": "Yet another buffer content"
+    },
+    "ans4": {
+      "value": "Buffer with some data"
+    },
+    "ans5": {
+      "value": "Final buffer content"
+    }
+  }
+}

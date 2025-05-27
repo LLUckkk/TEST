@@ -1,0 +1,78 @@
+{
+  "input_header": "def read_array(self, unpickler):",
+  "input_docstring": "Read array from unpickler file handle.\n\nThis function is an adaptation of the numpy read_array function\navailable in version 1.10.1 in numpy/lib/format.py.",
+  "output_code": "    def read_array(self, unpickler):\n        \n        if len(self.shape) == 0:\n            count = 1\n        else:\n            shape_int64 = [unpickler.np.int64(x) for x in self.shape]\n            count = unpickler.np.multiply.reduce(shape_int64)\n        if self.dtype.hasobject:\n            array = pickle.load(unpickler.file_handle)\n        else:\n            numpy_array_alignment_bytes = \\\n                self.safe_get_numpy_array_alignment_bytes()\n            if numpy_array_alignment_bytes is not None:\n                padding_byte = unpickler.file_handle.read(1)\n                padding_length = int.from_bytes(\n                    padding_byte, byteorder='little')\n                if padding_length != 0:\n                    unpickler.file_handle.read(padding_length)\n\n            max_read_count = BUFFER_SIZE // min(BUFFER_SIZE,\n                                                self.dtype.itemsize)\n\n            array = unpickler.np.empty(count, dtype=self.dtype)\n            for i in range(0, count, max_read_count):\n                read_count = min(max_read_count, count - i)\n                read_size = int(read_count * self.dtype.itemsize)\n                data = _read_bytes(unpickler.file_handle,\n                                   read_size, \"array data\")\n                array[i:i + read_count] = \\\n                    unpickler.np.frombuffer(data, dtype=self.dtype,\n                                            count=read_count)\n                del data\n\n            if self.order == 'F':\n                array.shape = self.shape[::-1]\n                array = array.transpose()\n            else:\n                array.shape = self.shape\n\n        return _ensure_native_byte_order(array)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_23685_1",
+      "input_code": "    def read(self, unpickler):\n        \n        if unpickler.mmap_mode is not None and self.allow_mmap:\n            array = self.read_mmap(unpickler)\n        else:\n            array = self.read_array(unpickler)\n\n        if (hasattr(array, '__array_prepare__') and\n            self.subclass not in (unpickler.np.ndarray,\n                                  unpickler.np.memmap)):\n            new_array = unpickler.np.core.multiarray._reconstruct(\n                self.subclass, (0,), 'b')\n            return new_array.__array_prepare__(array)\n        else:\n            return array\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\nimport pickle\nimport io\n\n<testcase_1>\nself = type('test', (object,), {\n    'shape': (2, 3),\n    'dtype': np.dtype('float64'),\n    'order': 'C',\n    'safe_get_numpy_array_alignment_bytes': lambda: None\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6]], dtype='float64').tobytes())\n})()\n\n<testcase_2>\nself = type('test', (object,), {\n    'shape': (3, 3),\n    'dtype': np.dtype('int32'),\n    'order': 'F',\n    'safe_get_numpy_array_alignment_bytes': lambda: 8\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype='int32').tobytes())\n})()\n\n<testcase_3>\nself = type('test', (object,), {\n    'shape': (4,),\n    'dtype': np.dtype('complex64'),\n    'order': 'C',\n    'safe_get_numpy_array_alignment_bytes': lambda: None\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([1+2j, 3+4j, 5+6j, 7+8j], dtype='complex64').tobytes())\n})()\n\n<testcase_4>\nself = type('test', (object,), {\n    'shape': (2, 2, 2),\n    'dtype': np.dtype('int16'),\n    'order': 'F',\n    'safe_get_numpy_array_alignment_bytes': lambda: None\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]], dtype='int16').tobytes())\n})()\n\n<testcase_5>\nself = type('test', (object,), {\n    'shape': (5,),\n    'dtype': np.dtype('float32'),\n    'order': 'C',\n    'safe_get_numpy_array_alignment_bytes': lambda: None\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([1.1, 2.2, 3.3, 4.4, 5.5], dtype='float32').tobytes())\n})()"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\nimport pickle\nimport io\n\n<testcase_1>\nself = type('test', (object,), {\n    'shape': (2, 3),\n    'dtype': np.dtype('float64'),\n    'order': 'C',\n    'safe_get_numpy_array_alignment_bytes': lambda: None\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6]], dtype='float64').tobytes())\n})()\n\n<testcase_2>\nself = type('test', (object,), {\n    'shape': (3, 3),\n    'dtype': np.dtype('int32'),\n    'order': 'F',\n    'safe_get_numpy_array_alignment_bytes': lambda: 8\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype='int32').tobytes())\n})()\n\n<testcase_3>\nself = type('test', (object,), {\n    'shape': (4,),\n    'dtype': np.dtype('complex64'),\n    'order': 'C',\n    'safe_get_numpy_array_alignment_bytes': lambda: None\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([1+2j, 3+4j, 5+6j, 7+8j], dtype='complex64').tobytes())\n})()\n\n<testcase_4>\nself = type('test', (object,), {\n    'shape': (2, 2, 2),\n    'dtype': np.dtype('int16'),\n    'order': 'F',\n    'safe_get_numpy_array_alignment_bytes': lambda: None\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]], dtype='int16').tobytes())\n})()\n\n<testcase_5>\nself = type('test', (object,), {\n    'shape': (5,),\n    'dtype': np.dtype('float32'),\n    'order': 'C',\n    'safe_get_numpy_array_alignment_bytes': lambda: None\n})()\nunpickler = type('unpickler', (object,), {\n    'np': np,\n    'file_handle': io.BytesIO(np.array([1.1, 2.2, 3.3, 4.4, 5.5], dtype='float32').tobytes())\n})()",
+  "needimport": "import numpy as np\nimport pickle\nimport io\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        1.1,
+        2.2,
+        3.3
+      ],
+      [
+        4.4,
+        5.5,
+        6.6
+      ]
+    ],
+    "ans2": null,
+    "ans3": [
+      {
+        "real": 1.0,
+        "imag": 2.0
+      },
+      {
+        "real": 3.0,
+        "imag": 4.0
+      },
+      {
+        "real": 5.0,
+        "imag": 6.0
+      },
+      {
+        "real": 7.0,
+        "imag": 8.0
+      }
+    ],
+    "ans4": [
+      [
+        [
+          1,
+          5
+        ],
+        [
+          3,
+          7
+        ]
+      ],
+      [
+        [
+          2,
+          6
+        ],
+        [
+          4,
+          8
+        ]
+      ]
+    ],
+    "ans5": [
+      1.100000023841858,
+      2.200000047683716,
+      3.299999952316284,
+      4.400000095367432,
+      5.5
+    ]
+  }
+}

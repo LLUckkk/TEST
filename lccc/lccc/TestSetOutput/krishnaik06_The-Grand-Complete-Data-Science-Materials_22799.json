@@ -1,0 +1,48 @@
+{
+  "input_header": "def push(self, token: Token) -> None:",
+  "input_docstring": "Push a token back to the stream.",
+  "output_code": "    def push(self, token: Token) -> None:\n        \n        self._pushed.append(token)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_22799_1",
+      "input_code": "    def look(self) -> Token:\n        \n        old_token = next(self)\n        result = self.current\n        self.push(result)\n        self.current = old_token\n        return result\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport collections\n\nToken = collections.namedtuple('Token', ['type', 'value'])\n\n<testcase_1>\ntoken = Token(type='identifier', value='variable_name')\n\n<testcase_2>\ntoken = Token(type='keyword', value='def')\n\n<testcase_3>\ntoken = Token(type='operator', value='+')\n\n<testcase_4>\ntoken = Token(type='literal', value='42')\n\n<testcase_5>\ntoken = Token(type='punctuation', value=';')"
+  ],
+  "gpt_output": "<needimport>\nimport collections\n\nToken = collections.namedtuple('Token', ['type', 'value'])\n\n<testcase_1>\ntoken = Token(type='identifier', value='variable_name')\n\n<testcase_2>\ntoken = Token(type='keyword', value='def')\n\n<testcase_3>\ntoken = Token(type='operator', value='+')\n\n<testcase_4>\ntoken = Token(type='literal', value='42')\n\n<testcase_5>\ntoken = Token(type='punctuation', value=';')",
+  "needimport": "import collections\n\nToken = collections.namedtuple('Token', ['type', 'value'])\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        "identifier",
+        "variable_name"
+      ]
+    ],
+    "ans2": [
+      [
+        "keyword",
+        "def"
+      ]
+    ],
+    "ans3": [
+      [
+        "operator",
+        "+"
+      ]
+    ],
+    "ans4": [
+      [
+        "literal",
+        "42"
+      ]
+    ],
+    "ans5": [
+      [
+        "punctuation",
+        ";"
+      ]
+    ]
+  }
+}

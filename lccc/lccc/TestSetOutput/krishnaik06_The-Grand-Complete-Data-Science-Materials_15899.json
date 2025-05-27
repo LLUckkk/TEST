@@ -1,0 +1,43 @@
+{
+  "input_header": "def arg_blend_number(self, name):",
+  "input_docstring": null,
+  "output_code": "    def arg_blend_number(self, name):\n        out = []\n        blendArgs = self.pop()\n        numMasters = len(blendArgs)\n        out.append(blendArgs)\n        out.append(\"blend\")\n        dummy = self.popall()\n        return blendArgs",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_15899_1",
+      "input_code": "    def arg_number(self, name):\n        if isinstance(self.stack[0], list):\n            out = self.arg_blend_number(self.stack)\n        else:\n            out = self.pop()\n        return out\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport random\n\n<testcase_1>\nself = type('Test', (object,), {'stack': [[1, 2, 3]], 'pop': lambda: [4, 5, 6], 'popall': lambda: []})()\nname = \"test_case_1\"\n\n<testcase_2>\nself = type('Test', (object,), {'stack': [[7, 8, 9]], 'pop': lambda: [10, 11, 12], 'popall': lambda: []})()\nname = \"test_case_2\"\n\n<testcase_3>\nself = type('Test', (object,), {'stack': [[13, 14, 15]], 'pop': lambda: [16, 17, 18], 'popall': lambda: []})()\nname = \"test_case_3\"\n\n<testcase_4>\nself = type('Test', (object,), {'stack': [[19, 20, 21]], 'pop': lambda: [22, 23, 24], 'popall': lambda: []})()\nname = \"test_case_4\"\n\n<testcase_5>\nself = type('Test', (object,), {'stack': [[25, 26, 27]], 'pop': lambda: [28, 29, 30], 'popall': lambda: []})()\nname = \"test_case_5\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport random\n\n<testcase_1>\nself = type('Test', (object,), {'stack': [[1, 2, 3]], 'pop': lambda: [4, 5, 6], 'popall': lambda: []})()\nname = \"test_case_1\"\n\n<testcase_2>\nself = type('Test', (object,), {'stack': [[7, 8, 9]], 'pop': lambda: [10, 11, 12], 'popall': lambda: []})()\nname = \"test_case_2\"\n\n<testcase_3>\nself = type('Test', (object,), {'stack': [[13, 14, 15]], 'pop': lambda: [16, 17, 18], 'popall': lambda: []})()\nname = \"test_case_3\"\n\n<testcase_4>\nself = type('Test', (object,), {'stack': [[19, 20, 21]], 'pop': lambda: [22, 23, 24], 'popall': lambda: []})()\nname = \"test_case_4\"\n\n<testcase_5>\nself = type('Test', (object,), {'stack': [[25, 26, 27]], 'pop': lambda: [28, 29, 30], 'popall': lambda: []})()\nname = \"test_case_5\"\n```",
+  "needimport": "import random\n\n",
+  "test_results": {
+    "ans1": [
+      4,
+      5,
+      6
+    ],
+    "ans2": [
+      10,
+      11,
+      12
+    ],
+    "ans3": [
+      16,
+      17,
+      18
+    ],
+    "ans4": [
+      22,
+      23,
+      24
+    ],
+    "ans5": [
+      28,
+      29,
+      30
+    ]
+  }
+}

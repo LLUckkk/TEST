@@ -1,0 +1,23 @@
+{
+  "input_header": "def _lineTo(self, p1):",
+  "input_docstring": null,
+  "output_code": "    def _lineTo(self, p1):\n        p0 = self._getCurrentPoint()\n        self.value += _distance(p0, p1)",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_16543_1",
+      "input_code": "    def _closePath(self):\n        p0 = self._getCurrentPoint()\n        if p0 != self.__startPoint:\n            self._lineTo(self.__startPoint)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport math\n\n<testcase_1>\np1 = (10, 20)\n\n<testcase_2>\np1 = (0, 0)\n\n<testcase_3>\np1 = (-5, 15)\n\n<testcase_4>\np1 = (100.5, 200.75)\n\n<testcase_5>\np1 = (3.1415, 2.7182)\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport math\n\n<testcase_1>\np1 = (10, 20)\n\n<testcase_2>\np1 = (0, 0)\n\n<testcase_3>\np1 = (-5, 15)\n\n<testcase_4>\np1 = (100.5, 200.75)\n\n<testcase_5>\np1 = (3.1415, 2.7182)\n```",
+  "needimport": "import math\n\n",
+  "test_results": {
+    "ans1": 22.360679774997898,
+    "ans2": 7.0710678118654755,
+    "ans3": 15.231546211727817,
+    "ans4": 112.13886480609655,
+    "ans5": 2.605051533079528
+  }
+}

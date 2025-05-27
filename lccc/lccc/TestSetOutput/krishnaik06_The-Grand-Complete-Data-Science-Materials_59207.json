@@ -1,0 +1,118 @@
+{
+  "input_header": "def _pseudo_css(self, uuid: str, name: str, row: int, col: int, text: str):",
+  "input_docstring": "For every table data-cell that has a valid tooltip (not None, NaN or\nempty string) must create two pseudo CSS entries for the specific\n<td> element id which are added to overall table styles:\nan on hover visibility change and a content change\ndependent upon the user's chosen display string.\n\nFor example:\n    [{\"selector\": \"T__row1_col1:hover .pd-t\",\n     \"props\": [(\"visibility\", \"visible\")]},\n    {\"selector\": \"T__row1_col1 .pd-t::after\",\n     \"props\": [(\"content\", \"Some Valid Text String\")]}]\n\nParameters\n----------\nuuid: str\n    The uuid of the Styler instance\nname: str\n    The css-name of the class used for styling tooltips\nrow : int\n    The row index of the specified tooltip string data\ncol : int\n    The col index of the specified tooltip string data\ntext : str\n    The textual content of the tooltip to be displayed in HTML.\n\nReturns\n-------\npseudo_css : List",
+  "output_code": "    def _pseudo_css(self, uuid: str, name: str, row: int, col: int, text: str):\n        \n        selector_id = \"#T_\" + uuid + \"_row\" + str(row) + \"_col\" + str(col)\n        return [\n            {\n                \"selector\": selector_id + f\":hover .{name}\",\n                \"props\": [(\"visibility\", \"visible\")],\n            },\n            {\n                \"selector\": selector_id + f\" .{name}::after\",\n                \"props\": [(\"content\", f'\"{text}\"')],\n            },\n        ]",
+  "input_contexts": [
+    {
+      "id": "krishnaik06_The-Grand-Complete-Data-Science-Materials_59207_1",
+      "input_code": "    def _translate(self, styler: StylerRenderer, d: dict):\n        \n        self.tt_data = self.tt_data.reindex_like(styler.data)\n        if self.tt_data.empty:\n            return d\n\n        name = self.class_name\n        mask = (self.tt_data.isna()) | (self.tt_data.eq(\"\"))\n        self.table_styles = [\n            style\n            for sublist in [\n                self._pseudo_css(styler.uuid, name, i, j, str(self.tt_data.iloc[i, j]))\n                for i in range(len(self.tt_data.index))\n                for j in range(len(self.tt_data.columns))\n                if not (\n                    mask.iloc[i, j]\n                    or i in styler.hidden_rows\n                    or j in styler.hidden_columns\n                )\n            ]\n            for style in sublist\n        ]\n\n        if self.table_styles:\n            for row in d[\"body\"]:\n                for item in row:\n                    if item[\"type\"] == \"td\":\n                        item[\"display_value\"] = (\n                            str(item[\"display_value\"])\n                            + f'<span class=\"{self.class_name}\"></span>'\n                        )\n            d[\"table_styles\"].extend(self._class_styles)\n            d[\"table_styles\"].extend(self.table_styles)\n\n        return d\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport uuid\n\n<testcase_1>\nuuid_str = str(uuid.uuid4())\nname = \"tooltip-class\"\nrow = 0\ncol = 0\ntext = \"This is a tooltip\"\n\n<testcase_2>\nuuid_str = str(uuid.uuid4())\nname = \"hover-info\"\nrow = 5\ncol = 3\ntext = \"Detailed information here\"\n\n<testcase_3>\nuuid_str = str(uuid.uuid4())\nname = \"info-box\"\nrow = 10\ncol = 2\ntext = \"Additional details available\"\n\n<testcase_4>\nuuid_str = str(uuid.uuid4())\nname = \"data-tooltip\"\nrow = 7\ncol = 8\ntext = \"Click for more info\"\n\n<testcase_5>\nuuid_str = str(uuid.uuid4())\nname = \"custom-tooltip\"\nrow = 2\ncol = 4\ntext = \"Hover to see more\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport uuid\n\n<testcase_1>\nuuid_str = str(uuid.uuid4())\nname = \"tooltip-class\"\nrow = 0\ncol = 0\ntext = \"This is a tooltip\"\n\n<testcase_2>\nuuid_str = str(uuid.uuid4())\nname = \"hover-info\"\nrow = 5\ncol = 3\ntext = \"Detailed information here\"\n\n<testcase_3>\nuuid_str = str(uuid.uuid4())\nname = \"info-box\"\nrow = 10\ncol = 2\ntext = \"Additional details available\"\n\n<testcase_4>\nuuid_str = str(uuid.uuid4())\nname = \"data-tooltip\"\nrow = 7\ncol = 8\ntext = \"Click for more info\"\n\n<testcase_5>\nuuid_str = str(uuid.uuid4())\nname = \"custom-tooltip\"\nrow = 2\ncol = 4\ntext = \"Hover to see more\"\n```",
+  "needimport": "import uuid\n\n",
+  "test_results": {
+    "ans1": [
+      {
+        "selector": "#T_306da984-50b4-4c90-9d6f-e8f0552a1caa_row0_col0:hover .tooltip-class",
+        "props": [
+          [
+            "visibility",
+            "visible"
+          ]
+        ]
+      },
+      {
+        "selector": "#T_306da984-50b4-4c90-9d6f-e8f0552a1caa_row0_col0 .tooltip-class::after",
+        "props": [
+          [
+            "content",
+            "\"This is a tooltip\""
+          ]
+        ]
+      }
+    ],
+    "ans2": [
+      {
+        "selector": "#T_29ecc770-47c8-46cc-89a1-9dff8a7b1e8a_row5_col3:hover .hover-info",
+        "props": [
+          [
+            "visibility",
+            "visible"
+          ]
+        ]
+      },
+      {
+        "selector": "#T_29ecc770-47c8-46cc-89a1-9dff8a7b1e8a_row5_col3 .hover-info::after",
+        "props": [
+          [
+            "content",
+            "\"Detailed information here\""
+          ]
+        ]
+      }
+    ],
+    "ans3": [
+      {
+        "selector": "#T_e514add9-565f-43e5-80b3-af315447df61_row10_col2:hover .info-box",
+        "props": [
+          [
+            "visibility",
+            "visible"
+          ]
+        ]
+      },
+      {
+        "selector": "#T_e514add9-565f-43e5-80b3-af315447df61_row10_col2 .info-box::after",
+        "props": [
+          [
+            "content",
+            "\"Additional details available\""
+          ]
+        ]
+      }
+    ],
+    "ans4": [
+      {
+        "selector": "#T_7649cc30-81fa-40f2-9013-f96458b015f0_row7_col8:hover .data-tooltip",
+        "props": [
+          [
+            "visibility",
+            "visible"
+          ]
+        ]
+      },
+      {
+        "selector": "#T_7649cc30-81fa-40f2-9013-f96458b015f0_row7_col8 .data-tooltip::after",
+        "props": [
+          [
+            "content",
+            "\"Click for more info\""
+          ]
+        ]
+      }
+    ],
+    "ans5": [
+      {
+        "selector": "#T_44bc9ca2-047f-452b-b78f-d6370a2a894c_row2_col4:hover .custom-tooltip",
+        "props": [
+          [
+            "visibility",
+            "visible"
+          ]
+        ]
+      },
+      {
+        "selector": "#T_44bc9ca2-047f-452b-b78f-d6370a2a894c_row2_col4 .custom-tooltip::after",
+        "props": [
+          [
+            "content",
+            "\"Hover to see more\""
+          ]
+        ]
+      }
+    ]
+  }
+}
