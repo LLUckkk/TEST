@@ -1,0 +1,42 @@
+{
+  "input_header": "def get_cuda_version_tuple() -> Tuple[int, int]:",
+  "input_docstring": null,
+  "output_code": "def get_cuda_version_tuple() -> Tuple[int, int]:\n    major, minor = map(int, torch.version.cuda.split(\".\"))\n    return major, minor",
+  "input_contexts": [
+    {
+      "id": "bitsandbytes-foundation_bitsandbytes_35_2",
+      "input_code": "def get_cuda_specs() -> Optional[CUDASpecs]:\n    if not torch.cuda.is_available():\n        return None\n\n    return CUDASpecs(\n        highest_compute_capability=(get_compute_capabilities()[-1]),\n        cuda_version_string=(get_cuda_version_string()),\n        cuda_version_tuple=get_cuda_version_tuple(),\n    )\n"
+    },
+    {
+      "id": "bitsandbytes-foundation_bitsandbytes_35_1",
+      "input_code": "def get_cuda_version_string() -> str:\n    major, minor = get_cuda_version_tuple()\n    return f\"{major}{minor}\"\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport torch\n\n<testcase_1>\ntorch.version.cuda = \"11.2\"\n\n<testcase_2>\ntorch.version.cuda = \"10.1\"\n\n<testcase_3>\ntorch.version.cuda = \"9.0\"\n\n<testcase_4>\ntorch.version.cuda = \"12.0\"\n\n<testcase_5>\ntorch.version.cuda = \"11.8\""
+  ],
+  "gpt_output": "<needimport>\nimport torch\n\n<testcase_1>\ntorch.version.cuda = \"11.2\"\n\n<testcase_2>\ntorch.version.cuda = \"10.1\"\n\n<testcase_3>\ntorch.version.cuda = \"9.0\"\n\n<testcase_4>\ntorch.version.cuda = \"12.0\"\n\n<testcase_5>\ntorch.version.cuda = \"11.8\"",
+  "needimport": "import torch\n\n",
+  "test_results": {
+    "ans1": [
+      11,
+      2
+    ],
+    "ans2": [
+      10,
+      1
+    ],
+    "ans3": [
+      9,
+      0
+    ],
+    "ans4": [
+      12,
+      0
+    ],
+    "ans5": [
+      11,
+      8
+    ]
+  }
+}

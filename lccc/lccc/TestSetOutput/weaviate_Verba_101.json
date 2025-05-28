@@ -1,0 +1,47 @@
+{
+  "input_header": "def get_token(env: str, default: str = None) -> str:",
+  "input_docstring": null,
+  "output_code": "def get_token(env: str, default: str = None) -> str:\n    token = tok if bool(tok := os.getenv(env, None)) else default\n    return token",
+  "input_contexts": [
+    {
+      "id": "weaviate_Verba_101_5",
+      "input_code": "    def __init__(self):\n        super().__init__()\n        self.name = \"Novita AI\"\n        self.description = \"Using Novita AI LLM models to generate answers to queries\"\n        self.context_window = 8192\n\n        models = get_models()\n\n        self.config[\"Model\"] = InputConfig(\n            type=\"dropdown\",\n            value=models[0],\n            description=\"Select a Novita Model\",\n            values=models,\n        )\n\n        if get_token(\"NOVITA_API_KEY\") is None:\n            self.config[\"API Key\"] = InputConfig(\n                type=\"password\",\n                value=\"\",\n                description=\"You can set your Novita API Key here or set it as environment variable `NOVITA_API_KEY`\",\n                values=[],\n            )\n"
+    },
+    {
+      "id": "weaviate_Verba_101_6",
+      "input_code": "    def __init__(self):\n        super().__init__()\n        self.name = \"OpenAI\"\n        self.description = \"Using OpenAI LLM models to generate answers to queries\"\n        self.context_window = 10000\n\n        api_key = get_token(\"OPENAI_API_KEY\")\n        base_url = os.getenv(\"OPENAI_BASE_URL\", \"https://api.openai.com/v1\")\n        models = self.get_models(api_key, base_url)\n\n        self.config[\"Model\"] = InputConfig(\n            type=\"dropdown\",\n            value=models[0],\n            description=\"Select an OpenAI Embedding Model\",\n            values=models,\n        )\n\n        if get_token(\"OPENAI_API_KEY\") is None:\n            self.config[\"API Key\"] = InputConfig(\n                type=\"password\",\n                value=\"\",\n                description=\"You can set your OpenAI API Key here or set it as environment variable `OPENAI_API_KEY`\",\n                values=[],\n            )\n        if os.getenv(\"OPENAI_BASE_URL\") is None:\n            self.config[\"URL\"] = InputConfig(\n                type=\"text\",\n                value=\"https://api.openai.com/v1\",\n                description=\"You can change the Base URL here if needed\",\n                values=[],\n            )\n"
+    },
+    {
+      "id": "weaviate_Verba_101_1",
+      "input_code": "    def __init__(self):\n        super().__init__()\n        self.name = \"Cohere\"\n        self.description = \"Vectorizes documents and queries using Cohere\"\n        self.url = os.getenv(\"COHERE_BASE_URL\", \"https://api.cohere.com/v1\")\n        models = get_models(self.url, get_token(\"COHERE_API_KEY\", None), \"embed\")\n\n        self.config[\"Model\"] = InputConfig(\n            type=\"dropdown\",\n            value=models[0] if models else \"\",\n            description=\"Select a Cohere Embedding Model\",\n            values=models if models else [],\n        )\n\n        if get_token(\"COHERE_API_KEY\") is None:\n            self.config[\"API Key\"] = InputConfig(\n                type=\"password\",\n                value=\"\",\n                description=\"You can set your Cohere API Key here or set it as environment variable `COHERE_API_KEY`\",\n                values=[],\n            )\n"
+    },
+    {
+      "id": "weaviate_Verba_101_2",
+      "input_code": "    def __init__(self):\n        super().__init__()\n        self.name = \"OpenAI\"\n        self.description = \"Vectorizes documents and queries using OpenAI\"\n\n        api_key = get_token(\"OPENAI_API_KEY\")\n        base_url = os.getenv(\"OPENAI_BASE_URL\", \"https://api.openai.com/v1\")\n        models = self.get_models(api_key, base_url)\n\n        self.config = {\n            \"Model\": InputConfig(\n                type=\"dropdown\",\n                value=\"text-embedding-3-small\",\n                description=\"Select an OpenAI Embedding Model\",\n                values=models,\n            )\n        }\n\n        if api_key is None:\n            self.config[\"API Key\"] = InputConfig(\n                type=\"password\",\n                value=\"\",\n                description=\"OpenAI API Key (or set OPENAI_API_KEY env var)\",\n                values=[],\n            )\n        if os.getenv(\"OPENAI_BASE_URL\") is None:\n            self.config[\"URL\"] = InputConfig(\n                type=\"text\",\n                value=base_url,\n                description=\"OpenAI API Base URL (if different from default)\",\n                values=[],\n            )\n"
+    },
+    {
+      "id": "weaviate_Verba_101_7",
+      "input_code": "    def __init__(self):\n        super().__init__()\n        self.name = \"Upstage\"\n        self.description = \"Using Upstage Solar LLM models for advanced text generation\"\n        self.context_window = self.CONTEXT_WINDOW\n\n        models = self.MODELS\n\n        self.config[\"Model\"] = InputConfig(\n            type=\"dropdown\",\n            value=models[0],\n            description=\"Select an Upstage Solar Model\",\n            values=models,\n        )\n\n        if get_token(\"UPSTAGE_API_KEY\") is None:\n            self.config[\"API Key\"] = InputConfig(\n                type=\"password\",\n                value=\"\",\n                description=\"You can set your Upstage API Key here or set it as environment variable `UPSTAGE_API_KEY`\",\n                values=[],\n            )\n        if os.getenv(\"UPSTAGE_BASE_URL\") is None:\n            self.config[\"URL\"] = InputConfig(\n                type=\"text\",\n                value=self.DEFAULT_BASE_URL,\n                description=\"You can change the Base URL here if needed\",\n                values=[],\n            )\n"
+    },
+    {
+      "id": "weaviate_Verba_101_3",
+      "input_code": "    def __init__(self):\n        super().__init__()\n        self.name = \"Upstage\"\n        self.description = (\n            \"Vectorizes documents and queries using Upstage Solar Embeddings\"\n        )\n        self.max_batch_size = 100\n\n        api_key = get_token(\"UPSTAGE_API_KEY\")\n        base_url = os.getenv(\"UPSTAGE_BASE_URL\", \"https://api.upstage.ai/v1/solar\")\n\n        self.config = {\n            \"Model\": InputConfig(\n                type=\"dropdown\",\n                value=\"embedding-query\",\n                description=\"Select an Upstage Embedding Model\",\n                values=[\"embedding-query\", \"embedding-passage\"],\n            )\n        }\n\n        if api_key is None:\n            self.config[\"API Key\"] = InputConfig(\n                type=\"password\",\n                value=\"\",\n                description=\"Upstage API Key (or set UPSTAGE_API_KEY env var)\",\n                values=[],\n            )\n        if os.getenv(\"UPSTAGE_BASE_URL\") is None:\n            self.config[\"URL\"] = InputConfig(\n                type=\"text\",\n                value=base_url,\n                description=\"Upstage API Base URL (if different from default)\",\n                values=[],\n            )\n"
+    },
+    {
+      "id": "weaviate_Verba_101_4",
+      "input_code": "    def __init__(self):\n        super().__init__()\n        self.name = \"Cohere\"\n        self.description = \"Generator using Cohere's command-r-plus model\"\n        self.url = os.getenv(\"COHERE_BASE_URL\", \"https://api.cohere.com/v1\")\n        self.context_window = 10000\n\n        models = get_models(self.url, get_token(\"COHERE_API_KEY\", None), \"chat\")\n\n        self.config[\"Model\"] = InputConfig(\n            type=\"dropdown\",\n            value=models[0] if models else \"\",\n            description=\"Select a Cohere Embedding Model\",\n            values=models if models else [],\n        )\n\n        if get_token(\"COHERE_API_KEY\") is None:\n            self.config[\"API Key\"] = InputConfig(\n                type=\"password\",\n                value=\"\",\n                description=\"You can set your Cohere API Key here or set it as environment variable `COHERE_API_KEY`\",\n                values=[],\n            )\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport os\n\n<testcase_1>\nenv = \"NOVITA_API_KEY\"\ndefault = \"default_novita_key\"\n\n<testcase_2>\nenv = \"OPENAI_API_KEY\"\ndefault = \"default_openai_key\"\n\n<testcase_3>\nenv = \"COHERE_API_KEY\"\ndefault = \"default_cohere_key\"\n\n<testcase_4>\nenv = \"UPSTAGE_API_KEY\"\ndefault = \"default_upstage_key\"\n\n<testcase_5>\nenv = \"NON_EXISTENT_KEY\"\ndefault = \"default_non_existent_key\""
+  ],
+  "gpt_output": "<needimport>\nimport os\n\n<testcase_1>\nenv = \"NOVITA_API_KEY\"\ndefault = \"default_novita_key\"\n\n<testcase_2>\nenv = \"OPENAI_API_KEY\"\ndefault = \"default_openai_key\"\n\n<testcase_3>\nenv = \"COHERE_API_KEY\"\ndefault = \"default_cohere_key\"\n\n<testcase_4>\nenv = \"UPSTAGE_API_KEY\"\ndefault = \"default_upstage_key\"\n\n<testcase_5>\nenv = \"NON_EXISTENT_KEY\"\ndefault = \"default_non_existent_key\"",
+  "needimport": "import os\n\n",
+  "test_results": {
+    "ans1": "default_novita_key",
+    "ans2": "default_openai_key",
+    "ans3": "default_cohere_key",
+    "ans4": "default_upstage_key",
+    "ans5": "default_non_existent_key"
+  }
+}

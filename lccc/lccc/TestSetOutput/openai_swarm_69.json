@@ -1,0 +1,37 @@
+{
+  "input_header": "def get_assistant(self, assistant_name):",
+  "input_docstring": null,
+  "output_code": "    def get_assistant(self, assistant_name):\n\n        for assistant in self.assistants:\n            if assistant.name == assistant_name:\n                return assistant\n        print('No assistant found')\n        return None",
+  "input_contexts": [
+    {
+      "id": "openai_swarm_69_1",
+      "input_code": "    def triage_request(self, assistant, message):\n        \n        assistant_name = None\n\n        if assistant.sub_assistants is not None:\n            assistant_name = self.determine_appropriate_assistant(assistant, message)\n            if not assistant_name:\n                print('No appropriate assistant determined')\n                return None\n\n            assistant_new = self.get_assistant(assistant_name)\n            if not assistant_new:\n                print(f'No assistant found with name: {assistant_name}')\n                return None\n\n            assistant.pass_context(assistant_new)\n        else:\n            assistant_new = assistant\n\n\n        if assistant_name and assistant_name != assistant.name:\n            print(\n                f\"{Colors.OKGREEN}Selecting sub-assistant:{Colors.ENDC} {Colors.BOLD}{assistant_new.name}{Colors.ENDC}\"\n            )\n            assistant.add_assistant_message(f\"Selecting sub-assistant: {assistant_new.name}\")\n        else:\n            print(\n                f\"{Colors.OKGREEN}Assistant:{Colors.ENDC} {Colors.BOLD}{assistant_new.name}{Colors.ENDC}\"\n            )\n        return assistant_new\n"
+    },
+    {
+      "id": "openai_swarm_69_2",
+      "input_code": "    def run_task(self, task, test_mode):\n            \n\n            if not test_mode:\n                print(\n            f\"{Colors.OKCYAN}User Query:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}\"\n                )\n            else:\n                print(\n            f\"{Colors.OKCYAN}Test:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}\"\n                )\n            if self.persist and self.last_assistant is not None:\n                assistant = self.last_assistant\n            else:\n                assistant = self.get_assistant(task.assistant)\n                assistant.current_task_id = task.id\n                assistant.add_user_message(task.description)\n\n            selected_assistant = self.triage_request(assistant, task.description)\n            if test_mode:\n                task.assistant = selected_assistant.name if selected_assistant else \"None\"\n            if not selected_assistant:\n                if not test_mode:\n                    print(f\"No suitable assistant found for the task: {task.description}\")\n                return None\n\n            original_plan, plan_log = self.initiate_run(task, selected_assistant,test_mode)\n\n            self.last_assistant = selected_assistant\n\n            if task.evaluate:\n                output = assistant.evaluate(self.client,task, plan_log)\n                if output is not None:\n                    success_flag = False\n                    if not isinstance(output[0],bool):\n                     success_flag = False if output[0].lower() == 'false' else bool(output[0])\n                    message = output[1]\n                    if success_flag:\n                        print(f'\\n\\033[93m{message}\\033[0m')\n                    else:\n                        print(f\"{Colors.RED}{message}{Colors.ENDC}\")\n                    assistant.add_assistant_message(message)\n                else:\n                    message = \"Error evaluating output\"\n                    print(f\"{Colors.RED}{message}{Colors.ENDC}\")\n                    assistant.add_assistant_message(message)\n\n            return original_plan, plan_log\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport random\n\n<testcase_1>\nself.assistants = [Assistant(name=\"Alpha\"), Assistant(name=\"Beta\"), Assistant(name=\"Gamma\")]\nassistant_name = \"Beta\"\n\n<testcase_2>\nself.assistants = [Assistant(name=\"Delta\"), Assistant(name=\"Epsilon\"), Assistant(name=\"Zeta\")]\nassistant_name = \"Zeta\"\n\n<testcase_3>\nself.assistants = [Assistant(name=\"Eta\"), Assistant(name=\"Theta\"), Assistant(name=\"Iota\")]\nassistant_name = \"Theta\"\n\n<testcase_4>\nself.assistants = [Assistant(name=\"Kappa\"), Assistant(name=\"Lambda\"), Assistant(name=\"Mu\")]\nassistant_name = \"Lambda\"\n\n<testcase_5>\nself.assistants = [Assistant(name=\"Nu\"), Assistant(name=\"Xi\"), Assistant(name=\"Omicron\")]\nassistant_name = \"Omicron\""
+  ],
+  "gpt_output": "<needimport>\nimport random\n\n<testcase_1>\nself.assistants = [Assistant(name=\"Alpha\"), Assistant(name=\"Beta\"), Assistant(name=\"Gamma\")]\nassistant_name = \"Beta\"\n\n<testcase_2>\nself.assistants = [Assistant(name=\"Delta\"), Assistant(name=\"Epsilon\"), Assistant(name=\"Zeta\")]\nassistant_name = \"Zeta\"\n\n<testcase_3>\nself.assistants = [Assistant(name=\"Eta\"), Assistant(name=\"Theta\"), Assistant(name=\"Iota\")]\nassistant_name = \"Theta\"\n\n<testcase_4>\nself.assistants = [Assistant(name=\"Kappa\"), Assistant(name=\"Lambda\"), Assistant(name=\"Mu\")]\nassistant_name = \"Lambda\"\n\n<testcase_5>\nself.assistants = [Assistant(name=\"Nu\"), Assistant(name=\"Xi\"), Assistant(name=\"Omicron\")]\nassistant_name = \"Omicron\"",
+  "needimport": "import random\n\n",
+  "test_results": {
+    "ans1": {
+      "name": "Beta"
+    },
+    "ans2": {
+      "name": "Zeta"
+    },
+    "ans3": {
+      "name": "Theta"
+    },
+    "ans4": {
+      "name": "Lambda"
+    },
+    "ans5": {
+      "name": "Omicron"
+    }
+  }
+}
