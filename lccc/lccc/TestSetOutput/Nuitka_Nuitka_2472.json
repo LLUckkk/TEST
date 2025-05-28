@@ -1,0 +1,23 @@
+{
+  "input_header": "def cleanup(self):",
+  "input_docstring": null,
+  "output_code": "    def cleanup(self):\n        self._memo = {}",
+  "input_contexts": [
+    {
+      "id": "Nuitka_Nuitka_2472_1",
+      "input_code": "    def nullify(self):\n        self.cleanup()\n        self.do_execute = self.do_nothing\n        self.my_str     = lambda: ''\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport [No additional libraries needed]\n\n<testcase_1>\nself = type('TestClass', (object,), {'_memo': {'key1': 'value1', 'key2': 'value2'}})()\n\n<testcase_2>\nself = type('TestClass', (object,), {'_memo': {'a': 1, 'b': 2, 'c': 3}})()\n\n<testcase_3>\nself = type('TestClass', (object,), {'_memo': {'x': 'foo', 'y': 'bar'}})()\n\n<testcase_4>\nself = type('TestClass', (object,), {'_memo': {'name': 'Alice', 'age': 30}})()\n\n<testcase_5>\nself = type('TestClass', (object,), {'_memo': {}})()"
+  ],
+  "gpt_output": "<needimport>\nimport [No additional libraries needed]\n\n<testcase_1>\nself = type('TestClass', (object,), {'_memo': {'key1': 'value1', 'key2': 'value2'}})()\n\n<testcase_2>\nself = type('TestClass', (object,), {'_memo': {'a': 1, 'b': 2, 'c': 3}})()\n\n<testcase_3>\nself = type('TestClass', (object,), {'_memo': {'x': 'foo', 'y': 'bar'}})()\n\n<testcase_4>\nself = type('TestClass', (object,), {'_memo': {'name': 'Alice', 'age': 30}})()\n\n<testcase_5>\nself = type('TestClass', (object,), {'_memo': {}})()",
+  "needimport": "import [No additional libraries needed]\n\n",
+  "test_results": {
+    "ans1": {},
+    "ans2": {},
+    "ans3": {},
+    "ans4": {},
+    "ans5": {}
+  }
+}

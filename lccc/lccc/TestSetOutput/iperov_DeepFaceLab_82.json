@@ -1,0 +1,50 @@
+{
+  "input_header": "def QSize_to_np(q):",
+  "input_docstring": null,
+  "output_code": "def QSize_to_np(q):\n    return np.int32( [q.width(), q.height()] )",
+  "input_contexts": [
+    {
+      "id": "iperov_DeepFaceLab_82_1",
+      "input_code": "    def initialize(self, img, img_look_pt=None, view_scale=None, ie_polys=None, xseg_mask=None, canvas_config=None ):\n        q_img = self.q_img = QImage_from_np(img)\n        self.img_pixmap = QPixmap.fromImage(q_img)\n\n        self.xseg_mask_pixmap = None\n        self.xseg_overlay_mask_pixmap = None\n        if xseg_mask is not None:\n            h,w,c = img.shape\n            xseg_mask = cv2.resize(xseg_mask, (w,h), interpolation=cv2.INTER_CUBIC)\n            xseg_mask = imagelib.normalize_channels(xseg_mask, 1)\n            xseg_img = img.astype(np.float32)/255.0\n            xseg_overlay_mask = xseg_img*(1-xseg_mask)*0.5 + xseg_img*xseg_mask\n            xseg_overlay_mask = np.clip(xseg_overlay_mask*255, 0, 255).astype(np.uint8)\n            xseg_mask = np.clip(xseg_mask*255, 0, 255).astype(np.uint8)\n            self.xseg_mask_pixmap = QPixmap.fromImage(QImage_from_np(xseg_mask))\n            self.xseg_overlay_mask_pixmap = QPixmap.fromImage(QImage_from_np(xseg_overlay_mask))\n\n        self.img_size = QSize_to_np (self.img_pixmap.size())\n\n        self.img_look_pt = img_look_pt\n        self.view_scale = view_scale\n\n        if ie_polys is None:\n            ie_polys = SegIEPolys()\n        self.ie_polys = ie_polys\n\n        if canvas_config is None:\n            canvas_config = CanvasConfig()\n        self.canvas_config = canvas_config\n\n        self.set_cbar_disabled()\n        self.cbar.btn_poly_color_act_grp.setDisabled(False)\n        self.cbar.btn_view_xseg_overlay_mask_act.setDisabled(False)\n        self.cbar.btn_poly_type_act_grp.setDisabled(False)\n\n        self.current_cursor = None\n        self.mouse_hull_poly = None\n        self.mouse_wire_poly = None\n        self.drag_type = DragType.NONE\n        self.mouse_cli_pt = np.zeros((2,), np.float32 )\n\n        self.set_op_mode(OpMode.NONE)\n        self.set_color_scheme_id(1)\n        self.set_poly_include_type(SegIEPolyType.INCLUDE)\n        self.set_pt_edit_mode(PTEditMode.MOVE)\n        self.set_view_lock(ViewLock.NONE)\n\n        if self.last_state is not None:\n            self.set_color_scheme_id(self.last_state.color_scheme_id)\n            if self.last_state.op_mode is not None:\n                self.set_op_mode(self.last_state.op_mode)\n\n        self.initialized = True\n\n        self.setMouseTracking(True)\n        self.update_cursor()\n        self.update()\n"
+    },
+    {
+      "id": "iperov_DeepFaceLab_82_4",
+      "input_code": "    def img_to_cli_rect(self, rect):\n        tl = QPoint_to_np(rect.topLeft())\n        xy = self.img_to_cli_pt(tl)\n        xy2 = self.img_to_cli_pt(tl + QSize_to_np(rect.size()) ) - xy\n        return QRect ( *xy.astype(np.int), *xy2.astype(np.int) )\n"
+    },
+    {
+      "id": "iperov_DeepFaceLab_82_2",
+      "input_code": "    def get_cli_center_pt(self):\n        return np.round(QSize_to_np(self.size())/2.0)\n"
+    },
+    {
+      "id": "iperov_DeepFaceLab_82_3",
+      "input_code": "    def get_view_scale(self):\n        view_scale = self.view_scale\n        if view_scale is None:\n            min_cli_size = np.min(QSize_to_np(self.size()))\n            max_img_size = np.max(self.img_size)\n            view_scale =  min_cli_size / max_img_size\n\n        return view_scale\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport numpy as np\nfrom PyQt5.QtCore import QSize\n\n<testcase_1>\nq = QSize(1920, 1080)\n\n<testcase_2>\nq = QSize(1280, 720)\n\n<testcase_3>\nq = QSize(800, 600)\n\n<testcase_4>\nq = QSize(2560, 1440)\n\n<testcase_5>\nq = QSize(3840, 2160)"
+  ],
+  "gpt_output": "<needimport>\nimport numpy as np\nfrom PyQt5.QtCore import QSize\n\n<testcase_1>\nq = QSize(1920, 1080)\n\n<testcase_2>\nq = QSize(1280, 720)\n\n<testcase_3>\nq = QSize(800, 600)\n\n<testcase_4>\nq = QSize(2560, 1440)\n\n<testcase_5>\nq = QSize(3840, 2160)",
+  "needimport": "import numpy as np\nfrom PyQt5.QtCore import QSize\n\n",
+  "test_results": {
+    "ans1": [
+      1920,
+      1080
+    ],
+    "ans2": [
+      1280,
+      720
+    ],
+    "ans3": [
+      800,
+      600
+    ],
+    "ans4": [
+      2560,
+      1440
+    ],
+    "ans5": [
+      3840,
+      2160
+    ]
+  }
+}

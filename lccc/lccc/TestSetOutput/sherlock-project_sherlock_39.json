@@ -1,0 +1,43 @@
+{
+  "input_header": "def simple_query(sites_info: dict, site: str, username: str) -> QueryStatus:",
+  "input_docstring": null,
+  "output_code": "def simple_query(sites_info: dict, site: str, username: str) -> QueryStatus:\n    query_notify = QueryNotify()\n    site_data: dict = {}\n    site_data[site] = sites_info[site]\n    return sherlock(\n        username=username,\n        site_data=site_data,\n        query_notify=query_notify,\n    )[site]['status'].status",
+  "input_contexts": [
+    {
+      "id": "sherlock-project_sherlock_39_2",
+      "input_code": "    def test_known_positives_via_status_code(self, sites_info, site, username):\n        assert simple_query(sites_info=sites_info, site=site, username=username) is QueryStatus.CLAIMED\n"
+    },
+    {
+      "id": "sherlock-project_sherlock_39_6",
+      "input_code": "def test_username_illegal_regex(sites_info):\n    site: str = 'BitBucket'\n    invalid_handle: str = '*#$Y&*JRE'\n    pattern = re.compile(sites_info[site]['regexCheck'])\n    assert pattern.match(invalid_handle) is None\n    assert simple_query(sites_info=sites_info, site=site, username=invalid_handle) is QueryStatus.ILLEGAL\n"
+    },
+    {
+      "id": "sherlock-project_sherlock_39_1",
+      "input_code": "    def test_known_positives_via_message(self, sites_info, site, username):\n        assert simple_query(sites_info=sites_info, site=site, username=username) is QueryStatus.CLAIMED\n"
+    },
+    {
+      "id": "sherlock-project_sherlock_39_4",
+      "input_code": "    def test_likely_negatives_via_message(self, sites_info, site, random_len):\n        num_attempts: int = 3\n        attempted_usernames: list[str] = []\n        status: QueryStatus = QueryStatus.CLAIMED\n        for i in range(num_attempts):\n            acceptable_types = string.ascii_letters + string.digits\n            random_handle = ''.join(random.choice(acceptable_types) for _ in range (random_len))\n            attempted_usernames.append(random_handle)\n            status = simple_query(sites_info=sites_info, site=site, username=random_handle)\n            if status is QueryStatus.AVAILABLE:\n                break\n        assert status is QueryStatus.AVAILABLE, f\"Could not validate available username after {num_attempts} attempts with randomly generated usernames {attempted_usernames}.\"\n"
+    },
+    {
+      "id": "sherlock-project_sherlock_39_3",
+      "input_code": "    def test_known_positives_via_response_url(self, sites_info, site, username):\n        assert simple_query(sites_info=sites_info, site=site, username=username) is QueryStatus.CLAIMED\n"
+    },
+    {
+      "id": "sherlock-project_sherlock_39_5",
+      "input_code": "    def test_likely_negatives_via_status_code(self, sites_info, site, random_len):\n        num_attempts: int = 3\n        attempted_usernames: list[str] = []\n        status: QueryStatus = QueryStatus.CLAIMED\n        for i in range(num_attempts):\n            acceptable_types = string.ascii_letters + string.digits\n            random_handle = ''.join(random.choice(acceptable_types) for _ in range (random_len))\n            attempted_usernames.append(random_handle)\n            status = simple_query(sites_info=sites_info, site=site, username=random_handle)\n            if status is QueryStatus.AVAILABLE:\n                break\n        assert status is QueryStatus.AVAILABLE, f\"Could not validate available username after {num_attempts} attempts with randomly generated usernames {attempted_usernames}.\"\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport re\nimport random\nimport string\n\n<testcase_1>\nsites_info = {\n    'GitHub': {\n        'regexCheck': r'^[a-zA-Z0-9_-]+$',\n        'url': 'https://github.com/{}',\n    }\n}\nsite = 'GitHub'\nusername = 'validUser123'\n\n<testcase_2>\nsites_info = {\n    'Twitter': {\n        'regexCheck': r'^[a-zA-Z0-9_]{1,15}$',\n        'url': 'https://twitter.com/{}',\n    }\n}\nsite = 'Twitter'\nusername = 'another_user'\n\n<testcase_3>\nsites_info = {\n    'Instagram': {\n        'regexCheck': r'^[a-zA-Z0-9._]+$',\n        'url': 'https://instagram.com/{}',\n    }\n}\nsite = 'Instagram'\nusername = 'insta.user'\n\n<testcase_4>\nsites_info = {\n    'Reddit': {\n        'regexCheck': r'^[a-zA-Z0-9_-]{3,20}$',\n        'url': 'https://reddit.com/user/{}',\n    }\n}\nsite = 'Reddit'\nusername = 'redditUser'\n\n<testcase_5>\nsites_info = {\n    'LinkedIn': {\n        'regexCheck': r'^[a-zA-Z0-9-]+$',\n        'url': 'https://linkedin.com/in/{}',\n    }\n}\nsite = 'LinkedIn'\nusername = 'professional-profile'\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport re\nimport random\nimport string\n\n<testcase_1>\nsites_info = {\n    'GitHub': {\n        'regexCheck': r'^[a-zA-Z0-9_-]+$',\n        'url': 'https://github.com/{}',\n    }\n}\nsite = 'GitHub'\nusername = 'validUser123'\n\n<testcase_2>\nsites_info = {\n    'Twitter': {\n        'regexCheck': r'^[a-zA-Z0-9_]{1,15}$',\n        'url': 'https://twitter.com/{}',\n    }\n}\nsite = 'Twitter'\nusername = 'another_user'\n\n<testcase_3>\nsites_info = {\n    'Instagram': {\n        'regexCheck': r'^[a-zA-Z0-9._]+$',\n        'url': 'https://instagram.com/{}',\n    }\n}\nsite = 'Instagram'\nusername = 'insta.user'\n\n<testcase_4>\nsites_info = {\n    'Reddit': {\n        'regexCheck': r'^[a-zA-Z0-9_-]{3,20}$',\n        'url': 'https://reddit.com/user/{}',\n    }\n}\nsite = 'Reddit'\nusername = 'redditUser'\n\n<testcase_5>\nsites_info = {\n    'LinkedIn': {\n        'regexCheck': r'^[a-zA-Z0-9-]+$',\n        'url': 'https://linkedin.com/in/{}',\n    }\n}\nsite = 'LinkedIn'\nusername = 'professional-profile'\n```",
+  "needimport": "import re\nimport random\nimport string\n\n",
+  "test_results": {
+    "ans1": "CLAIMED",
+    "ans2": "AVAILABLE",
+    "ans3": "CLAIMED",
+    "ans4": "CLAIMED",
+    "ans5": "CLAIMED"
+  }
+}

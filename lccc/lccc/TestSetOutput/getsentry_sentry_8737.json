@@ -1,0 +1,23 @@
+{
+  "input_header": "def in_cache(self, organization_id, feature_id):",
+  "input_docstring": null,
+  "output_code": "    def in_cache(self, organization_id, feature_id):\n        org_key = self.key_tpl.format(organization_id)\n        return self.get_client(org_key).sismember(org_key, feature_id)",
+  "input_contexts": [
+    {
+      "id": "getsentry_sentry_8737_1",
+      "input_code": "    def record(self, organization_id, feature_slug, **kwargs):\n        try:\n            feature_id = manager.get_by_slug(feature_slug).id\n        except UnknownFeature as e:\n            logger.exception(str(e))\n            return False\n\n        if not self.in_cache(organization_id, feature_id):\n            row, created = self.create_or_update(\n                organization_id=organization_id, feature_id=feature_id, complete=True\n            )\n            self.set_cache(organization_id, feature_id)\n            return created\n\n        return False\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport redis\n\n<testcase_1>\nself = SomeClass()\norganization_id = 1\nfeature_id = 101\n\n<testcase_2>\nself = SomeClass()\norganization_id = 2\nfeature_id = 202\n\n<testcase_3>\nself = SomeClass()\norganization_id = 3\nfeature_id = 303\n\n<testcase_4>\nself = SomeClass()\norganization_id = 4\nfeature_id = 404\n\n<testcase_5>\nself = SomeClass()\norganization_id = 5\nfeature_id = 505"
+  ],
+  "gpt_output": "<needimport>\nimport redis\n\n<testcase_1>\nself = SomeClass()\norganization_id = 1\nfeature_id = 101\n\n<testcase_2>\nself = SomeClass()\norganization_id = 2\nfeature_id = 202\n\n<testcase_3>\nself = SomeClass()\norganization_id = 3\nfeature_id = 303\n\n<testcase_4>\nself = SomeClass()\norganization_id = 4\nfeature_id = 404\n\n<testcase_5>\nself = SomeClass()\norganization_id = 5\nfeature_id = 505",
+  "needimport": "import redis\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": false,
+    "ans4": false,
+    "ans5": true
+  }
+}

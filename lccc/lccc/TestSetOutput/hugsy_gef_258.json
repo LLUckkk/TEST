@@ -1,0 +1,39 @@
+{
+  "input_header": "def p16(x: int) -> bytes:",
+  "input_docstring": null,
+  "output_code": "def p16(x: int) -> bytes:\n    return struct.pack(\"<H\", x)",
+  "input_contexts": [
+    {
+      "id": "hugsy_gef_258_3",
+      "input_code": "    def test_cmd_nop_bytes(self):\n        gdb = self._gdb\n        gef = self._gef\n        gdb.execute(\"start\")\n        gef.memory.write(gef.arch.pc, p16(0x9191))\n        res = gdb.execute(\n            f\"{self.cmd} --b\",\n            to_string=True,\n        ) or \"\"\n        assert res\n        mem = u16(gef.memory.read(gef.arch.pc, 2))\n        self.assertEqual(0x9190, mem)\n"
+    },
+    {
+      "id": "hugsy_gef_258_1",
+      "input_code": "    def test_cmd_nop_nop_break_instruction(self):\n        gdb = self._gdb\n        gef = self._gef\n        gdb.execute(\"start\")\n        gef.memory.write(gef.arch.pc, p16(0xFEEB))\n        res = gdb.execute(f\"{self.cmd} --n\", to_string=True)\n        mem = u16(gef.memory.read(gef.arch.pc, 2))\n        self.assertIn(r\"will result in LAST-INSTRUCTION\", res)\n        self.assertEqual(0xFEEB, mem)\n"
+    },
+    {
+      "id": "hugsy_gef_258_2",
+      "input_code": "    def test_cmd_nop_nop_break_instruction_force(self):\n        gdb = self._gdb\n        gef = self._gef\n        gdb.execute(\"start\")\n        gef.memory.write(gef.arch.pc, p16(0xFEEB))\n        res = gdb.execute(f\"{self.cmd} --n --f\", to_string=True)\n        mem = u16(gef.memory.read(gef.arch.pc, 2))\n        self.assertIn(r\"will result in LAST-INSTRUCTION\", res)\n        self.assertEqual(0xFE90, mem)\n"
+    },
+    {
+      "id": "hugsy_gef_258_4",
+      "input_code": "    def test_cmd_nop_bytes_break_instruction(self):\n        gdb = self._gdb\n        gef = self._gef\n        gdb.execute(\"start\")\n        gef.memory.write(gef.arch.pc, p16(0xFEEB))\n        res = gdb.execute(f\"{self.cmd} --b\", to_string=True)\n        mem = u16(gef.memory.read(gef.arch.pc, 2))\n        self.assertIn(r\"will result in LAST-INSTRUCTION\", res)\n        self.assertEqual(0xFEEB, mem)\n"
+    },
+    {
+      "id": "hugsy_gef_258_5",
+      "input_code": "    def test_cmd_nop_bytes_break_instruction_force(self):\n        gdb = self._gdb\n        gef = self._gef\n        gdb.execute(\"start\")\n        gef.memory.write(gef.arch.pc, p16(0xFEEB))\n        res = gdb.execute(f\"{self.cmd} --b --f\", to_string=True)\n        mem = u16(gef.memory.read(gef.arch.pc, 2))\n        self.assertIn(r\"will result in LAST-INSTRUCTION\", res)\n        self.assertEqual(0xfe90, mem)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport struct\n\n<testcase_1>\nx = 0x1234\n\n<testcase_2>\nx = 0x5678\n\n<testcase_3>\nx = 0x9ABC\n\n<testcase_4>\nx = 0xDEF0\n\n<testcase_5>\nx = 0xFFFF"
+  ],
+  "gpt_output": "<needimport>\nimport struct\n\n<testcase_1>\nx = 0x1234\n\n<testcase_2>\nx = 0x5678\n\n<testcase_3>\nx = 0x9ABC\n\n<testcase_4>\nx = 0xDEF0\n\n<testcase_5>\nx = 0xFFFF",
+  "needimport": "import struct\n\n",
+  "test_results": {
+    "ans1": "b'4\\x12'",
+    "ans2": "b'xV'",
+    "ans3": "b'\\xbc\\x9a'",
+    "ans4": "b'\\xf0\\xde'",
+    "ans5": "b'\\xff\\xff'"
+  }
+}

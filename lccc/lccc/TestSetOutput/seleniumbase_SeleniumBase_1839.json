@@ -1,0 +1,27 @@
+{
+  "input_header": "def translate_assert_text(language):",
+  "input_docstring": null,
+  "output_code": "    def translate_assert_text(language):\n        words = {}\n        words[\"English\"] = \"ASSERT TEXT\"\n        words[\"Chinese\"] = \"断言文本\"\n        words[\"Dutch\"] = \"CONTROLEREN TEKST\"\n        words[\"French\"] = \"VÉRIFIER TEXTE\"\n        words[\"Italian\"] = \"VERIFICARE TESTO\"\n        words[\"Japanese\"] = \"テキストを確認する\"\n        words[\"Korean\"] = \"텍스트 확인하는\"\n        words[\"Portuguese\"] = \"VERIFICAR TEXTO\"\n        words[\"Russian\"] = \"ПОДТВЕРДИТЬ ТЕКСТ\"\n        words[\"Spanish\"] = \"VERIFICAR TEXTO\"\n        return words[language]",
+  "input_contexts": [
+    {
+      "id": "seleniumbase_SeleniumBase_1839_1",
+      "input_code": "    def assert_text(\n        self, text, selector=\"body\", by=\"css selector\", timeout=None\n    ):\n        \n        self.__check_scope()\n        if not timeout:\n            timeout = settings.SMALL_TIMEOUT\n        if self.timeout_multiplier and timeout == settings.SMALL_TIMEOUT:\n            timeout = self.__get_new_timeout(timeout)\n        original_selector = selector\n        selector, by = self.__recalculate_selector(selector, by)\n        if isinstance(text, (list, tuple)):\n            text_list = text\n            for _text in text_list:\n                self.wait_for_text_visible(\n                    _text, selector, by=by, timeout=timeout\n                )\n                if self.demo_mode:\n                    a_t = \"ASSERT TEXT\"\n                    i_n = \"in\"\n                    if self._language != \"English\":\n                        from seleniumbase.fixtures.words import SD\n\n                        a_t = SD.translate_assert_text(self._language)\n                        i_n = SD.translate_in(self._language)\n                    messenger_post = \"<b>%s</b>: {%s} %s %s: %s\" % (\n                        a_t, _text, i_n, by.upper(), selector\n                    )\n                    self.__highlight_with_assert_success(\n                        messenger_post, selector, by\n                    )\n        elif self.__is_cdp_swap_needed():\n            self.cdp.assert_text(text, selector)\n            return True\n        elif not self.is_connected():\n            self.connect()\n        elif self.__is_shadow_selector(selector):\n            self.__assert_shadow_text_visible(text, selector, timeout)\n            return True\n        else:\n            self.wait_for_text_visible(text, selector, by=by, timeout=timeout)\n            if self.demo_mode:\n                a_t = \"ASSERT TEXT\"\n                i_n = \"in\"\n                if self._language != \"English\":\n                    from seleniumbase.fixtures.words import SD\n\n                    a_t = SD.translate_assert_text(self._language)\n                    i_n = SD.translate_in(self._language)\n                messenger_post = \"<b>%s</b>: {%s} %s %s: %s\" % (\n                    a_t, text, i_n, by.upper(), selector\n                )\n                self.__highlight_with_assert_success(\n                    messenger_post, selector, by\n                )\n        if self.recorder_mode and self.__current_url_is_recordable():\n            if self.get_session_storage_item(\"pause_recorder\") == \"no\":\n                if by == By.XPATH:\n                    selector = original_selector\n                time_stamp = self.execute_script(\"return Date.now();\")\n                origin = self.get_origin()\n                text_selector = [text, selector]\n                action = [\"as_te\", text_selector, origin, time_stamp]\n                self.__extra_actions.append(action)\n        return True\n"
+    },
+    {
+      "id": "seleniumbase_SeleniumBase_1839_2",
+      "input_code": "    def __assert_shadow_text_visible(self, text, selector, timeout):\n        self.__wait_for_shadow_text_visible(text, selector, timeout)\n        if self.demo_mode:\n            a_t = \"ASSERT TEXT\"\n            i_n = \"in\"\n            by = By.CSS_SELECTOR\n            if self._language != \"English\":\n                from seleniumbase.fixtures.words import SD\n\n                a_t = SD.translate_assert_text(self._language)\n                i_n = SD.translate_in(self._language)\n            messenger_post = \"<b>%s</b>: {%s} %s %s: %s\" % (\n                a_t, text, i_n, by.upper(), selector\n            )\n            with suppress(Exception):\n                js_utils.activate_jquery(self.driver)\n                js_utils.post_messenger_success_message(\n                    self.driver, messenger_post, self.message_duration\n                )\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport None\n\n<testcase_1>\nlanguage = \"English\"\n\n<testcase_2>\nlanguage = \"Spanish\"\n\n<testcase_3>\nlanguage = \"French\"\n\n<testcase_4>\nlanguage = \"Japanese\"\n\n<testcase_5>\nlanguage = \"Russian\""
+  ],
+  "gpt_output": "<needimport>\nimport None\n\n<testcase_1>\nlanguage = \"English\"\n\n<testcase_2>\nlanguage = \"Spanish\"\n\n<testcase_3>\nlanguage = \"French\"\n\n<testcase_4>\nlanguage = \"Japanese\"\n\n<testcase_5>\nlanguage = \"Russian\"",
+  "needimport": "import None\n\n",
+  "test_results": {
+    "ans1": "ASSERT TEXT",
+    "ans2": "VERIFICAR TEXTO",
+    "ans3": "VÉRIFIER TEXTE",
+    "ans4": "テキストを確認する",
+    "ans5": "ПОДТВЕРДИТЬ ТЕКСТ"
+  }
+}

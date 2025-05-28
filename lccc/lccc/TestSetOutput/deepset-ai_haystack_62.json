@@ -1,0 +1,105 @@
+{
+  "input_header": "def run(self, template: Optional[str] = None, template_variables: Optional[Dict[str, Any]] = None, **kwargs):",
+  "input_docstring": "Renders the prompt template with the provided variables.\n\nIt applies the template variables to render the final prompt. You can provide variables via pipeline kwargs.\nIn order to overwrite the default template, you can set the `template` parameter.\nIn order to overwrite pipeline kwargs, you can set the `template_variables` parameter.\n\n:param template:\n    An optional string template to overwrite PromptBuilder's default template. If None, the default template\n    provided at initialization is used.\n:param template_variables:\n    An optional dictionary of template variables to overwrite the pipeline variables.\n:param kwargs:\n    Pipeline variables used for rendering the prompt.\n\n:returns: A dictionary with the following keys:\n    - `prompt`: The updated prompt text after rendering the prompt template.\n\n:raises ValueError:\n    If any of the required template variables is not provided.",
+  "output_code": "    def run(self, template: Optional[str] = None, template_variables: Optional[Dict[str, Any]] = None, **kwargs):\n        \n        kwargs = kwargs or {}\n        template_variables = template_variables or {}\n        template_variables_combined = {**kwargs, **template_variables}\n        self._validate_variables(set(template_variables_combined.keys()))\n\n        compiled_template = self.template\n        if template is not None:\n            compiled_template = self._env.from_string(template)\n\n        result = compiled_template.render(template_variables_combined)\n        return {\"prompt\": result}",
+  "input_contexts": [
+    {
+      "id": "deepset-ai_haystack_62_2",
+      "input_code": "    def test_run(self):\n        builder = PromptBuilder(template=\"This is a {{ variable }}\")\n        res = builder.run(variable=\"test\")\n        assert res == {\"prompt\": \"This is a test\"}\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_7",
+      "input_code": "    def test_run_with_missing_required_input(self):\n        builder = PromptBuilder(template=\"This is a {{ foo }}, not a {{ bar }}\", required_variables=[\"foo\", \"bar\"])\n        with pytest.raises(ValueError, match=\"foo\"):\n            builder.run(bar=\"bar\")\n        with pytest.raises(ValueError, match=\"bar\"):\n            builder.run(foo=\"foo\")\n        with pytest.raises(ValueError, match=\"foo, bar\"):\n            builder.run()\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_1",
+      "input_code": "    def test_init_with_missing_extension_dependency(self, extension_mock):\n        extension_mock.side_effect = ImportError\n        builder = PromptBuilder(template=\"This is a {{ variable }}\")\n        assert builder._env.extensions == {}\n        res = builder.run(variable=\"test\")\n        assert res == {\"prompt\": \"This is a test\"}\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_16",
+      "input_code": "    def test_date_with_addition_offset(self) -> None:\n        template = \"Time after 2 hours is: {% now 'UTC' + 'hours=2' %}\"\n        builder = PromptBuilder(template=template)\n\n        result = builder.run()[\"prompt\"]\n\n        now_plus_2 = f\"Time after 2 hours is: {(arrow.now('UTC').shift(hours=+2)).strftime('%Y-%m-%d %H:%M:%S')}\"\n\n        assert now_plus_2 == result\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_3",
+      "input_code": "    def test_run_template_variable(self):\n        builder = PromptBuilder(template=\"This is a {{ variable }}\")\n        res = builder.run(template_variables={\"variable\": \"test\"})\n        assert res == {\"prompt\": \"This is a test\"}\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_4",
+      "input_code": "    def test_run_template_variable_overrides_variable(self):\n        builder = PromptBuilder(template=\"This is a {{ variable }}\")\n        res = builder.run(template_variables={\"variable\": \"test_from_template_var\"}, variable=\"test\")\n        assert res == {\"prompt\": \"This is a test_from_template_var\"}\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_5",
+      "input_code": "    def test_run_without_input(self):\n        builder = PromptBuilder(template=\"This is a template without input\")\n        res = builder.run()\n        assert res == {\"prompt\": \"This is a template without input\"}\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_6",
+      "input_code": "    def test_run_with_missing_input(self):\n        builder = PromptBuilder(template=\"This is a {{ variable }}\")\n        res = builder.run()\n        assert res == {\"prompt\": \"This is a \"}\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_9",
+      "input_code": "    def test_run_with_variables(self):\n        variables = [\"var1\", \"var2\", \"var3\"]\n        template = \"Hello, {{ name }}! {{ var1 }}\"\n\n        builder = PromptBuilder(template=template, variables=variables)\n\n        template_variables = {\"name\": \"John\"}\n        expected_result = {\"prompt\": \"Hello, John! How are you?\"}\n\n        assert builder.run(template_variables=template_variables, var1=\"How are you?\") == expected_result\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_17",
+      "input_code": "    def test_date_with_subtraction_offset(self) -> None:\n        template = \"Time after 12 days is: {% now 'UTC' - 'days=12' %}\"\n        builder = PromptBuilder(template=template)\n\n        result = builder.run()[\"prompt\"]\n\n        now_plus_2 = f\"Time after 12 days is: {(arrow.now('UTC').shift(days=-12)).strftime('%Y-%m-%d %H:%M:%S')}\"\n\n        assert now_plus_2 == result\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_15",
+      "input_code": "    def test_with_different_timezone(self) -> None:\n        template = \"Current time in New York is: {% now 'America/New_York' %}\"\n        builder = PromptBuilder(template=template)\n\n        result = builder.run()[\"prompt\"]\n\n        now_ny = f\"Current time in New York is: {arrow.now('America/New_York').strftime('%Y-%m-%d %H:%M:%S')}\"\n\n        assert now_ny == result\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_12",
+      "input_code": "    def test_run_overwriting_default_template_with_variables(self):\n        variables = [\"var1\", \"var2\", \"name\"]\n        default_template = \"Hello, {{ name }}!\"\n\n        builder = PromptBuilder(template=default_template, variables=variables)\n\n        template = \"Hello, {{ var1 }} {{ name }}!\"\n        expected_result = {\"prompt\": \"Hello, Big John!\"}\n\n        assert builder.run(template, name=\"John\", var1=\"Big\") == expected_result\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_13",
+      "input_code": "    def test_run_with_invalid_template(self):\n        builder = PromptBuilder(template=\"Hello, {{ name }}!\")\n\n        template = \"Hello, {{ name }!\"\n        template_variables = {\"name\": \"John\"}\n        with pytest.raises(TemplateSyntaxError):\n            builder.run(template, template_variables)\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_8",
+      "input_code": "    def test_run_with_missing_required_input_using_star(self):\n        builder = PromptBuilder(template=\"This is a {{ foo }}, not a {{ bar }}\", required_variables=\"*\")\n        with pytest.raises(ValueError, match=\"foo\"):\n            builder.run(bar=\"bar\")\n        with pytest.raises(ValueError, match=\"bar\"):\n            builder.run(foo=\"foo\")\n        with pytest.raises(ValueError, match=\"bar, foo\"):\n            builder.run()\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_18",
+      "input_code": "    def test_invalid_timezone(self) -> None:\n        template = \"Current time is: {% now 'Invalid/Timezone' %}\"\n        builder = PromptBuilder(template=template)\n\n        with pytest.raises(ValueError, match=\"Invalid timezone\"):\n            builder.run()\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_14",
+      "input_code": "    def test_with_custom_dateformat(self) -> None:\n        template = \"Formatted date: {% now 'UTC', '%Y-%m-%d' %}\"\n        builder = PromptBuilder(template=template)\n\n        result = builder.run()[\"prompt\"]\n\n        now_formatted = f\"Formatted date: {arrow.now('UTC').strftime('%Y-%m-%d')}\"\n\n        assert now_formatted == result\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_19",
+      "input_code": "    def test_invalid_offset(self) -> None:\n        template = \"Time after invalid offset is: {% now 'UTC' + 'invalid_offset' %}\"\n        builder = PromptBuilder(template=template)\n\n        with pytest.raises(ValueError, match=\"Invalid offset or operator\"):\n            builder.run()\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_10",
+      "input_code": "    def test_run_overwriting_default_template(self):\n        default_template = \"Hello, {{ name }}!\"\n\n        builder = PromptBuilder(template=default_template)\n\n        template = \"Hello, {{ var1 }}{{ name }}!\"\n        expected_result = {\"prompt\": \"Hello, John!\"}\n\n        assert builder.run(template, name=\"John\") == expected_result\n"
+    },
+    {
+      "id": "deepset-ai_haystack_62_11",
+      "input_code": "    def test_run_overwriting_default_template_with_template_variables(self):\n        default_template = \"Hello, {{ name }}!\"\n\n        builder = PromptBuilder(template=default_template)\n\n        template = \"Hello, {{ var1 }} {{ name }}!\"\n        template_variables = {\"var1\": \"Big\"}\n        expected_result = {\"prompt\": \"Hello, Big John!\"}\n\n        assert builder.run(template, template_variables, name=\"John\") == expected_result\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport pytest\nfrom typing import Dict, Any, Optional\n\n<testcase_1>\ntemplate = \"Hello, {{ name }}!\"\ntemplate_variables = {\"name\": \"Alice\"}\nkwargs = {}\n\n<testcase_2>\ntemplate = \"The current temperature is {{ temperature }} degrees.\"\ntemplate_variables = {\"temperature\": 25}\nkwargs = {}\n\n<testcase_3>\ntemplate = None\ntemplate_variables = {\"greeting\": \"Hi\", \"name\": \"Bob\"}\nkwargs = {\"greeting\": \"Hello\"}\n\n<testcase_4>\ntemplate = \"Today is {{ day }} and the weather is {{ weather }}.\"\ntemplate_variables = {\"day\": \"Monday\", \"weather\": \"sunny\"}\nkwargs = {}\n\n<testcase_5>\ntemplate = \"Your order number {{ order_id }} will be delivered on {{ delivery_date }}.\"\ntemplate_variables = {\"order_id\": 12345, \"delivery_date\": \"2023-10-15\"}\nkwargs = {}\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport pytest\nfrom typing import Dict, Any, Optional\n\n<testcase_1>\ntemplate = \"Hello, {{ name }}!\"\ntemplate_variables = {\"name\": \"Alice\"}\nkwargs = {}\n\n<testcase_2>\ntemplate = \"The current temperature is {{ temperature }} degrees.\"\ntemplate_variables = {\"temperature\": 25}\nkwargs = {}\n\n<testcase_3>\ntemplate = None\ntemplate_variables = {\"greeting\": \"Hi\", \"name\": \"Bob\"}\nkwargs = {\"greeting\": \"Hello\"}\n\n<testcase_4>\ntemplate = \"Today is {{ day }} and the weather is {{ weather }}.\"\ntemplate_variables = {\"day\": \"Monday\", \"weather\": \"sunny\"}\nkwargs = {}\n\n<testcase_5>\ntemplate = \"Your order number {{ order_id }} will be delivered on {{ delivery_date }}.\"\ntemplate_variables = {\"order_id\": 12345, \"delivery_date\": \"2023-10-15\"}\nkwargs = {}\n```",
+  "needimport": "import pytest\nfrom typing import Dict, Any, Optional\n\n",
+  "test_results": {
+    "ans1": {
+      "prompt": "Hello, Alice!"
+    },
+    "ans2": {
+      "prompt": "The current temperature is 25 degrees."
+    },
+    "ans3": {
+      "prompt": "Hi Bob"
+    },
+    "ans4": {
+      "prompt": "Today is Monday and the weather is sunny."
+    },
+    "ans5": {
+      "prompt": "Your order number 12345 will be delivered on 2023-10-15."
+    }
+  }
+}

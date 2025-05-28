@@ -1,0 +1,23 @@
+{
+  "input_header": "def isPythonValidCLongValue(value):",
+  "input_docstring": null,
+  "output_code": "def isPythonValidCLongValue(value):\n    return _min_signed_long <= value <= _max_signed_long",
+  "input_contexts": [
+    {
+      "id": "Nuitka_Nuitka_346_1",
+      "input_code": "def _pickIntFamilyType(expression, context):\n    if expression.isCompileTimeConstant():\n        if isPythonValidDigitValue(expression.getCompileTimeConstant()):\n            c_type = CTypeCLongDigit\n        elif isPythonValidCLongValue(expression.getCompileTimeConstant()):\n            c_type = CTypeCLong\n        else:\n            c_type = CTypePyObjectPtr\n    elif expression.isExpressionVariableRefOrTempVariableRef():\n        variable = expression.getVariable()\n\n        if variable.isLocalVariable() and not variable.isSharedTechnically():\n            variable_declaration = getLocalVariableDeclaration(\n                context=context,\n                variable=expression.getVariable(),\n                variable_trace=expression.getVariableTrace(),\n            )\n\n            c_type = variable_declaration.getCType()\n        else:\n            c_type = CTypePyObjectPtr\n    else:\n        c_type = CTypePyObjectPtr\n\n    return c_type\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport sys\n\n_min_signed_long = -sys.maxsize - 1\n_max_signed_long = sys.maxsize\n\n<testcase_1>\nvalue = _min_signed_long\n\n<testcase_2>\nvalue = _max_signed_long\n\n<testcase_3>\nvalue = 0\n\n<testcase_4>\nvalue = 123456789\n\n<testcase_5>\nvalue = -987654321"
+  ],
+  "gpt_output": "<needimport>\nimport sys\n\n_min_signed_long = -sys.maxsize - 1\n_max_signed_long = sys.maxsize\n\n<testcase_1>\nvalue = _min_signed_long\n\n<testcase_2>\nvalue = _max_signed_long\n\n<testcase_3>\nvalue = 0\n\n<testcase_4>\nvalue = 123456789\n\n<testcase_5>\nvalue = -987654321",
+  "needimport": "import sys\n\n_min_signed_long = -sys.maxsize - 1\n_max_signed_long = sys.maxsize\n\n",
+  "test_results": {
+    "ans1": true,
+    "ans2": true,
+    "ans3": true,
+    "ans4": true,
+    "ans5": true
+  }
+}

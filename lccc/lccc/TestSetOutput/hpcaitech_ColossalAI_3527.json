@@ -1,0 +1,192 @@
+{
+  "input_header": "def load( self, mode: Optional[str] = None, vocab_parallel: bool = False, parallel_input_1d: bool = False, summa_dim: int = None, tesseract_dim: int = None, tesseract_dep: int = None, depth_3d: int = None, input_group_3d=None, weight_group_3d=None, output_group_3d=None, input_x_weight_group_3d=None, output_x_weight_group_3d=None, ):",
+  "input_docstring": null,
+  "output_code": "    def load(\n        self,\n        mode: Optional[str] = None,\n        vocab_parallel: bool = False,\n        parallel_input_1d: bool = False,\n        summa_dim: int = None,\n        tesseract_dim: int = None,\n        tesseract_dep: int = None,\n        depth_3d: int = None,\n        input_group_3d=None,\n        weight_group_3d=None,\n        output_group_3d=None,\n        input_x_weight_group_3d=None,\n        output_x_weight_group_3d=None,\n    ):\n        self.mode = mode\n        self.vocab_parallel = vocab_parallel\n        self.parallel_input_1d = parallel_input_1d\n        self.summa_dim = summa_dim\n        self.tesseract_dim = tesseract_dim\n        self.tesseract_dep = tesseract_dep\n        self.depth_3d = depth_3d\n        self.input_group_3d = input_group_3d\n        self.weight_group_3d = weight_group_3d\n        self.output_group_3d = output_group_3d\n        self.input_x_weight_group_3d = input_x_weight_group_3d\n        self.output_x_weight_group_3d = output_x_weight_group_3d",
+  "input_contexts": [
+    {
+      "id": "hpcaitech_ColossalAI_3527_1",
+      "input_code": "    def __init__(self, *args, **kwargs):\n        self.load(*args, **kwargs)\n"
+    },
+    {
+      "id": "hpcaitech_ColossalAI_3527_2",
+      "input_code": "    def __exit__(self, *exc_info):\n        env.load(**self.env_status)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport typing\n\n<testcase_1>\nmode = \"train\"\nvocab_parallel = True\nparallel_input_1d = False\nsumma_dim = 4\ntesseract_dim = 8\ntesseract_dep = 2\ndepth_3d = 3\ninput_group_3d = [1, 2, 3]\nweight_group_3d = [4, 5, 6]\noutput_group_3d = [7, 8, 9]\ninput_x_weight_group_3d = [10, 11, 12]\noutput_x_weight_group_3d = [13, 14, 15]\n\n<testcase_2>\nmode = \"test\"\nvocab_parallel = False\nparallel_input_1d = True\nsumma_dim = 2\ntesseract_dim = 4\ntesseract_dep = 1\ndepth_3d = 1\ninput_group_3d = [1]\nweight_group_3d = [2]\noutput_group_3d = [3]\ninput_x_weight_group_3d = [4]\noutput_x_weight_group_3d = [5]\n\n<testcase_3>\nmode = \"validation\"\nvocab_parallel = False\nparallel_input_1d = False\nsumma_dim = 6\ntesseract_dim = 12\ntesseract_dep = 3\ndepth_3d = 4\ninput_group_3d = [1, 2, 3, 4]\nweight_group_3d = [5, 6, 7, 8]\noutput_group_3d = [9, 10, 11, 12]\ninput_x_weight_group_3d = [13, 14, 15, 16]\noutput_x_weight_group_3d = [17, 18, 19, 20]\n\n<testcase_4>\nmode = None\nvocab_parallel = True\nparallel_input_1d = True\nsumma_dim = 3\ntesseract_dim = 6\ntesseract_dep = 2\ndepth_3d = 2\ninput_group_3d = [1, 2]\nweight_group_3d = [3, 4]\noutput_group_3d = [5, 6]\ninput_x_weight_group_3d = [7, 8]\noutput_x_weight_group_3d = [9, 10]\n\n<testcase_5>\nmode = \"deploy\"\nvocab_parallel = False\nparallel_input_1d = False\nsumma_dim = 5\ntesseract_dim = 10\ntesseract_dep = 4\ndepth_3d = 5\ninput_group_3d = [1, 2, 3, 4, 5]\nweight_group_3d = [6, 7, 8, 9, 10]\noutput_group_3d = [11, 12, 13, 14, 15]\ninput_x_weight_group_3d = [16, 17, 18, 19, 20]\noutput_x_weight_group_3d = [21, 22, 23, 24, 25]"
+  ],
+  "gpt_output": "<needimport>\nimport typing\n\n<testcase_1>\nmode = \"train\"\nvocab_parallel = True\nparallel_input_1d = False\nsumma_dim = 4\ntesseract_dim = 8\ntesseract_dep = 2\ndepth_3d = 3\ninput_group_3d = [1, 2, 3]\nweight_group_3d = [4, 5, 6]\noutput_group_3d = [7, 8, 9]\ninput_x_weight_group_3d = [10, 11, 12]\noutput_x_weight_group_3d = [13, 14, 15]\n\n<testcase_2>\nmode = \"test\"\nvocab_parallel = False\nparallel_input_1d = True\nsumma_dim = 2\ntesseract_dim = 4\ntesseract_dep = 1\ndepth_3d = 1\ninput_group_3d = [1]\nweight_group_3d = [2]\noutput_group_3d = [3]\ninput_x_weight_group_3d = [4]\noutput_x_weight_group_3d = [5]\n\n<testcase_3>\nmode = \"validation\"\nvocab_parallel = False\nparallel_input_1d = False\nsumma_dim = 6\ntesseract_dim = 12\ntesseract_dep = 3\ndepth_3d = 4\ninput_group_3d = [1, 2, 3, 4]\nweight_group_3d = [5, 6, 7, 8]\noutput_group_3d = [9, 10, 11, 12]\ninput_x_weight_group_3d = [13, 14, 15, 16]\noutput_x_weight_group_3d = [17, 18, 19, 20]\n\n<testcase_4>\nmode = None\nvocab_parallel = True\nparallel_input_1d = True\nsumma_dim = 3\ntesseract_dim = 6\ntesseract_dep = 2\ndepth_3d = 2\ninput_group_3d = [1, 2]\nweight_group_3d = [3, 4]\noutput_group_3d = [5, 6]\ninput_x_weight_group_3d = [7, 8]\noutput_x_weight_group_3d = [9, 10]\n\n<testcase_5>\nmode = \"deploy\"\nvocab_parallel = False\nparallel_input_1d = False\nsumma_dim = 5\ntesseract_dim = 10\ntesseract_dep = 4\ndepth_3d = 5\ninput_group_3d = [1, 2, 3, 4, 5]\nweight_group_3d = [6, 7, 8, 9, 10]\noutput_group_3d = [11, 12, 13, 14, 15]\ninput_x_weight_group_3d = [16, 17, 18, 19, 20]\noutput_x_weight_group_3d = [21, 22, 23, 24, 25]",
+  "needimport": "import typing\n\n",
+  "test_results": {
+    "ans1": {
+      "mode": "train",
+      "vocab_parallel": true,
+      "parallel_input_1d": false,
+      "summa_dim": 4,
+      "tesseract_dim": 8,
+      "tesseract_dep": 2,
+      "depth_3d": 3,
+      "input_group_3d": [
+        1,
+        2,
+        3
+      ],
+      "weight_group_3d": [
+        4,
+        5,
+        6
+      ],
+      "output_group_3d": [
+        7,
+        8,
+        9
+      ],
+      "input_x_weight_group_3d": [
+        10,
+        11,
+        12
+      ],
+      "output_x_weight_group_3d": [
+        13,
+        14,
+        15
+      ]
+    },
+    "ans2": {
+      "mode": "test",
+      "vocab_parallel": false,
+      "parallel_input_1d": true,
+      "summa_dim": 2,
+      "tesseract_dim": 4,
+      "tesseract_dep": 1,
+      "depth_3d": 1,
+      "input_group_3d": [
+        1
+      ],
+      "weight_group_3d": [
+        2
+      ],
+      "output_group_3d": [
+        3
+      ],
+      "input_x_weight_group_3d": [
+        4
+      ],
+      "output_x_weight_group_3d": [
+        5
+      ]
+    },
+    "ans3": {
+      "mode": "validation",
+      "vocab_parallel": false,
+      "parallel_input_1d": false,
+      "summa_dim": 6,
+      "tesseract_dim": 12,
+      "tesseract_dep": 3,
+      "depth_3d": 4,
+      "input_group_3d": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "weight_group_3d": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "output_group_3d": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "input_x_weight_group_3d": [
+        13,
+        14,
+        15,
+        16
+      ],
+      "output_x_weight_group_3d": [
+        17,
+        18,
+        19,
+        20
+      ]
+    },
+    "ans4": {
+      "mode": null,
+      "vocab_parallel": true,
+      "parallel_input_1d": true,
+      "summa_dim": 3,
+      "tesseract_dim": 6,
+      "tesseract_dep": 2,
+      "depth_3d": 2,
+      "input_group_3d": [
+        1,
+        2
+      ],
+      "weight_group_3d": [
+        3,
+        4
+      ],
+      "output_group_3d": [
+        5,
+        6
+      ],
+      "input_x_weight_group_3d": [
+        7,
+        8
+      ],
+      "output_x_weight_group_3d": [
+        9,
+        10
+      ]
+    },
+    "ans5": {
+      "mode": "deploy",
+      "vocab_parallel": false,
+      "parallel_input_1d": false,
+      "summa_dim": 5,
+      "tesseract_dim": 10,
+      "tesseract_dep": 4,
+      "depth_3d": 5,
+      "input_group_3d": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "weight_group_3d": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "output_group_3d": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "input_x_weight_group_3d": [
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "output_x_weight_group_3d": [
+        21,
+        22,
+        23,
+        24,
+        25
+      ]
+    }
+  }
+}

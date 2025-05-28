@@ -1,0 +1,71 @@
+{
+  "input_header": "def construct_scalar(self, node):",
+  "input_docstring": null,
+  "output_code": "    def construct_scalar(self, node):\n        if not isinstance(node, ScalarNode):\n            raise ConstructorError(None, None,\n                    \"expected a scalar node, but found %s\" % node.id,\n                    node.start_mark)\n        return node.value",
+  "input_contexts": [
+    {
+      "id": "Nuitka_Nuitka_8120_13",
+      "input_code": "    def construct_python_module(self, suffix, node):\n        value = self.construct_scalar(node)\n        if value:\n            raise ConstructorError(\"while constructing a Python module\", node.start_mark,\n                    \"expected the empty value, but found %r\" % value, node.start_mark)\n        return self.find_python_module(suffix, node.start_mark)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_12",
+      "input_code": "    def construct_python_name(self, suffix, node):\n        value = self.construct_scalar(node)\n        if value:\n            raise ConstructorError(\"while constructing a Python name\", node.start_mark,\n                    \"expected the empty value, but found %r\" % value, node.start_mark)\n        return self.find_python_name(suffix, node.start_mark)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_1",
+      "input_code": "    def construct_yaml_null(self, node):\n        self.construct_scalar(node)\n        return None\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_8",
+      "input_code": "    def construct_python_str(self, node):\n        return self.construct_scalar(node)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_11",
+      "input_code": "    def construct_python_complex(self, node):\n       return complex(self.construct_scalar(node))\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_2",
+      "input_code": "    def construct_yaml_bool(self, node):\n        value = self.construct_scalar(node)\n        return self.bool_values[value.lower()]\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_4",
+      "input_code": "    def construct_yaml_float(self, node):\n        value = self.construct_scalar(node)\n        value = value.replace('_', '').lower()\n        sign = +1\n        if value[0] == '-':\n            sign = -1\n        if value[0] in '+-':\n            value = value[1:]\n        if value == '.inf':\n            return sign*self.inf_value\n        elif value == '.nan':\n            return self.nan_value\n        elif ':' in value:\n            digits = [float(part) for part in value.split(':')]\n            digits.reverse()\n            base = 1\n            value = 0.0\n            for digit in digits:\n                value += digit*base\n                base *= 60\n            return sign*value\n        else:\n            return sign*float(value)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_9",
+      "input_code": "    def construct_python_unicode(self, node):\n        return self.construct_scalar(node)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_6",
+      "input_code": "    def construct_yaml_timestamp(self, node):\n        value = self.construct_scalar(node)\n        match = self.timestamp_regexp.match(node.value)\n        values = match.groupdict()\n        year = int(values['year'])\n        month = int(values['month'])\n        day = int(values['day'])\n        if not values['hour']:\n            return datetime.date(year, month, day)\n        hour = int(values['hour'])\n        minute = int(values['minute'])\n        second = int(values['second'])\n        fraction = 0\n        tzinfo = None\n        if values['fraction']:\n            fraction = values['fraction'][:6]\n            while len(fraction) < 6:\n                fraction += '0'\n            fraction = int(fraction)\n        if values['tz_sign']:\n            tz_hour = int(values['tz_hour'])\n            tz_minute = int(values['tz_minute'] or 0)\n            delta = datetime.timedelta(hours=tz_hour, minutes=tz_minute)\n            if values['tz_sign'] == '-':\n                delta = -delta\n            tzinfo = datetime.timezone(delta)\n        elif values['tz']:\n            tzinfo = datetime.timezone.utc\n        return datetime.datetime(year, month, day, hour, minute, second, fraction,\n                                 tzinfo=tzinfo)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_5",
+      "input_code": "    def construct_yaml_binary(self, node):\n        try:\n            value = self.construct_scalar(node).encode('ascii')\n        except UnicodeEncodeError as exc:\n            raise ConstructorError(None, None,\n                    \"failed to convert base64 data into ascii: %s\" % exc,\n                    node.start_mark)\n        try:\n            if hasattr(base64, 'decodebytes'):\n                return base64.decodebytes(value)\n            else:\n                return base64.decodestring(value)\n        except binascii.Error as exc:\n            raise ConstructorError(None, None,\n                    \"failed to decode base64 data: %s\" % exc, node.start_mark)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_7",
+      "input_code": "    def construct_yaml_str(self, node):\n        return self.construct_scalar(node)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_3",
+      "input_code": "    def construct_yaml_int(self, node):\n        value = self.construct_scalar(node)\n        value = value.replace('_', '')\n        sign = +1\n        if value[0] == '-':\n            sign = -1\n        if value[0] in '+-':\n            value = value[1:]\n        if value == '0':\n            return 0\n        elif value.startswith('0b'):\n            return sign*int(value[2:], 2)\n        elif value.startswith('0x'):\n            return sign*int(value[2:], 16)\n        elif value[0] == '0':\n            return sign*int(value, 8)\n        elif ':' in value:\n            digits = [int(part) for part in value.split(':')]\n            digits.reverse()\n            base = 1\n            value = 0\n            for digit in digits:\n                value += digit*base\n                base *= 60\n            return sign*value\n        else:\n            return sign*int(value)\n"
+    },
+    {
+      "id": "Nuitka_Nuitka_8120_10",
+      "input_code": "    def construct_python_bytes(self, node):\n        try:\n            value = self.construct_scalar(node).encode('ascii')\n        except UnicodeEncodeError as exc:\n            raise ConstructorError(None, None,\n                    \"failed to convert base64 data into ascii: %s\" % exc,\n                    node.start_mark)\n        try:\n            if hasattr(base64, 'decodebytes'):\n                return base64.decodebytes(value)\n            else:\n                return base64.decodestring(value)\n        except binascii.Error as exc:\n            raise ConstructorError(None, None,\n                    \"failed to decode base64 data: %s\" % exc, node.start_mark)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport base64\nimport binascii\nimport datetime\nfrom yaml.nodes import ScalarNode\nfrom yaml.constructor import ConstructorError\n\n<testcase_1>\nnode = ScalarNode(tag='tag:yaml.org,2002:str', value='example string')\n\n<testcase_2>\nnode = ScalarNode(tag='tag:yaml.org,2002:int', value='42')\n\n<testcase_3>\nnode = ScalarNode(tag='tag:yaml.org,2002:float', value='3.14')\n\n<testcase_4>\nnode = ScalarNode(tag='tag:yaml.org,2002:bool', value='true')\n\n<testcase_5>\nnode = ScalarNode(tag='tag:yaml.org,2002:timestamp', value='2023-10-05T14:48:00Z')"
+  ],
+  "gpt_output": "<needimport>\nimport base64\nimport binascii\nimport datetime\nfrom yaml.nodes import ScalarNode\nfrom yaml.constructor import ConstructorError\n\n<testcase_1>\nnode = ScalarNode(tag='tag:yaml.org,2002:str', value='example string')\n\n<testcase_2>\nnode = ScalarNode(tag='tag:yaml.org,2002:int', value='42')\n\n<testcase_3>\nnode = ScalarNode(tag='tag:yaml.org,2002:float', value='3.14')\n\n<testcase_4>\nnode = ScalarNode(tag='tag:yaml.org,2002:bool', value='true')\n\n<testcase_5>\nnode = ScalarNode(tag='tag:yaml.org,2002:timestamp', value='2023-10-05T14:48:00Z')",
+  "needimport": "import base64\nimport binascii\nimport datetime\nfrom yaml.nodes import ScalarNode\nfrom yaml.constructor import ConstructorError\n\n",
+  "test_results": {
+    "ans1": "example string",
+    "ans2": "42",
+    "ans3": "3.14",
+    "ans4": "true",
+    "ans5": "2023-10-05T14:48:00Z"
+  }
+}

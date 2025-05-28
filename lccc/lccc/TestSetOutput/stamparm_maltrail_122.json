@@ -1,0 +1,31 @@
+{
+  "input_header": "def __get_module(self, fullname):",
+  "input_docstring": null,
+  "output_code": "    def __get_module(self, fullname):\n        try:\n            return self.known_modules[fullname]\n        except KeyError:\n            raise ImportError(\"This loader does not know module \" + fullname)",
+  "input_contexts": [
+    {
+      "id": "stamparm_maltrail_122_2",
+      "input_code": "    def is_package(self, fullname):\n        \n        return hasattr(self.__get_module(fullname), \"__path__\")\n"
+    },
+    {
+      "id": "stamparm_maltrail_122_1",
+      "input_code": "    def load_module(self, fullname):\n        try:\n            return sys.modules[fullname]\n        except KeyError:\n            pass\n        mod = self.__get_module(fullname)\n        if isinstance(mod, MovedModule):\n            mod = mod._resolve()\n        else:\n            mod.__loader__ = self\n        sys.modules[fullname] = mod\n        return mod\n"
+    },
+    {
+      "id": "stamparm_maltrail_122_3",
+      "input_code": "    def get_code(self, fullname):\n        \n        self.__get_module(fullname)\n        return None\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport sys\n\n<testcase_1>\nfullname = \"os.path\"\n\n<testcase_2>\nfullname = \"json.encoder\"\n\n<testcase_3>\nfullname = \"collections.defaultdict\"\n\n<testcase_4>\nfullname = \"http.client\"\n\n<testcase_5>\nfullname = \"xml.etree.ElementTree\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport sys\n\n<testcase_1>\nfullname = \"os.path\"\n\n<testcase_2>\nfullname = \"json.encoder\"\n\n<testcase_3>\nfullname = \"collections.defaultdict\"\n\n<testcase_4>\nfullname = \"http.client\"\n\n<testcase_5>\nfullname = \"xml.etree.ElementTree\"\n```",
+  "needimport": "import sys\n\n",
+  "test_results": {
+    "ans1": "ntpath",
+    "ans2": "json.encoder",
+    "ans3": "defaultdict",
+    "ans4": "http.client",
+    "ans5": "xml.etree.ElementTree"
+  }
+}

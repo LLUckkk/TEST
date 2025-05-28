@@ -1,0 +1,23 @@
+{
+  "input_header": "def get_unambiguous_name(self, display_name: str | None = None) -> str:",
+  "input_docstring": "Get a disambiguated function name.\n\n:param display_name: Name to display, otherwise the function name.\n:return: The function name in the form:\n    ::<name>           when the function binary is the main object.\n    ::<obj>::<name>    when the function binary is not the main object.\n    ::<addr>::<name>   when the function binary is an unnamed non-main object, or when multiple functions with\n                       the same name are defined in the function binary.",
+  "output_code": "    def get_unambiguous_name(self, display_name: str | None = None) -> str:\n        \n        must_disambiguate_by_addr = self.binary is not self.project.loader.main_object and self.binary_name is None\n\n        if not must_disambiguate_by_addr:\n            for func in self._function_manager.get_by_name(self.name):\n                if func is not self and func.binary is self.binary:\n                    must_disambiguate_by_addr = True\n                    break\n\n        separator = \"::\"\n        n = separator\n        if must_disambiguate_by_addr:\n            n += hex(self.addr) + separator\n        elif self.binary is not self.project.loader.main_object:\n            n += self.binary_name + separator\n        return n + (display_name or self.name)",
+  "input_contexts": [
+    {
+      "id": "angr_angr_6235_1",
+      "input_code": "    def c_repr_chunks(self, indent=0, asexpr: bool = False):\n        \n        indent_str = self.indent_str(indent=indent)\n        yield indent_str, None\n\n        if not self.is_expr and self.ret_expr is not None:\n            yield from CExpression._try_c_repr_chunks(self.ret_expr)\n            yield \" = \", None\n\n        if self.callee_func is not None:\n            if self.callee_func.demangled_name and self.show_demangled_name:\n                func_name = get_cpp_function_name(self.callee_func.demangled_name, specialized=False, qualified=True)\n            else:\n                func_name = self.callee_func.name\n            if self.show_disambiguated_name and self._is_target_ambiguous(func_name):\n                func_name = self.callee_func.get_unambiguous_name(display_name=func_name)\n            yield func_name, self\n        elif isinstance(self.callee_target, str):\n            yield self.callee_target, self\n        else:\n            yield from CExpression._try_c_repr_chunks(self.callee_target)\n\n        paren = CClosingObject(\"(\")\n        yield \"(\", paren\n\n        for i, arg in enumerate(self.args):\n            if i:\n                yield \", \", None\n            yield from CExpression._try_c_repr_chunks(arg)\n\n        yield \")\", paren\n\n        if not self.is_expr and not asexpr:\n            yield \";\", None\n            if not self.returning:\n                yield \" /* do not return */\", None\n            yield \"\\n\", None\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\n# No additional imports are needed for this function\n\n<testcase_1>\ndisplay_name = \"main_function\"\n\n<testcase_2>\ndisplay_name = None\n\n<testcase_3>\ndisplay_name = \"helper_function\"\n\n<testcase_4>\ndisplay_name = \"init_function\"\n\n<testcase_5>\ndisplay_name = \"process_data\"\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\n# No additional imports are needed for this function\n\n<testcase_1>\ndisplay_name = \"main_function\"\n\n<testcase_2>\ndisplay_name = None\n\n<testcase_3>\ndisplay_name = \"helper_function\"\n\n<testcase_4>\ndisplay_name = \"init_function\"\n\n<testcase_5>\ndisplay_name = \"process_data\"\n```",
+  "needimport": "# No additional imports are needed for this function\n\n",
+  "test_results": {
+    "ans1": "::0x400123::main_function",
+    "ans2": "::0x400123::unnamed_func",
+    "ans3": "::libhelper.so::helper_function",
+    "ans4": "::0x401000::init_function",
+    "ans5": "::libprocessor.so::process_data"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "input_header": "def _generate_cache(self, env):",
+  "input_docstring": null,
+  "output_code": "    def _generate_cache(self, env):\n        if env:\n            c = env.get(self.var, '')\n        else:\n            c = ''\n        gen_cmd = Action(c, **self.gen_kw)\n        if not gen_cmd:\n            raise SCons.Errors.UserError(\"$%s value %s cannot be used to create an Action.\" % (self.var, repr(c)))\n        return gen_cmd",
+  "input_contexts": [
+    {
+      "id": "Nuitka_Nuitka_5009_1",
+      "input_code": "    def _generate(self, target, source, env, for_signature, executor=None):\n        return self._generate_cache(env)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport SCons\nfrom SCons.Action import Action\n\n<testcase_1>\nself.var = 'CC'\nself.gen_kw = {}\nenv = {'CC': 'gcc'}\n\n<testcase_2>\nself.var = 'LINK'\nself.gen_kw = {'cmdstr': 'Linking $TARGET'}\nenv = {'LINK': 'ld'}\n\n<testcase_3>\nself.var = 'CXX'\nself.gen_kw = {}\nenv = {'CXX': 'g++'}\n\n<testcase_4>\nself.var = 'AR'\nself.gen_kw = {'cmdstr': 'Archiving $TARGET'}\nenv = {'AR': 'ar'}\n\n<testcase_5>\nself.var = 'RANLIB'\nself.gen_kw = {}\nenv = {'RANLIB': 'ranlib'}"
+  ],
+  "gpt_output": "<needimport>\nimport SCons\nfrom SCons.Action import Action\n\n<testcase_1>\nself.var = 'CC'\nself.gen_kw = {}\nenv = {'CC': 'gcc'}\n\n<testcase_2>\nself.var = 'LINK'\nself.gen_kw = {'cmdstr': 'Linking $TARGET'}\nenv = {'LINK': 'ld'}\n\n<testcase_3>\nself.var = 'CXX'\nself.gen_kw = {}\nenv = {'CXX': 'g++'}\n\n<testcase_4>\nself.var = 'AR'\nself.gen_kw = {'cmdstr': 'Archiving $TARGET'}\nenv = {'AR': 'ar'}\n\n<testcase_5>\nself.var = 'RANLIB'\nself.gen_kw = {}\nenv = {'RANLIB': 'ranlib'}",
+  "needimport": "import SCons\nfrom SCons.Action import Action\n\n",
+  "test_results": {
+    "ans1": {
+      "varlist": [],
+      "chdir": null,
+      "targets": "$TARGETS",
+      "cmd_list": "gcc"
+    },
+    "ans2": {
+      "cmdstr": "Linking $TARGET",
+      "varlist": [],
+      "chdir": null,
+      "targets": "$TARGETS",
+      "cmd_list": "ld"
+    },
+    "ans3": {
+      "varlist": [],
+      "chdir": null,
+      "targets": "$TARGETS",
+      "cmd_list": "g++"
+    },
+    "ans4": {
+      "cmdstr": "Archiving $TARGET",
+      "varlist": [],
+      "chdir": null,
+      "targets": "$TARGETS",
+      "cmd_list": "ar"
+    },
+    "ans5": {
+      "varlist": [],
+      "chdir": null,
+      "targets": "$TARGETS",
+      "cmd_list": "ranlib"
+    }
+  }
+}

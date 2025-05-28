@@ -1,0 +1,126 @@
+{
+  "input_header": "def add(self, role: str, content: str, name: Optional[str] = None) -> \"Convo\":",
+  "input_docstring": "Add a message to the conversation.\n\nIn most cases, you should use the convenience methods instead.\n\n:param role: Role of the message (system, user, assistant, function).\n:param content: Content of the message.\n:param name: Name of the message sender (optional).\n:return: The conv object.",
+  "output_code": "    def add(self, role: str, content: str, name: Optional[str] = None) -> \"Convo\":\n        \n\n        if role not in self.ROLES:\n            raise ValueError(f\"Unknown role: {role}\")\n        if not content:\n            raise ValueError(\"Empty message content\")\n        if not isinstance(content, str) and not isinstance(content, dict):\n            raise TypeError(f\"Invalid message content: {type(content).__name__}\")\n\n        message = {\n            \"role\": role,\n            \"content\": self._dedent(content) if isinstance(content, str) else content,\n        }\n        if name is not None:\n            message[\"name\"] = name\n\n        self.messages.append(message)\n        return self",
+  "input_contexts": [
+    {
+      "id": "Pythagora-io_gpt-pilot_173_4",
+      "input_code": "    def function(self, content: str, name: Optional[str] = None) -> \"Convo\":\n        \n        return self.add(\"function\", content, name)\n"
+    },
+    {
+      "id": "Pythagora-io_gpt-pilot_173_5",
+      "input_code": "def test_add_unknown_role_raises_value_error():\n    convo = Convo()\n    with pytest.raises(ValueError) as excinfo:\n        convo.add(\"unknown\", \"hello\")\n    assert str(excinfo.value) == \"Unknown role: unknown\"\n"
+    },
+    {
+      "id": "Pythagora-io_gpt-pilot_173_9",
+      "input_code": "def test_add_forwards_dict_content():\n    convo = Convo()\n    convo.add(\"user\", {\"text\": \"hello\"})\n    assert convo.messages[0][\"content\"] == {\"text\": \"hello\"}\n"
+    },
+    {
+      "id": "Pythagora-io_gpt-pilot_173_7",
+      "input_code": "def test_add_adds_message_with_role_content_and_name():\n    convo = Convo()\n    convo.add(\"user\", \"hello\", \"Alice\")\n    assert convo.messages[0] == {\"role\": \"user\", \"content\": \"hello\", \"name\": \"Alice\"}\n"
+    },
+    {
+      "id": "Pythagora-io_gpt-pilot_173_1",
+      "input_code": "    def system(self, content: str, name: Optional[str] = None) -> \"Convo\":\n        \n        return self.add(\"system\", content, name)\n"
+    },
+    {
+      "id": "Pythagora-io_gpt-pilot_173_6",
+      "input_code": "def test_add_adds_message_with_role_and_content():\n    convo = Convo()\n    convo.add(\"user\", \"hello\")\n    assert convo.messages[0] == {\"role\": \"user\", \"content\": \"hello\"}\n"
+    },
+    {
+      "id": "Pythagora-io_gpt-pilot_173_3",
+      "input_code": "    def assistant(self, content: str, name: Optional[str] = None) -> \"Convo\":\n        \n        return self.add(\"assistant\", content, name)\n"
+    },
+    {
+      "id": "Pythagora-io_gpt-pilot_173_8",
+      "input_code": "def test_add_dedents_string_content():\n    convo = Convo()\n    convo.add(\"user\", \"\\n    hello\\n    world\\n\")\n    assert convo.messages[0][\"content\"] == \"\\nhello\\nworld\"\n"
+    },
+    {
+      "id": "Pythagora-io_gpt-pilot_173_2",
+      "input_code": "    def user(self, content: str, name: Optional[str] = None) -> \"Convo\":\n        \n        return self.add(\"user\", content, name)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport pytest\nfrom typing import Optional\n\n<testcase_1>\nrole = \"user\"\ncontent = \"Hello, how can I help you today?\"\nname = \"Alice\"\n\n<testcase_2>\nrole = \"assistant\"\ncontent = {\"text\": \"Sure, I can assist you with that.\"}\nname = None\n\n<testcase_3>\nrole = \"system\"\ncontent = \"System initialization complete.\"\nname = \"System\"\n\n<testcase_4>\nrole = \"function\"\ncontent = \"Executing function call.\"\nname = \"FunctionHandler\"\n\n<testcase_5>\nrole = \"user\"\ncontent = \"\\n    This is a test message.\\n    Please respond.\\n\"\nname = \"Bob\""
+  ],
+  "gpt_output": "<needimport>\nimport pytest\nfrom typing import Optional\n\n<testcase_1>\nrole = \"user\"\ncontent = \"Hello, how can I help you today?\"\nname = \"Alice\"\n\n<testcase_2>\nrole = \"assistant\"\ncontent = {\"text\": \"Sure, I can assist you with that.\"}\nname = None\n\n<testcase_3>\nrole = \"system\"\ncontent = \"System initialization complete.\"\nname = \"System\"\n\n<testcase_4>\nrole = \"function\"\ncontent = \"Executing function call.\"\nname = \"FunctionHandler\"\n\n<testcase_5>\nrole = \"user\"\ncontent = \"\\n    This is a test message.\\n    Please respond.\\n\"\nname = \"Bob\"",
+  "needimport": "import pytest\nfrom typing import Optional\n\n",
+  "test_results": {
+    "ans1": {
+      "ROLES": [
+        "user",
+        "assistant",
+        "system",
+        "function"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hello, how can I help you today?",
+          "name": "Alice"
+        }
+      ]
+    },
+    "ans2": {
+      "ROLES": [
+        "user",
+        "assistant",
+        "system",
+        "function"
+      ],
+      "messages": [
+        {
+          "role": "assistant",
+          "content": {
+            "text": "Sure, I can assist you with that."
+          }
+        }
+      ]
+    },
+    "ans3": {
+      "ROLES": [
+        "user",
+        "assistant",
+        "system",
+        "function"
+      ],
+      "messages": [
+        {
+          "role": "system",
+          "content": "System initialization complete.",
+          "name": "System"
+        }
+      ]
+    },
+    "ans4": {
+      "ROLES": [
+        "user",
+        "assistant",
+        "system",
+        "function"
+      ],
+      "messages": [
+        {
+          "role": "function",
+          "content": "Executing function call.",
+          "name": "FunctionHandler"
+        }
+      ]
+    },
+    "ans5": {
+      "ROLES": [
+        "user",
+        "assistant",
+        "system",
+        "function"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "This is a test message.\n    Please respond.",
+          "name": "Bob"
+        }
+      ]
+    }
+  }
+}

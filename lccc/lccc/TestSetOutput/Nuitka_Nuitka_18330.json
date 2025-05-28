@@ -1,0 +1,78 @@
+{
+  "input_header": "def annotation8():",
+  "input_docstring": null,
+  "output_code": "def annotation8():\n    print(\"Called\", annotation8)\n\n    return \"a8\"",
+  "input_contexts": [
+    {
+      "id": "Nuitka_Nuitka_18330_1",
+      "input_code": "def kw_only_func(\n    x: annotation1(),\n    y: annotation2() = default1(),\n    z: annotation3() = default2(),\n    *,\n    a: annotation4(),\n    b: annotation5() = default3(),\n    c: annotation6() = default4(),\n    d: annotation7(),\n    **kw: annotation8()\n) -> annotation9():\n    print(x, y, z, a, b, c, d)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport datetime\n\n<testcase_1>\nx = 10\ny = 20\nz = 30\na = \"required_a\"\nb = \"optional_b\"\nc = \"optional_c\"\nd = \"required_d\"\nkw = {\"extra1\": \"value1\", \"extra2\": \"value2\"}\n\n<testcase_2>\nx = 5.5\ny = 10.1\nz = 15.2\na = \"another_a\"\nb = \"another_b\"\nc = \"another_c\"\nd = \"another_d\"\nkw = {\"extra_key\": \"extra_value\"}\n\n<testcase_3>\nx = \"string_x\"\ny = \"string_y\"\nz = \"string_z\"\na = \"string_a\"\nb = \"string_b\"\nc = \"string_c\"\nd = \"string_d\"\nkw = {\"key1\": 100, \"key2\": 200}\n\n<testcase_4>\nx = datetime.datetime.now()\ny = datetime.datetime(2023, 10, 1)\nz = datetime.datetime(2023, 10, 2)\na = \"datetime_a\"\nb = \"datetime_b\"\nc = \"datetime_c\"\nd = \"datetime_d\"\nkw = {\"date1\": datetime.datetime(2023, 10, 3), \"date2\": datetime.datetime(2023, 10, 4)}\n\n<testcase_5>\nx = [1, 2, 3]\ny = [4, 5, 6]\nz = [7, 8, 9]\na = \"list_a\"\nb = \"list_b\"\nc = \"list_c\"\nd = \"list_d\"\nkw = {\"list_key\": [10, 11, 12], \"another_list_key\": [13, 14, 15]}"
+  ],
+  "gpt_output": "<needimport>\nimport datetime\n\n<testcase_1>\nx = 10\ny = 20\nz = 30\na = \"required_a\"\nb = \"optional_b\"\nc = \"optional_c\"\nd = \"required_d\"\nkw = {\"extra1\": \"value1\", \"extra2\": \"value2\"}\n\n<testcase_2>\nx = 5.5\ny = 10.1\nz = 15.2\na = \"another_a\"\nb = \"another_b\"\nc = \"another_c\"\nd = \"another_d\"\nkw = {\"extra_key\": \"extra_value\"}\n\n<testcase_3>\nx = \"string_x\"\ny = \"string_y\"\nz = \"string_z\"\na = \"string_a\"\nb = \"string_b\"\nc = \"string_c\"\nd = \"string_d\"\nkw = {\"key1\": 100, \"key2\": 200}\n\n<testcase_4>\nx = datetime.datetime.now()\ny = datetime.datetime(2023, 10, 1)\nz = datetime.datetime(2023, 10, 2)\na = \"datetime_a\"\nb = \"datetime_b\"\nc = \"datetime_c\"\nd = \"datetime_d\"\nkw = {\"date1\": datetime.datetime(2023, 10, 3), \"date2\": datetime.datetime(2023, 10, 4)}\n\n<testcase_5>\nx = [1, 2, 3]\ny = [4, 5, 6]\nz = [7, 8, 9]\na = \"list_a\"\nb = \"list_b\"\nc = \"list_c\"\nd = \"list_d\"\nkw = {\"list_key\": [10, 11, 12], \"another_list_key\": [13, 14, 15]}",
+  "needimport": "import datetime\n\n",
+  "test_results": {
+    "ans1": [
+      [
+        1.1,
+        2.2,
+        3.3
+      ],
+      [
+        4.4,
+        5.5,
+        6.6
+      ]
+    ],
+    "ans2": null,
+    "ans3": [
+      {
+        "real": 1.0,
+        "imag": 2.0
+      },
+      {
+        "real": 3.0,
+        "imag": 4.0
+      },
+      {
+        "real": 5.0,
+        "imag": 6.0
+      },
+      {
+        "real": 7.0,
+        "imag": 8.0
+      }
+    ],
+    "ans4": [
+      [
+        [
+          1,
+          5
+        ],
+        [
+          3,
+          7
+        ]
+      ],
+      [
+        [
+          2,
+          6
+        ],
+        [
+          4,
+          8
+        ]
+      ]
+    ],
+    "ans5": [
+      1.100000023841858,
+      2.200000047683716,
+      3.299999952316284,
+      4.400000095367432,
+      5.5
+    ]
+  }
+}
