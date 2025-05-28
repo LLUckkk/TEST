@@ -1,0 +1,27 @@
+{
+  "input_header": "def bkn(pSkey):",
+  "input_docstring": null,
+  "output_code": "def bkn(pSkey):\n    t, n, o = 5381, 0, len(pSkey)\n\n    while n < o:\n        t += (t << 5) + ord(pSkey[n])\n        n += 1\n\n    return t & 2147483647",
+  "input_contexts": [
+    {
+      "id": "LibraHp_GetQzonehistory_16_1",
+      "input_code": "def get_msg_list(pageSize, offset=0):\n    url = 'https://user.qzone.qq.com/proxy/domain/taotao.qq.com/cgi-bin/emotion_cgi_msglist_v6'\n    g_tk = LoginUtil.bkn(cookies.get('p_skey'))\n    qqNumber = re.sub(r'o0*', '', cookies.get('uin'))\n    skey = cookies.get('skey')\n    p_uin = cookies.get('p_uin')\n    pt4_token = cookies.get('pt4_token')\n    p_skey = cookies.get('p_skey')\n    headers = {\n        'accept': '*/*',\n        'accept-language': 'en-US,en;q=0.9',\n        'cookie': f'uin={p_uin};skey={skey};p_uin={p_uin};pt4_token={pt4_token};p_skey={p_skey}',\n        'priority': 'u=1, i',\n        'referer': f'https://user.qzone.qq.com/{qqNumber}/main',\n        'sec-ch-ua': '\"Not;A=Brand\";v=\"24\", \"Chromium\";v=\"128\"',\n        'sec-ch-ua-mobile': '?0',\n        'sec-ch-ua-platform': '\"Linux\"',\n        'sec-fetch-dest': 'empty',\n        'sec-fetch-mode': 'cors',\n        'sec-fetch-site': 'same-origin',\n        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'\n    }\n\n    params = {\n        'uin': f'{qqNumber}',\n        'ftype': '0',\n        'sort': '0',\n        'pos': f'{offset}',\n        'num': f'{pageSize}',\n        'replynum': '100',\n        'g_tk': f'{g_tk}',\n        'callback': '_preloadCallback',\n        'code_version': '1',\n        'format': 'jsonp',\n        'need_private_comment': '1'\n    }\n    try:\n        response = requests.get(url, headers=headers, params=params)\n    except Exception as e:\n        print(e)\n    rawResponse = response.text\n    raw_txt = re.sub(r'^_preloadCallback\\((.*)\\);?$', r'\\1', rawResponse, flags=re.S)\n    json_dict = json.loads(raw_txt)\n    if json_dict['code'] != 0:\n        print(f\"错误 {json_dict['message']}\")\n        sys.exit(1)\n    return json.dumps(json_dict, indent=2, ensure_ascii=False)\n"
+    },
+    {
+      "id": "LibraHp_GetQzonehistory_16_2",
+      "input_code": "def get_user_qzone_info(page_size, offset=0):\n    url = 'https://user.qzone.qq.com/proxy/domain/taotao.qq.com/cgi-bin/emotion_cgi_msglist_v6'\n    cookies = Request.cookies\n    g_tk = LoginUtil.bkn(cookies.get('p_skey'))\n    qqNumber = re.sub(r'o0*', '', cookies.get('uin'))\n    skey = cookies.get('skey')\n    p_uin = cookies.get('p_uin')\n    pt4_token = cookies.get('pt4_token')\n    p_skey = cookies.get('p_skey')\n    headers = {\n        'accept': '*/*',\n        'accept-language': 'en-US,en;q=0.9',\n        'cookie': f'uin={p_uin};skey={skey};p_uin={p_uin};pt4_token={pt4_token};p_skey={p_skey}',\n        'priority': 'u=1, i',\n        'referer': f'https://user.qzone.qq.com/{qqNumber}/main',\n        'sec-ch-ua': '\"Not;A=Brand\";v=\"24\", \"Chromium\";v=\"128\"',\n        'sec-ch-ua-mobile': '?0',\n        'sec-ch-ua-platform': '\"Linux\"',\n        'sec-fetch-dest': 'empty',\n        'sec-fetch-mode': 'cors',\n        'sec-fetch-site': 'same-origin',\n        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'\n    }\n\n    params = {\n        'uin': f'{qqNumber}',\n        'ftype': '0',\n        'sort': '0',\n        'pos': f'{offset}',\n        'num': f'{page_size}',\n        'replynum': '100',\n        'g_tk': f'{g_tk}',\n        'callback': '_preloadCallback',\n        'code_version': '1',\n        'format': 'jsonp',\n        'need_private_comment': '1'\n    }\n    try:\n        response = requests.get(url, headers=headers, params=params)\n    except Exception as e:\n        print(e)\n    rawResponse = response.text\n    raw_txt = re.sub(r'^_preloadCallback\\((.*)\\);?$', r'\\1', rawResponse, flags=re.S)\n    json_dict = json.loads(raw_txt)\n    if json_dict['code'] != 0:\n        print(f\"错误 {json_dict['message']}\")\n        sys.exit(1)\n    return json.dumps(json_dict, indent=2, ensure_ascii=False)\n"
+    }
+  ],
+  "generated_inputs": [
+    "```\n<needimport>\nimport re\n\n<testcase_1>\npSkey = \"abc123def456\"\n\n<testcase_2>\npSkey = \"p_skey_value_example\"\n\n<testcase_3>\npSkey = \"randomString1234567890\"\n\n<testcase_4>\npSkey = \"testKey0987654321\"\n\n<testcase_5>\npSkey = \"secureP_skeyValue\"\n```"
+  ],
+  "gpt_output": "```\n<needimport>\nimport re\n\n<testcase_1>\npSkey = \"abc123def456\"\n\n<testcase_2>\npSkey = \"p_skey_value_example\"\n\n<testcase_3>\npSkey = \"randomString1234567890\"\n\n<testcase_4>\npSkey = \"testKey0987654321\"\n\n<testcase_5>\npSkey = \"secureP_skeyValue\"\n```",
+  "needimport": "import re\n\n",
+  "test_results": {
+    "ans1": 966022447,
+    "ans2": 1154143799,
+    "ans3": 1931339690,
+    "ans4": 175666779,
+    "ans5": 1626891028
+  }
+}

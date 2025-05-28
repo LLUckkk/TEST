@@ -1,0 +1,96 @@
+{
+  "input_header": "def set_color(self, c):",
+  "input_docstring": "Set both the edgecolor and the facecolor.\n\nParameters\n----------\nc : :mpltype:`color` or list of RGBA tuples\n\nSee Also\n--------\nCollection.set_facecolor, Collection.set_edgecolor\n    For setting the edge or face color individually.",
+  "output_code": "    def set_color(self, c):\n        \n        self.set_facecolor(c)\n        self.set_edgecolor(c)",
+  "input_contexts": [
+    {
+      "id": "matplotlib_matplotlib_3039_1",
+      "input_code": "def test_polycollection_close():\n    from mpl_toolkits.mplot3d import Axes3D\n    plt.rcParams['axes3d.automargin'] = True\n\n    vertsQuad = [\n        [[0., 0.], [0., 1.], [1., 1.], [1., 0.]],\n        [[0., 1.], [2., 3.], [2., 2.], [1., 1.]],\n        [[2., 2.], [2., 3.], [4., 1.], [3., 1.]],\n        [[3., 0.], [3., 1.], [4., 1.], [4., 0.]]]\n\n    fig = plt.figure()\n    ax = fig.add_axes(Axes3D(fig))\n\n    colors = ['r', 'g', 'b', 'y', 'k']\n    zpos = list(range(5))\n\n    poly = mcollections.PolyCollection(\n        vertsQuad * len(zpos), linewidth=0.25)\n    poly.set_alpha(0.7)\n\n    zs = []\n    cs = []\n    for z, c in zip(zpos, colors):\n        zs.extend([z] * len(vertsQuad))\n        cs.extend([c] * len(vertsQuad))\n\n    poly.set_color(cs)\n\n    ax.add_collection3d(poly, zs=zs, zdir='y')\n\n    ax.set_xlim3d(0, 4)\n    ax.set_zlim3d(0, 3)\n    ax.set_ylim3d(0, 4)\n"
+    }
+  ],
+  "generated_inputs": [
+    "<needimport>\nimport matplotlib.colors as mcolors\n\n<testcase_1>\nc = 'blue'\n\n<testcase_2>\nc = '#FF5733'\n\n<testcase_3>\nc = (0.1, 0.2, 0.5, 0.7)\n\n<testcase_4>\nc = ['red', 'green', 'blue', 'yellow']\n\n<testcase_5>\nc = [(0.1, 0.2, 0.3, 0.4), (0.5, 0.6, 0.7, 0.8), (0.9, 0.1, 0.2, 0.3)]"
+  ],
+  "gpt_output": "<needimport>\nimport matplotlib.colors as mcolors\n\n<testcase_1>\nc = 'blue'\n\n<testcase_2>\nc = '#FF5733'\n\n<testcase_3>\nc = (0.1, 0.2, 0.5, 0.7)\n\n<testcase_4>\nc = ['red', 'green', 'blue', 'yellow']\n\n<testcase_5>\nc = [(0.1, 0.2, 0.3, 0.4), (0.5, 0.6, 0.7, 0.8), (0.9, 0.1, 0.2, 0.3)]",
+  "needimport": "import matplotlib.colors as mcolors\n\n",
+  "test_results": {
+    "ans1": {
+      "face": "blue",
+      "edge": "blue"
+    },
+    "ans2": {
+      "face": "#FF5733",
+      "edge": "#FF5733"
+    },
+    "ans3": {
+      "face": [
+        0.1,
+        0.2,
+        0.5,
+        0.7
+      ],
+      "edge": [
+        0.1,
+        0.2,
+        0.5,
+        0.7
+      ]
+    },
+    "ans4": {
+      "face": [
+        "red",
+        "green",
+        "blue",
+        "yellow"
+      ],
+      "edge": [
+        "red",
+        "green",
+        "blue",
+        "yellow"
+      ]
+    },
+    "ans5": {
+      "face": [
+        [
+          0.1,
+          0.2,
+          0.3,
+          0.4
+        ],
+        [
+          0.5,
+          0.6,
+          0.7,
+          0.8
+        ],
+        [
+          0.9,
+          0.1,
+          0.2,
+          0.3
+        ]
+      ],
+      "edge": [
+        [
+          0.1,
+          0.2,
+          0.3,
+          0.4
+        ],
+        [
+          0.5,
+          0.6,
+          0.7,
+          0.8
+        ],
+        [
+          0.9,
+          0.1,
+          0.2,
+          0.3
+        ]
+      ]
+    }
+  }
+}

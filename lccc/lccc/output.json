@@ -1,22 +1,122 @@
 {
-  "ans1": [
-    11,
-    2
-  ],
-  "ans2": [
-    10,
-    1
-  ],
-  "ans3": [
-    9,
-    0
-  ],
-  "ans4": [
-    12,
-    0
-  ],
-  "ans5": [
-    11,
-    8
-  ]
+  "ans1": {
+    "training": true,
+    "_parameters": {
+      "weight": {},
+      "bias": {}
+    },
+    "_buffers": {},
+    "_non_persistent_buffers_set": [],
+    "_backward_pre_hooks": {},
+    "_backward_hooks": {},
+    "_is_full_backward_hook": null,
+    "_forward_hooks": {},
+    "_forward_hooks_with_kwargs": {},
+    "_forward_hooks_always_called": {},
+    "_forward_pre_hooks": {},
+    "_forward_pre_hooks_with_kwargs": {},
+    "_state_dict_hooks": {},
+    "_state_dict_pre_hooks": {},
+    "_load_state_dict_pre_hooks": {},
+    "_load_state_dict_post_hooks": {},
+    "_modules": {},
+    "in_features": 10,
+    "out_features": 5
+  },
+  "ans2": {
+    "training": true,
+    "_parameters": {
+      "weight": {},
+      "bias": {}
+    },
+    "_buffers": {},
+    "_non_persistent_buffers_set": [],
+    "_backward_pre_hooks": {},
+    "_backward_hooks": {},
+    "_is_full_backward_hook": null,
+    "_forward_hooks": {},
+    "_forward_hooks_with_kwargs": {},
+    "_forward_hooks_always_called": {},
+    "_forward_pre_hooks": {},
+    "_forward_pre_hooks_with_kwargs": {},
+    "_state_dict_hooks": {},
+    "_state_dict_pre_hooks": {},
+    "_load_state_dict_pre_hooks": {},
+    "_load_state_dict_post_hooks": {},
+    "_modules": {},
+    "in_features": 7,
+    "out_features": 30
+  },
+  "ans3": {
+    "training": true,
+    "_parameters": {
+      "weight": {},
+      "bias": {}
+    },
+    "_buffers": {},
+    "_non_persistent_buffers_set": [],
+    "_backward_pre_hooks": {},
+    "_backward_hooks": {},
+    "_is_full_backward_hook": null,
+    "_forward_hooks": {},
+    "_forward_hooks_with_kwargs": {},
+    "_forward_hooks_always_called": {},
+    "_forward_pre_hooks": {},
+    "_forward_pre_hooks_with_kwargs": {},
+    "_state_dict_hooks": {},
+    "_state_dict_pre_hooks": {},
+    "_load_state_dict_pre_hooks": {},
+    "_load_state_dict_post_hooks": {},
+    "_modules": {},
+    "in_features": 25,
+    "out_features": 10
+  },
+  "ans4": {
+    "training": true,
+    "_parameters": {
+      "weight": {},
+      "bias": {}
+    },
+    "_buffers": {},
+    "_non_persistent_buffers_set": [],
+    "_backward_pre_hooks": {},
+    "_backward_hooks": {},
+    "_is_full_backward_hook": null,
+    "_forward_hooks": {},
+    "_forward_hooks_with_kwargs": {},
+    "_forward_hooks_always_called": {},
+    "_forward_pre_hooks": {},
+    "_forward_pre_hooks_with_kwargs": {},
+    "_state_dict_hooks": {},
+    "_state_dict_pre_hooks": {},
+    "_load_state_dict_pre_hooks": {},
+    "_load_state_dict_post_hooks": {},
+    "_modules": {},
+    "in_features": 3,
+    "out_features": 16
+  },
+  "ans5": {
+    "training": true,
+    "_parameters": {
+      "weight": {},
+      "bias": {}
+    },
+    "_buffers": {},
+    "_non_persistent_buffers_set": [],
+    "_backward_pre_hooks": {},
+    "_backward_hooks": {},
+    "_is_full_backward_hook": null,
+    "_forward_hooks": {},
+    "_forward_hooks_with_kwargs": {},
+    "_forward_hooks_always_called": {},
+    "_forward_pre_hooks": {},
+    "_forward_pre_hooks_with_kwargs": {},
+    "_state_dict_hooks": {},
+    "_state_dict_pre_hooks": {},
+    "_load_state_dict_pre_hooks": {},
+    "_load_state_dict_post_hooks": {},
+    "_modules": {},
+    "in_features": 12,
+    "out_features": 4
+  }
 }

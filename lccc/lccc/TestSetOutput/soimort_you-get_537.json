@@ -1,0 +1,79 @@
+{
+  "input_header": "def read_uint(stream):",
+  "input_docstring": null,
+  "output_code": "def read_uint(stream):\n    return struct.unpack('>I', stream.read(4))[0]",
+  "input_contexts": [
+    {
+      "id": "soimort_you-get_537_4",
+      "input_code": "def read_tkhd(stream, size, left, type):\n    body, stream = read_body_stream(stream, left)\n    value = read_full_atom(stream)\n    left -= 4\n    \n    creation_time = read_uint(stream)\n    modification_time = read_uint(stream)\n    track_id = read_uint(stream)\n    assert stream.read(4) == b'\\x00' * 4\n    duration = read_uint(stream)\n    left -= 20\n    \n    assert stream.read(8) == b'\\x00' * 8\n    qt_layer = read_ushort(stream)\n    qt_alternate_group = read_ushort(stream)\n    qt_volume = read_ushort(stream)\n    assert stream.read(2) == b'\\x00\\x00'\n    qt_matrixA = read_uint(stream)\n    qt_matrixB = read_uint(stream)\n    qt_matrixU = read_uint(stream)\n    qt_matrixC = read_uint(stream)\n    qt_matrixD = read_uint(stream)\n    qt_matrixV = read_uint(stream)\n    qt_matrixX = read_uint(stream)\n    qt_matrixY = read_uint(stream)\n    qt_matrixW = read_uint(stream)\n    qt_track_width = read_uint(stream)\n    width = qt_track_width >> 16\n    qt_track_height = read_uint(stream)\n    height = qt_track_height >> 16\n    left -= 60\n    assert left == 0\n    return VariableAtom(b'tkhd', size, body, [('duration', 20, duration, 4)])\n"
+    },
+    {
+      "id": "soimort_you-get_537_15",
+      "input_code": "def read_esds(stream, size, left, type):\n    value = read_uint(stream)\n    version = value >> 24\n    assert version == 0\n    flags = value & 0xffffff\n    left -= 4\n    \n    body = stream.read(left)\n    return Atom(b'esds', size, None)\n"
+    },
+    {
+      "id": "soimort_you-get_537_13",
+      "input_code": "def read_stco(stream, size, left, type):\n    value = read_full_atom(stream)\n    left -= 4\n    \n    entry_count = read_uint(stream)\n    left -= 4\n    \n    offsets = []\n    for i in range(entry_count):\n        chunk_offset = read_uint(stream)\n        offsets.append(chunk_offset)\n        left -= 4\n    \n    assert left == 0\n    class stco_atom(Atom):\n        def __init__(self, type, size, body):\n            Atom.__init__(self, type, size, body)\n        def write(self, stream):\n            self.write1(stream)\n            write_uint(stream, self.body[0])\n            write_uint(stream, len(self.body[1]))\n            for chunk_offset in self.body[1]:\n                write_uint(stream, chunk_offset)\n        def calsize(self):\n            self.size = 8 + 4 + 4 + len(self.body[1]) * 4\n            return self.size\n    return stco_atom(b'stco', size, (value, offsets))\n"
+    },
+    {
+      "id": "soimort_you-get_537_5",
+      "input_code": "def read_mdhd(stream, size, left, type):\n    body, stream = read_body_stream(stream, left)\n    ver, value = read_full_atom2(stream)\n    left -= 4\n\n    if ver == 1:\n        creation_time = read_ulong(stream)\n        modification_time = read_ulong(stream)\n        time_scale = read_uint(stream)\n        duration = read_ulong(stream)\n        var = [('duration', 24, duration, 8)]\n        left -= 28\n    else: \n        assert ver == 0, \"ver=%d\" % ver\n        creation_time = read_uint(stream)\n        modification_time = read_uint(stream)\n        time_scale = read_uint(stream)\n        duration = read_uint(stream)\n        var = [('duration', 16, duration, 4)]\n        left -= 16\n    \n    packed_language = read_ushort(stream)\n    qt_quality = read_ushort(stream)\n    left -= 4\n    \n    assert left == 0\n    return VariableAtom(b'mdhd', size, body, var)\n"
+    },
+    {
+      "id": "soimort_you-get_537_10",
+      "input_code": "def read_stss(stream, size, left, type):\n    value = read_full_atom(stream)\n    left -= 4\n    \n    entry_count = read_uint(stream)\n    left -= 4\n    \n    samples = []\n    for i in range(entry_count):\n            sample = read_uint(stream)\n            samples.append(sample)\n            left -= 4\n    \n    assert left == 0\n    class stss_atom(Atom):\n        def __init__(self, type, size, body):\n            Atom.__init__(self, type, size, body)\n        def write(self, stream):\n            self.write1(stream)\n            write_uint(stream, self.body[0])\n            write_uint(stream, len(self.body[1]))\n            for sample in self.body[1]:\n                write_uint(stream, sample)\n        def calsize(self):\n            self.size = 8 + 4 + 4 + len(self.body[1]) * 4\n            return self.size\n    return stss_atom(b'stss', size, (value, samples))\n"
+    },
+    {
+      "id": "soimort_you-get_537_9",
+      "input_code": "def read_stts(stream, size, left, type):\n    value = read_full_atom(stream)\n    left -= 4\n    \n    entry_count = read_uint(stream)\n    left -= 4\n    \n    samples = []\n    for i in range(entry_count):\n        sample_count = read_uint(stream)\n        sample_duration = read_uint(stream)\n        samples.append((sample_count, sample_duration))\n        left -= 8\n\n    assert left == 0\n    class stts_atom(Atom):\n        def __init__(self, type, size, body):\n            Atom.__init__(self, type, size, body)\n        def write(self, stream):\n            self.write1(stream)\n            write_uint(stream, self.body[0])\n            write_uint(stream, len(self.body[1]))\n            for sample_count, sample_duration in self.body[1]:\n                write_uint(stream, sample_count)\n                write_uint(stream, sample_duration)\n        def calsize(self):\n            self.size = 8 + 4 + 4 + len(self.body[1]) * 8\n            return self.size\n    return stts_atom(b'stts', size, (value, samples))\n"
+    },
+    {
+      "id": "soimort_you-get_537_11",
+      "input_code": "def read_stsc(stream, size, left, type):\n    value = read_full_atom(stream)\n    left -= 4\n    \n    entry_count = read_uint(stream)\n    left -= 4\n    \n    chunks = []\n    for i in range(entry_count):\n        first_chunk = read_uint(stream)\n        samples_per_chunk = read_uint(stream)\n        sample_description_index = read_uint(stream)\n        assert sample_description_index == 1\n        chunks.append((first_chunk, samples_per_chunk, sample_description_index))\n        left -= 12\n    \n    assert left == 0\n    class stsc_atom(Atom):\n        def __init__(self, type, size, body):\n            Atom.__init__(self, type, size, body)\n        def write(self, stream):\n            self.write1(stream)\n            write_uint(stream, self.body[0])\n            write_uint(stream, len(self.body[1]))\n            for first_chunk, samples_per_chunk, sample_description_index in self.body[1]:\n                write_uint(stream, first_chunk)\n                write_uint(stream, samples_per_chunk)\n                write_uint(stream, sample_description_index)\n        def calsize(self):\n            self.size = 8 + 4 + 4 + len(self.body[1]) * 12\n            return self.size\n    return stsc_atom(b'stsc', size, (value, chunks))\n"
+    },
+    {
+      "id": "soimort_you-get_537_6",
+      "input_code": "def read_hdlr(stream, size, left, type):\n    body, stream = read_body_stream(stream, left)\n    value = read_full_atom(stream)\n    left -= 4\n    \n    qt_component_type = read_uint(stream)\n    handler_type = read_uint(stream)\n    qt_component_manufacturer = read_uint(stream)\n    qt_component_flags = read_uint(stream)\n    qt_component_flags_mask = read_uint(stream)\n    left -= 20\n    \n    track_name = stream.read(left)\n    \n    return Atom(b'hdlr', size, body)\n"
+    },
+    {
+      "id": "soimort_you-get_537_2",
+      "input_code": "def read_full_atom2(stream):\n    value = read_uint(stream)\n    version = value >> 24\n    flags = value & 0xffffff\n    return version, value\n"
+    },
+    {
+      "id": "soimort_you-get_537_7",
+      "input_code": "def read_stsd(stream, size, left, type):\n    value = read_full_atom(stream)\n    left -= 4\n    \n    entry_count = read_uint(stream)\n    left -= 4\n    \n    children = []\n    for i in range(entry_count):\n        atom = read_atom(stream)\n        children.append(atom)\n        left -= atom.size\n    \n    assert left == 0\n    class stsd_atom(Atom):\n        def __init__(self, type, size, body):\n            Atom.__init__(self, type, size, body)\n        def write(self, stream):\n            self.write1(stream)\n            write_uint(stream, self.body[0])\n            write_uint(stream, len(self.body[1]))\n            for atom in self.body[1]:\n                atom.write(stream)\n        def calsize(self):\n            oldsize = self.size\n            self.size = 8 + 4 + 4 + sum([atom.calsize() for atom in self.body[1]])\n            assert oldsize == self.size, '%s: %d, %d' % (self.type, oldsize, self.size)\n            return self.size\n    return stsd_atom(b'stsd', size, (value, children))\n"
+    },
+    {
+      "id": "soimort_you-get_537_14",
+      "input_code": "def read_ctts(stream, size, left, type):\n    value = read_full_atom(stream)\n    left -= 4\n    \n    entry_count = read_uint(stream)\n    left -= 4\n    \n    samples = []\n    for i in range(entry_count):\n        sample_count = read_uint(stream)\n        sample_offset = read_uint(stream)\n        samples.append((sample_count, sample_offset))\n        left -= 8\n    \n    assert left == 0\n    class ctts_atom(Atom):\n        def __init__(self, type, size, body):\n            Atom.__init__(self, type, size, body)\n        def write(self, stream):\n            self.write1(stream)\n            write_uint(stream, self.body[0])\n            write_uint(stream, len(self.body[1]))\n            for sample_count, sample_offset in self.body[1]:\n                write_uint(stream, sample_count)\n                write_uint(stream, sample_offset)\n        def calsize(self):\n            self.size = 8 + 4 + 4 + len(self.body[1]) * 8\n            return self.size\n    return ctts_atom(b'ctts', size, (value, samples))\n"
+    },
+    {
+      "id": "soimort_you-get_537_12",
+      "input_code": "def read_stsz(stream, size, left, type):\n    value = read_full_atom(stream)\n    left -= 4\n    \n    sample_size = read_uint(stream)\n    sample_count = read_uint(stream)\n    left -= 8\n    \n    assert sample_size == 0\n    total = 0\n    sizes = []\n    if sample_size == 0:\n        for i in range(sample_count):\n            entry_size = read_uint(stream)\n            sizes.append(entry_size)\n            total += entry_size\n            left -= 4\n    \n    assert left == 0\n    class stsz_atom(Atom):\n        def __init__(self, type, size, body):\n            Atom.__init__(self, type, size, body)\n        def write(self, stream):\n            self.write1(stream)\n            write_uint(stream, self.body[0])\n            write_uint(stream, self.body[1])\n            write_uint(stream, self.body[2])\n            for entry_size in self.body[3]:\n                write_uint(stream, entry_size)\n        def calsize(self):\n            self.size = 8 + 4 + 8 + len(self.body[3]) * 4\n            return self.size\n    return stsz_atom(b'stsz', size, (value, sample_size, sample_count, sizes))\n"
+    },
+    {
+      "id": "soimort_you-get_537_1",
+      "input_code": "def read_full_atom(stream):\n    value = read_uint(stream)\n    version = value >> 24\n    flags = value & 0xffffff\n    assert version == 0\n    return value\n"
+    },
+    {
+      "id": "soimort_you-get_537_8",
+      "input_code": "def read_avc1(stream, size, left, type):\n    body, stream = read_body_stream(stream, left)\n    \n    skip_zeros(stream, 6)\n    data_reference_index = read_ushort(stream)\n    skip_zeros(stream, 2)\n    skip_zeros(stream, 2)\n    skip_zeros(stream, 12)\n    width = read_ushort(stream)\n    height = read_ushort(stream)\n    horizontal_rez = read_uint(stream) >> 16\n    vertical_rez = read_uint(stream) >> 16\n    assert stream.read(4) == b'\\x00' * 4\n    frame_count = read_ushort(stream)\n    string_len = read_byte(stream)\n    compressor_name = stream.read(31)\n    depth = read_ushort(stream)\n    assert stream.read(2) == b'\\xff\\xff'\n    left -= 78\n    \n    child = read_atom(stream)\n    assert child.type in (b'avcC', b'pasp'), 'if the sub atom is not avcC or pasp (actual %s), you should not cache raw body' % child.type\n    left -= child.size\n    stream.read(left)\n    return Atom(b'avc1', size, body)\n"
+    },
+    {
+      "id": "soimort_you-get_537_3",
+      "input_code": "def read_mvhd(stream, size, left, type):\n    body, stream = read_body_stream(stream, left)\n    value = read_full_atom(stream)\n    left -= 4\n    \n    creation_time = read_uint(stream)\n    modification_time = read_uint(stream)\n    time_scale = read_uint(stream)\n    duration = read_uint(stream)\n    left -= 16\n    \n    qt_preferred_fate = read_uint(stream)\n    qt_preferred_volume = read_ushort(stream)\n    assert stream.read(10) == b'\\x00' * 10\n    qt_matrixA = read_uint(stream)\n    qt_matrixB = read_uint(stream)\n    qt_matrixU = read_uint(stream)\n    qt_matrixC = read_uint(stream)\n    qt_matrixD = read_uint(stream)\n    qt_matrixV = read_uint(stream)\n    qt_matrixX = read_uint(stream)\n    qt_matrixY = read_uint(stream)\n    qt_matrixW = read_uint(stream)\n    qt_previewTime = read_uint(stream)\n    qt_previewDuration = read_uint(stream)\n    qt_posterTime = read_uint(stream)\n    qt_selectionTime = read_uint(stream)\n    qt_selectionDuration = read_uint(stream)\n    qt_currentTime = read_uint(stream)\n    nextTrackID = read_uint(stream)\n    left -= 80\n    assert left == 0\n    return VariableAtom(b'mvhd', size, body, [('duration', 16, duration, 4)])\n"
+    }
+  ],
+  "generated_inputs": [
+    "```python\n<needimport>\nimport io\nimport struct\n\n<testcase_1>\nstream = io.BytesIO(struct.pack('>I', 123456789))\n\n<testcase_2>\nstream = io.BytesIO(struct.pack('>I', 987654321))\n\n<testcase_3>\nstream = io.BytesIO(struct.pack('>I', 4294967295))  # Maximum value for an unsigned 32-bit integer\n\n<testcase_4>\nstream = io.BytesIO(struct.pack('>I', 0))  # Minimum value for an unsigned 32-bit integer\n\n<testcase_5>\nstream = io.BytesIO(struct.pack('>I', 305419896))  # Arbitrary value\n```"
+  ],
+  "gpt_output": "```python\n<needimport>\nimport io\nimport struct\n\n<testcase_1>\nstream = io.BytesIO(struct.pack('>I', 123456789))\n\n<testcase_2>\nstream = io.BytesIO(struct.pack('>I', 987654321))\n\n<testcase_3>\nstream = io.BytesIO(struct.pack('>I', 4294967295))  # Maximum value for an unsigned 32-bit integer\n\n<testcase_4>\nstream = io.BytesIO(struct.pack('>I', 0))  # Minimum value for an unsigned 32-bit integer\n\n<testcase_5>\nstream = io.BytesIO(struct.pack('>I', 305419896))  # Arbitrary value\n```",
+  "needimport": "import io\nimport struct\n\n",
+  "test_results": {
+    "ans1": 123456789,
+    "ans2": 987654321,
+    "ans3": 4294967295,
+    "ans4": 0,
+    "ans5": 305419896
+  }
+}
